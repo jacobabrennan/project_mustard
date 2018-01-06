@@ -1,0 +1,14 @@
+
+
+#Ignore Hub_Password and other sensitive data
+
+__secure/
+data/
+
+
+#Preferences and Generated Files
+
+*.int
+*.rsc
+*.dmb
+*.lk

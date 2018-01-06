@@ -1,0 +1,93 @@
+
+
+//------------------------------------------------------------------------------
+
+furniture
+	parent_type = /obj
+	density = TRUE
+	movement = MOVEMENT_FLOOR
+	toJSON()
+		var/list/objectData = ..()
+		var/plot/plotArea/PA = aloc(src)
+		objectData["x"] = x-PA.x
+		objectData["y"] = y-PA.y
+		return objectData
+	// Placement is handled by plot.fromJSON(), because of variable z location
+	var
+		interaction = INTERACTION_TOUCH // Projectiles can burn or cut, etc., furniture
+		thumbnailState // The icon_state to be shown in the town editor (small icons for large furniture)
+	Cross(character/C)
+		if(interaction&INTERACTION_TOUCH && istype(C))
+			return interact(C, INTERACTION_TOUCH)
+		else if(istype(C, /projectile))
+			var /projectile/P = C
+			if(P.interactionProperties & interaction)
+				interact(P, P.interactionProperties&interaction)
+		return TRUE
+	proc/interact(atom/A, interactionFlags)
+	proc/activate()
+furniture/bed
+	icon = 'furniture_32.dmi'
+	icon_state = "bed"
+	pixel_y = -2
+	interact(character/character)
+		character.adjustHp(character.maxHp())
+		character.adjustMp(character.maxMp())
+furniture/innNPC
+	icon = 'cq.dmi'
+	interact(character/character)
+		character.adjustHp(character.maxHp())
+		character.adjustMp(character.maxMp())
+		var/menu/store/C = character.interface.client.menu.addComponent(/menu/store)
+		var/list/itemList = list()
+		for(var/index = 1 to 36)
+			var/itemType = pick(typesof(/item/gear)-/item/gear)
+			itemList.Add(new itemType())
+		C.setup(itemList)
+		character.interface.client.menu.focus(C)
+
+client
+	var/C
+	New()
+		. = ..()
+		C = pick("red","green","blue","darkred","darkblue","darkgreen","darkgrey")
+		world << {"<i style="color:grey"> - [key] has joined.</i>"}
+	Del()
+		world << {"<i style="color:grey"> - [key] has left.</i>"}
+		. = ..()
+client/verb/say(what as text)
+	world << {"<b style="color:[C]">[key]</b>: [what]"}
+
+furniture/deleter
+	icon = 'specials.dmi'
+	icon_state = "cancel"
+	thumbnailState = "cancel"
+	New()
+		. = ..()
+		spawn(1)
+			del src
+furniture/tree
+	icon = 'tree1.dmi'
+	icon_state = "tree1"
+	pixel_x = -16
+	thumbnailState = "tree1_thumb"
+	interaction = INTERACTION_CUT | INTERACTION_WIND
+	movement = MOVEMENT_WALL
+	var/cut = FALSE
+	interact(projectile/projectile, interactFlags)
+		if(cut) return
+		if(interactFlags & INTERACTION_CUT)
+			cut = TRUE
+			//var /item/rawMaterial/wood/W = new()
+			//W.forceLoc(loc)
+			//icon_state = "stump"
+			//movement = MOVEMENT_FLOOR
+			//spawn(TIME_RESOURCE_RESTORE)
+			//	restore()
+		//else if(interactFlags & INTERACTION_WIND)
+	//activate()
+	//	. = ..()
+	proc/restore()
+		cut = initial(cut)
+		icon_state = initial(icon_state)
+		movement = initial(movement)

@@ -1,0 +1,49 @@
+// DM Environment file for makgam.dme.
+// All manual changes should be made outside the BEGIN_ and END_ blocks.
+// New source code should be placed in .dm files: choose File/New --> Code File.
+
+// BEGIN_INTERNALS
+// END_INTERNALS
+
+// BEGIN_FILE_DIR
+#define FILE_DIR .
+#define FILE_DIR "rsc"
+#define FILE_DIR "rsc/img"
+#define FILE_DIR "rsc/img/characters"
+// END_FILE_DIR
+
+// BEGIN_PREFERENCES
+#define DEBUG
+// END_PREFERENCES
+
+// BEGIN_INCLUDE
+#include <kaiochao\anymacro\AnyMacro.dme>
+#include <oasiscircle\mathematics\Mathematics.dme>
+#include "__bugs.dm"
+#include "version_history.dm"
+#include "asdf.dmf"
+#include "__secure\hub_password.dm"
+#include "code\__00_defines.dm"
+#include "code\__game.dm"
+#include "code\__system.dm"
+#include "code\__wrapper.dm"
+#include "code\event.dm"
+#include "code\interface.dm"
+#include "code\lighting.dm"
+#include "code\menu.dm"
+#include "code\party.dm"
+#include "code\utilities.dm"
+#include "code\combat\character.dm"
+#include "code\combat\combat.dm"
+#include "code\combat\enemy.dm"
+#include "code\combat\usable.dm"
+#include "code\map\editor.dm"
+#include "code\map\furniture.dm"
+#include "code\map\plot.dm"
+#include "code\map\region.dm"
+#include "code\map\terrain.dm"
+#include "code\map\terrain_forest.dm"
+#include "code\map\terrain_snow.dm"
+#include "code\map\tile.dm"
+// END_INCLUDE
+

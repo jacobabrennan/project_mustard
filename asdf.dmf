@@ -1,0 +1,84 @@
+macro "macro"
+	elem 
+		name = "Q"
+		command = "forceReboot"
+	elem 
+		name = "R"
+		command = "reboot"
+
+
+menu "menu"
+	elem 
+		name = "&Quit"
+		command = ".quit"
+		category = "&File"
+		saved-params = "is-checked"
+
+
+window "default"
+	elem "default"
+		type = MAIN
+		pos = 281,0
+		size = 627x359
+		anchor1 = none
+		anchor2 = none
+		background-color = #ff0080
+		is-default = true
+		saved-params = "pos;size;is-minimized;is-maximized"
+		macro = "macro"
+		menu = "menu"
+	elem "child1"
+		type = CHILD
+		pos = 384,0
+		size = 243x360
+		anchor1 = 61,0
+		anchor2 = 100,100
+		background-color = none
+		saved-params = "splitter"
+		left = "window1"
+		is-vert = false
+		splitter = 100
+	elem "map1"
+		type = MAP
+		pos = 0,0
+		size = 384x359
+		anchor1 = 0,0
+		anchor2 = 61,100
+		is-default = true
+		saved-params = "zoom;letterbox;zoom-mode"
+
+window "window1"
+	elem "window1"
+		type = MAIN
+		pos = 281,0
+		size = 640x480
+		anchor1 = none
+		anchor2 = none
+		background-color = #00ff00
+		saved-params = "pos;size;is-minimized;is-maximized"
+		titlebar = false
+		statusbar = false
+		can-close = false
+		can-minimize = false
+		can-resize = false
+		is-pane = true
+	elem "output1"
+		type = OUTPUT
+		pos = 0,0
+		size = 640x460
+		anchor1 = 0,0
+		anchor2 = 100,100
+		is-default = true
+		saved-params = "max-lines"
+	elem "input1"
+		type = INPUT
+		pos = 0,460
+		size = 640x20
+		anchor1 = 0,100
+		anchor2 = 100,100
+		is-disabled = true
+		is-default = true
+		border = sunken
+		saved-params = ""
+		command = "say"
+
