@@ -1,4 +1,5 @@
-
+#define REGION_TEST "test"
+//#define EDIT_MAP
 
 //------------------------------------------------------------------------------
 
@@ -27,12 +28,9 @@
 #define TIME_RESOURCE_RESTORE 3000
 	// The normal time after furniture has been interacted with before it restores.
 #define SAVEFILE_VERSION "0.1.0"
-#define FILE_PATH_GAMES
-//#define FILE_PATH_PARTIES "data/parties"
+#define FILE_PATH_GAMES "data/saved_games"
 #define FILE_PATH_REGIONS "data/regions"
 #define FILE_PATH_PROFILES "data/profiles"
-//#define FILE_PATH_CHARACTERS "data/characters"
-//#define FILE_PATH_ENVIRONMENT "data/environment.json"
 #define SALE_MARKDOWN (1/4)
 	// The amount you get back from selling items
 #define ITEM_DROP_RATE (1/6)
@@ -134,3 +132,6 @@
 	// Must remain 360 because it's used directly by trigonometric functions
 
 #define ID_SYSTEM "system"
+	// The id of the "game owner" when editing the map
+#define WARP_START "start"
+	// The default plot.warpId when warping to a region

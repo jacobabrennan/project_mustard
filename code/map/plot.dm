@@ -8,6 +8,7 @@ plot
 		regionId
 		x
 		y
+		warpId // Used to move the player between regions
 		revealed = FALSE
 		plot/plotArea/area
 		terrain
@@ -22,6 +23,7 @@ plot
 		objectData["regionId"] = regionId
 		objectData["x"] = x
 		objectData["y"] = y
+		objectData["warpId"] = warpId
 		objectData["terrain"] = terrain
 //		if(building) objectData["building"] = building.toJSON()
 		var/list/furnitureArray = list()
@@ -34,6 +36,7 @@ plot
 		regionId = objectData["regionId"]
 		x = objectData["x"]
 		y = objectData["y"]
+		warpId = objectData["warpId"]
 		terrain = objectData["terrain"]
 //		if(objectData["building"])
 //			building = json2Object(objectData["building"])
@@ -81,6 +84,7 @@ plot
 				furnitureStorage = list()
 			var /list/furnitureObject = F.toJSON()
 			furnitureStorage.Add(furnitureObject)
+			del F
 		// Remove Tiles
 		for(var/posY = 0 to PLOT_SIZE-1)
 			for(var/posX = 0 to PLOT_SIZE-1)

@@ -126,21 +126,37 @@ interface/rpg
 		if(block) return
 		commandsDown |= command
 	//
+	icon = 'specials.dmi'
+	icon_state = "eye"
 	proc/transition(plot/newPlot)
+		ASSERT(istype(newPlot))
 		var /terrain/oldTerrain = currentTerrain
 		currentTerrain = terrains[newPlot.terrain]
+		// Display Transition Dialogue
 		if(oldTerrain && currentTerrain.name && oldTerrain.name != currentTerrain.name)
 			client.menu.transition(currentTerrain.name)
+		//
 		var/plot/plotArea/newArea = newPlot.area
 		if(istype(newArea))
-			if(!loc || newArea.z != z)
+			// Calculate translation distance (in atomic steps)
+			var /plot/currentPlot = plot(src)
+			var plotDist
+			if(loc && currentPlot)
+				plotDist = max(
+					abs(newPlot.area.x-currentPlot.area.x),
+					abs(newPlot.area.y-currentPlot.area.y)
+				)
+			// Don't slide across entire map
+			if(!loc || newArea.z != z || plotDist > PLOT_SIZE)
 				forceLoc(locate(
 					newArea.x + round(PLOT_SIZE/2),
 					newArea.y + round(PLOT_SIZE/2),
 					newArea.z
 				))
+			// Slide between adjacent plots
 			else
 				new /event/transition(src, newPlot)
+		// Change Lighting
 		transitionLight(newPlot)
 	proc/transitionLight(plot/newPlot)
 		//var newLight = environment.getLight(newPlot)

@@ -2,6 +2,7 @@
 
 //------------------------------------------------------------------------------
 
+#define diag(messages...) system.diagnostic(list(messages), __FILE__, __LINE__)
 var/system/system = new()
 system
 	var
@@ -28,6 +29,17 @@ system
 		loadVersion()
 		spawn(10)
 			startProject()
+	proc
+		diagnostic(list/messages, file, line)
+			var argText = ""
+			var first = TRUE
+			for(var/key in messages)
+				if(!first)
+					argText += ", "
+				first = FALSE
+				argText += "[key]"
+			world << {"<span style="color:grey">[file]:[line]::</span> <b>[argText]</b>"}
+
 	//
 	proc
 		loadHub()
@@ -50,6 +62,7 @@ system
 			mapSlots[slotIndex] = newGame
 			// Inform game about its map placement (Set zOffset on game)
 			newGame.zOffset = (slotIndex-1)*MAP_DEPTH+1
+			return newGame
 
 		deregisterGame(game/oldGame)
 			#warn Don't forget about me
@@ -122,9 +135,11 @@ system
 			//Temp code
 
 			// Direct Players to Edit Map
+			#ifdef EDIT_MAP
 			new /interface/mapEditor(client)
 			return
 
+			#else
 			// Direct Players to Play Game
 			var/game/newGame
 				//Check if a game is in progress, add as spectator
@@ -135,3 +150,4 @@ system
 			newGame = newGame(client.ckey, "test")
 			newGame.createNew()
 			newGame.start()
+			#endif

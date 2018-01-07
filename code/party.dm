@@ -17,16 +17,6 @@ party
 //-- Saving / Loading --------------------------------------------//
 
 party
-	/*proc
-		load()
-			var/filePath = FILE_PATH_PARTIES+"/party.json"
-			if(fexists(filePath))
-				var/list/saveData = json_decode(file2text(filePath))
-				// TODO: check for compatible version
-				fromJSON(saveData)
-		save()
-			var/filePath = FILE_PATH_PARTIES+"/party.json"
-			replaceFile(filePath, json_encode(toJSON()))*/
 	toJSON()
 		var/list/dataObject = ..()
 		dataObject["characters"] = list2JSON(characters)
@@ -143,16 +133,23 @@ plot
 
 //-- Movement and Behavior ---------------------------------------//
 
-
 party
 	proc/changeRegion(region/newRegion, plot/newPlot)
 		// Find the Start Plot
-		if(!newPlot)
-			newPlot = newRegion.getPlot(newRegion.startPlotCoords.x, newRegion.startPlotCoords.y)
+		if(!newPlot) // Try for startPlotCoords (deprecated)
+			#warn Deprecate Start Plot Coords
+			if(newRegion.startPlotCoords)
+				newPlot = newRegion.getPlot(newRegion.startPlotCoords.x, newRegion.startPlotCoords.y)
+		if(!newPlot) // Try to find a WARP_START warpId plot
+			newPlot = newRegion.getWarp(WARP_START)
+		if(!newPlot) // Get plot at (0,0)
+			newPlot = newRegion.getPlot(0, 0)
+		ASSERT(newPlot)
+		newPlot.reveal()
 		// Find the Start Tile (currently the center) of that Plot
 		var /coord/startCoords = new( // Center
-			round((newPlot.x-0.5)*PLOT_SIZE)+1,
-			round((newPlot.y-0.5)*PLOT_SIZE)+1
+			round((newPlot.x+newRegion.mapOffset.x+0.5)*PLOT_SIZE)+1,
+			round((newPlot.y+newRegion.mapOffset.y+0.5)*PLOT_SIZE)+1
 		)
 		var /tile/startTile = locate(startCoords.x, startCoords.y, newRegion.z())
 		// Move each character in the party to the Start Tile
@@ -269,7 +266,7 @@ character/partyMember
 				attackWithWeapon()
 				return
 			// If we have health, find and attack a target
-			if(hp > 2)
+			if(hp > 0) // Change from zero to make her shy when wounded
 				// If current target is too far away, forget about it
 				if(target && bounds_dist(party.mainCharacter, target) > 80)
 					target = null
@@ -538,6 +535,8 @@ character/partyMember
 		dead = FALSE
 		density = initial(density)
 		icon_state = null
+		// Make Invulnerable temporarily
+		invincible(TIME_HURT)
 		// Rearrange HP / MP / Faiting overlays
 		adjustHp(1)
 		adjustMp(0)

@@ -3,10 +3,10 @@
 //------------------------------------------------------------------------------
 
 system
-	var/versionMotto = "DEATH PUFF"
+	var/versionMotto = "Now you're playing with Power"
 	proc/loadVersion()
 		system.versionType = "Internal"
-		system.versionNumber = "0.0.6"
+		system.versionNumber = "0.0.7"
 		system.versionHub = 0
 		spawn(1)
 			world << "<b>Version [versionType] [versionNumber]</b>: [versionMotto]"
@@ -14,62 +14,80 @@ system
 
 //345678901234567890123456789012345678901234567890123456789012345678901234567890
 //------------------------------------------------------------------------------
-/*
-Remember: It's the maps and bosses! COMBAT!
-Features:
-	World Editing
-		Even if it's quick and dirty,
-		but you should be able to make something nice with the new menu features
+
+/*-- Feature List - Remember: It's the map and Bosses! COMBAT! -----------------
+
+Focus - Things which must be done this version
+	Deprecate startPlotCoords
+	Dungeons that you can walk into
+
+Upcomming - Feature candidates for the next version
 	Quest System to track what the player has done in the world, save with game.
+
+Set In Stone - Features that have to be finished for 1.0
+	Diagonal Enemies are cheap
+		They should randomize starting direction at plot/activate()
+		Maybe move slower when first activated
 	Title Screen
 		With Animation
 		Join Game in progress
 		Start Own Game
 		Enter map editor
-	Dungeons that you can walk into
-	Revive meter that fills over fainted character
-		only fills if a character is reviving
-		resets if reviving stops
-		revives once full
 	Menu for player management (single+)
 	Intro Boss Fight
 		Maybe no other players (not single+)
 		Regressia Hero against Lorcan (legend, not true)
 		Convey basic story, but make them FEEL AWESOME!
 		SPECTACLE!
+
+Spectulative - Ideas for new features to make the game better.
 	Plot Backgrounds that show distant scenary,
 		like you're walking on a mountain ridge looking out at the sunset
+	Revive meter that fills over fainted character
+		only fills if a character is reviving
+		resets if reviving stops
+		revives once full
 
-	Deferred: Savefile versions
+Deferred - Low Priority Optional Features
+	Savefile versions
+
 */
 /*
 
-Internal 0.0.6
+Internal 0.0.7 -- Now you're playing with Power
+
+Internal 0.0.6 -- DEATH PUFF
 	Added Death Puffs
+	Warping between plots & regions
 	Added Map Editor, including:
+		Saving & Loading
 		Region Editor
 			Change World Dimensions (in number of plots)
 			Create Region
 			Delete Region
 			Move Region (by number of plots)
 			Resize Region (in number of plots)
+			Load Region
+			Unload Region
+			Save Region / Save all Regions
 			Change Plot Terrain
 		Plot Editor
 			Edit Tiles
 			Place Furniture
+			Configure Furniture
 
-Internal 0.0.5
+Internal 0.0.5 -- Party on Wayne!
 	Added Party System
 	Restructured Command / takeTurn / behavior.
 	Fixed Menus so they can move around smoothly.
 	Added Game Over & Respawn, including disconnected / reconnected players.
 
-Internal 0.0.4
+Internal 0.0.4 -- And there was darkness
 	Changed Project direction.
 		Concept is now a "single player plus" action RPG, similar to
 		the NES Secret of Mana.
 
-Internal 0.0.3
+Internal 0.0.3 -- Let there be light
 	Added Precipitation to weatherSystem. Weather can now produce rain and snow.
 	Added Wind. Wind moves across the map at the same bearing as the associated
 		weather system, and causes wind based effects to tiles and furniture.

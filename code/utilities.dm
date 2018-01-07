@@ -2,18 +2,13 @@
 
 //------------------------------------------------------------------------------
 
-//-- Development Utilities
-proc/diag() // Broken, was originally a macro, now __FILE__ and __LINE__ are always for THIS proc
-	var argText = ""
-	var first = TRUE
-	for(var/key in args)
-		if(!first)
-			argText += ", "
-		first = FALSE
-		argText += "[key]"
-	world << {"<span style="color:grey">[__FILE__]:[__LINE__]::</span> <b>[argText]</b>"}
 
-//-- Movement Utilities ---------------------------------------------------
+//-- Development Utilities -----------------------------------------------------
+// None
+
+
+//-- Movement Utilities --------------------------------------------------------
+
 mob/density = FALSE
 atom/movable/var/transitionable = FALSE // Most movable atoms cannot move between plots
 atom/movable/step_size = 1 // Necessary for all objects to use pixel movement
@@ -66,6 +61,7 @@ atom/movable/proc/centerLoc(var/atom/movable/_center)
 
 
 //-- Actor Definition -----------------------------------------------------
+
 actor
 	parent_type = /mob
 	var
@@ -156,7 +152,7 @@ coord
 		var/list/objectData = ..()
 		objectData["x"] = x
 		objectData["y"] = y
-		if(z) objectData["z"] = z
+		if(z != null) objectData["z"] = z
 		return objectData
 	fromJSON(list/objectData)
 		x = objectData["x"]
@@ -216,7 +212,7 @@ rect
 		copy.height = height
 		return copy
 proc
-	coord(x, y) return new /coord(x, y)
+	coord(x, y, z) return new /coord(x, y, z)
 	vector(_m, _d) return new /vector(_m, _d)
 	rect(x, y, w, h) return new /rect(x, y, w, h)
 
@@ -229,9 +225,10 @@ array
 	var
 		list/_list
 		length
-	New(length)
+	New(_length)
 		. = ..()
-		_list = new(length)
+		_list = new(_length)
+		length = _length
 	toJSON()
 		var/list/objectData = ..()
 		objectData["length"]  = length
@@ -239,7 +236,7 @@ array
 		return objectData
 	fromJSON(list/objectData)
 		. = ..()
-		length = objectData["length"]
+		setLength(objectData["length"])
 		_list = json2Object(objectData["_list"])
 	proc
 		setLength(value)
@@ -261,6 +258,7 @@ array
 			// Even works for "not found" 0 => -1
 		//
 		operator[](index)
+			ASSERT(istype(_list))
 			return _list[index+1] // Correct for DM's index 1 lists
 		operator[]=(index, value)
 			return _list[index+1] = value
@@ -344,31 +342,37 @@ datum/proc/toJSON() // hook
 	var/jsonObject = list()
 	jsonObject["typePath"] = type
 	return jsonObject
+
 datum/proc/fromJSON(list/objectData) // hook
-proc/json2Object(list/objectData) // utility
-	if(!istype(objectData)) return
-	var/typePath = text2path(objectData["typePath"])
-	if(!typePath) return
-	var/datum/D = new typePath()
-	D.fromJSON(objectData)
-	return D
-proc/list2JSON(list/array) // utility
-	var/list/jsonList = new(array.len)
-	for(var/I = 1 to array.len)
-		var/datum/indexed = array[I]
-		if(istype(indexed))
-			jsonList[I] = indexed.toJSON(indexed)
-		else
-			jsonList[I] = json_encode(indexed)
-	return jsonList
-proc/json2List(list/objectData)
-	var /list/objectList = new()
-	for(var/data in objectData)
-		var newObject = json2Object(data)
-		if(!newObject)
-			newObject = data
-		objectList.Add(newObject)
-	return objectList
+
+proc
+	json2Object(list/objectData) // utility
+		// Handle Primitive Types (strings, numbers, null)
+		if(!istype(objectData))
+			return objectData
+		// Handle objects from toJSON (having entries for "typepath")
+		var/typePath = text2path(objectData["typePath"])
+		if(typePath)
+			var/datum/D = new typePath()
+			D.fromJSON(objectData)
+			return D
+		// Handle Lists (recursive)
+		return json2List(objectData)
+	json2List(list/objectData)
+		var /list/objectList = new()
+		for(var/data in objectData)
+			var newObject = json2Object(data)
+			objectList.Add(newObject)
+		return objectList
+	list2JSON(list/array) // utility
+		var/list/jsonList = new(array.len)
+		for(var/I = 1 to array.len)
+			var/datum/indexed = array[I]
+			if(istype(indexed))
+				jsonList[I] = indexed.toJSON(indexed)
+			else
+				jsonList[I] = json_encode(indexed)
+		return jsonList
 
 
 //-- Key State Control (with Kaiochao.AnyMacro) ---------------------------

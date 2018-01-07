@@ -90,10 +90,13 @@ game
 					if(C.ckey == ckey(ownerId))
 						player = C
 				party.addPlayer(player, CHARACTER_HERO)
-				party.changeRegion(getRegion(OVERWORLD))
+				party.changeRegion(getRegion(REGION_TEST))
+				var /region/derp = getRegion("derp")
+				for(var/plot/P in derp.plots.contents())
+					P.reveal()
 		respawn()
 			party.respawn()
-			party.changeRegion(getRegion(OVERWORLD))
+			party.changeRegion(getRegion(REGION_TEST))
 		gameOver()
 			for(var/regionKey in regions)
 				var /region/R = regions[regionKey]
@@ -142,8 +145,10 @@ game
 			ASSERT(fexists(filePath))
 			var/list/regionData = json_decode(file2text(filePath))
 			// Create & register region
-			var/region/newRegion = json2Object(regionData)
+			var/region/newRegion = new(regionId)
+				// Can't use json2Object() because registerRegion() must be called before fromJSON()
 			registerRegion(newRegion)
+			newRegion.fromJSON(regionData)
 			// Reveal Start Plot
 			if(newRegion.startPlotCoords)
 				var /plot/startPlot = newRegion.getPlot(

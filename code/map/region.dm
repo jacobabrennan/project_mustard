@@ -41,6 +41,9 @@ region
 		world.maxy = max(world.maxy, PLOT_SIZE*height)
 		gridText = objectData["gridText"]
 		if(objectData["entrance"]) entrance = json2Object(objectData["entrance"])
+		plots = json2Object(objectData["plots"])
+		setLocation(mapOffset.x, mapOffset.y, mapOffset.z)
+		setSize(width, height)
 		/*var/list/plotsData = objectData["plots"]
 		plots.len = plotsData.len
 		for(var/I = 1 to plotsData.len)
@@ -94,6 +97,7 @@ region
 		var /grid/oldPlots = plots
 		var oldGridText = gridText
 		// Set to new metrics
+		warpPlots = new()
 		width  = setWidth  || DEFAULT_PLOTS
 		height = setHeight || DEFAULT_PLOTS
 		if(!_defaultTerrain)
@@ -108,19 +112,22 @@ region
 		plots = new(width, height)
 		for(var/posX = 0 to width-1)
 			for(var/posY = 0 to height-1)
+				var /plot/P
 				// Try to populate from old plots
 				if(posX < oldPlots.width && posY < oldPlots.height)
-					var /plot/oldPlot = oldPlots.get(posX, posY)
-					plots.put(posX, posY, oldPlot)
-					//oldPlot.unreveal()
+					P = oldPlots.get(posX, posY)
+					plots.put(posX, posY, P)
 				// Otherwise, create new plots
 				else
-					var/plot/P = new(id)
-					P.gameId = gameId
+					P = new(id)
 					plots.put(posX, posY, P)
 					P.x = posX
 					P.y = posY
 					P.terrain = _defaultTerrain
+				// Properly Configure Plot
+				P.gameId = gameId
+				if(P.warpId)
+					setWarp(P.warpId, P)
 		// Delete any old unused plots
 		for(var/plot/P in oldPlots.contents())
 			if(P in plots.contents()) continue
@@ -214,6 +221,20 @@ region
 					tileChar = "~"
 					world << "problem: [tileType]"
 			return tileChar
+
+
+//-- Handle Warp Points --------------------------------------------------------
+
+	var
+		list/warpPlots = list() // Associative: warpId => plot
+	proc
+		setWarp(warpId, plot/P)
+			if(P.warpId)
+				warpPlots.Remove(P.warpId)
+			warpPlots[warpId] = P
+			P.warpId = warpId
+		getWarp(warpId)
+			return warpPlots[warpId]
 
 
 //------------------------------------------------------------------------------

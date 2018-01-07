@@ -71,19 +71,38 @@ furniture/tree
 	icon_state = "tree1"
 	pixel_x = -16
 	thumbnailState = "tree1_thumb"
-	interaction = INTERACTION_CUT | INTERACTION_WIND
+	interaction = INTERACTION_CUT | INTERACTION_WIND// | INTERACTION_TOUCH
 	movement = MOVEMENT_WALL
 	var/cut = FALSE
+	/*var/warpRegion
+	var/warpPlot
+	toJSON()
+		var /list/objectData = ..()
+		objectData["warpRegion"] = warpRegion
+		objectData["warpPlot"] = warpPlot
+		return objectData
+	fromJSON(list/objectData)
+		. = ..()
+		warpRegion = objectData["warpRegion"]
+		warpPlot = objectData["warpPlot"]
+	_configureMapEditor()
+		warpPlot = input("Warp Plot?", "Set Stuff", warpPlot) as text
+		warpRegion = input("Warp Region?", "Set Stuff", warpRegion) as text*/
 	interact(projectile/projectile, interactFlags)
+		//var/character/C = projectile
+		//var /plot/P = plot(src)
+		//if(!warpPlot) return
+		//diag(warpPlot, warpRegion)
+		//C.warp(warpPlot, warpRegion, P.gameId)
 		if(cut) return
 		if(interactFlags & INTERACTION_CUT)
 			cut = TRUE
 			//var /item/rawMaterial/wood/W = new()
 			//W.forceLoc(loc)
-			//icon_state = "stump"
-			//movement = MOVEMENT_FLOOR
-			//spawn(TIME_RESOURCE_RESTORE)
-			//	restore()
+			icon_state = "stump"
+			movement = MOVEMENT_FLOOR
+			spawn(TIME_RESOURCE_RESTORE)
+				restore()
 		//else if(interactFlags & INTERACTION_WIND)
 	//activate()
 	//	. = ..()

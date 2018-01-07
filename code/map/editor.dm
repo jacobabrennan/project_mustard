@@ -1,4 +1,8 @@
-
+client/DblClick()
+	. = ..()
+	var /character/C = interface:character
+	var /plot/P = plot(C)
+	C.warp(WARP_START, P.regionId, P.gameId)
 
 //-- Necessary Client Wrapper --------------------------------------------------
 
@@ -15,7 +19,7 @@ client
 		. = ..()
 		if(!istype(location) || !istype(_mouseStorage)) return
 		for(var/tile/T in block(location, _mouseStorage))
-			interface.click(null, T)
+			interface.click(object, T)
 
 
 //-- Map Editor Interface ------------------------------------------------------
@@ -25,8 +29,8 @@ interface/mapEditor
 	var
 		gameId
 	New(client/client)
-		client.view = world.view*3
-		world.maxx = client.view*3+1
+		client.view = "[PLOT_SIZE*3]x[PLOT_SIZE*3]"
+		world.maxx = PLOT_SIZE*3
 		world.maxy = world.maxx
 		// Connect Client
 		. = ..()
@@ -219,6 +223,7 @@ interface/mapEditor/menu
 				del F
 				F = new typePath()
 				F.forceLoc(location)
+				F._configureMapEditor(editor)
 
 
 //-- Basic Palette (Plot & Region Editing) -------------------------------------
@@ -236,6 +241,7 @@ interface/mapEditor/menu/basicPalette
 			new /interface/mapEditor/menu/basicPalette/regionOption/deleteRegion(),
 			new /interface/mapEditor/menu/basicPalette/regionOption/saveRegion(),
 			new /interface/mapEditor/menu/basicPalette/regionOption/loadRegion(),
+			new /interface/mapEditor/menu/basicPalette/regionOption/saveAllRegions(),
 			new /interface/mapEditor/menu/basicPalette/regionOption/moveRegion(),
 			new /interface/mapEditor/menu/basicPalette/regionOption/resizeRegion(),
 			new /interface/mapEditor/menu/basicPalette/regionOption/changeTerrain(),
@@ -279,9 +285,11 @@ interface/mapEditor/menu/basicPalette
 				var /game/G = system.getGame(editor.gameId)
 				// Check if a region currently exists here
 				var /plot/P = plot(editor)
-				if(P) alert("There is already a region at this location.", "Create Region")
+				if(P)
+					alert("There is already a region at this location.", "Create Region")
+					return
 				// Prompt user for region ID and default terrain
-				var regionName = input("Set ID of new region", "Create Region", "test") as text|null
+				var regionName = input("Set ID of new region", "Create Region", REGION_TEST) as text|null
 				regionName = ckey(regionName)
 				if(!regionName) return
 				var defaultTerrain = input("Set Default Terrain","Create Region") in terrains
@@ -318,15 +326,18 @@ interface/mapEditor/menu/basicPalette
 				var /region/R = G.getRegion(P.regionId)
 				ASSERT(R)
 				// Confirm that the user really wants to delete this region
-				var confirm = input("Please confirm to delete this region", "Delete Region", "Cancel") in list("Confirm", "Cancel")
-				if(confirm == "Cancel")
+				var confirm = input("Please confirm to delete this region", "Delete Region") as null|anything in list("Confirm")
+				if(!confirm)
 					return
 				// Cleanup and delete the region
+				var /coord/editorLoc = coord(editor.x, editor.y, editor.z)
+				editor.loc = null
 				for(var/plot/unPlot in R.plots.contents())
 					unPlot.unreveal()
 				del R._regionMarker
 				G.unregisterRegion(R)
 				del R
+				editor.forceLoc(locate(editorLoc.x, editorLoc.y, editorLoc.z))
 		saveRegion
 			icon_state = "regionSaveRegion"
 			Click()
@@ -344,10 +355,10 @@ interface/mapEditor/menu/basicPalette
 				var fileName = "[FILE_PATH_REGIONS]/[R.id].json"
 				// Check if that region already exists, prompt user to overwrite
 				if(fexists(fileName))
-					var confirm = input({"Overwrite existing region data "[R.id].json"?"}, "Save Region", "Cancel") in list("Confirm", "Cancel")
-					if(confirm == "Cancel") return
+					var confirm = input({"Overwrite existing region data "[R.id].json"?"}, "Save Region") as null|anything in list("Confirm")
+					if(!confirm) return
 				// Save the file to file system and alert player of success
-				var success = replaceFile(fileName, R.toJSON())
+				var success = replaceFile(fileName, json_encode(R.toJSON()))
 				if(success) alert("Saving Complete.", "Save Region")
 				else alert("Saving Failed.", "Save Region")
 		loadRegion
@@ -365,6 +376,9 @@ interface/mapEditor/menu/basicPalette
 				for(var/name in regionSaves) // Remove already loaded regions
 					name = ckey(name)
 					if(name in G.regions) regionSaves.Remove(name)
+				if(!regionSaves.len)
+					alert("There are no regions to load.", "Load Region")
+					return
 				var regionId = input("Select region to load", "Load Region") as null|anything in regionSaves
 				if(!regionId) return
 				// Load the region from file data
@@ -375,15 +389,38 @@ interface/mapEditor/menu/basicPalette
 				G.registerRegion(R)
 				R.fromJSON(objectData)
 				// Move editor to region
-				#warn Move to starting location
+				var /plot/P = plot(editor) // Moving to null isn't working, for unknown reasons
+				editor.Move(null) // so brute force it is
+				editor.loc = null
+				if(P) P.deactivate()
+				var /plot/startPlot = R.getWarp(WARP_START)
+				if(!startPlot)
+					startPlot = R.getPlot(0,0)
 				var /tile/startLoc = locate(
-					R.mapOffset.x + 1,
-					R.mapOffset.y + 1,
+					round((R.mapOffset.x+startPlot.x+1/2)*PLOT_SIZE),
+					round((R.mapOffset.y+startPlot.y+1/2)*PLOT_SIZE),
 					R.z()
 				)
-				editor.Move(startLoc)
-				// Alert the player
-				//alert({"Region "[R.id]" loaded at: ([R.mapOffset.x],[R.mapOffset.y],[R.mapOffset.z])"}, "Load Region")
+				editor.forceLoc(startLoc)
+		saveAllRegions
+			icon_state = "saveAllRegions"
+			Click()
+				var /interface/mapEditor/editor = usr
+				ASSERT(istype(editor))
+				var /game/G = system.getGame(editor.gameId)
+				// Save all regions, prompt for overwrites
+
+				for(var/regionId in G.regions)
+					var /region/R = G.getRegion(regionId)
+					// Calculate file name
+					var fileName = "[FILE_PATH_REGIONS]/[regionId].json"
+					// Check if that region already exists, prompt user to overwrite
+					if(fexists(fileName))
+						var confirm = input({"Overwrite existing region data "[R.id].json"?"}, "Save Region") as null|anything in list("Confirm")
+						if(!confirm) continue
+					// Save the file to file system
+					replaceFile(fileName, json_encode(R.toJSON()))
+				alert("Saving Finished.", "Save All Regions")
 		moveRegion
 			icon_state = "regionMoveRegion"
 			Click()
@@ -399,7 +436,9 @@ interface/mapEditor/menu/basicPalette
 				ASSERT(R)
 				// Prompt the player for the new region location
 				var _x = input("Set Region X Position (#plots)", "Translate Region", R.mapOffset.x) as num|null
+				if(_x == null) return
 				var _y = input("Set Region Y Position (#plots)", "Translate Region", R.mapOffset.y) as num|null
+				if(_y == null) return
 				if(_x < 0 || _y < 0)
 					alert("Coordinates cannot be negative")
 					return
@@ -432,8 +471,8 @@ interface/mapEditor/menu/basicPalette
 				var height = input("Set Region Height (#plots)", "Resize Region", R.height) as num|null
 				if(!width || !height) return
 				if(width < R.width || height < R.height)
-					var confirm = input(editor, "Region data will be lost in clipped plots. Continue?", "Resize Region", null) as anything in list("Yes", "No")
-					if(confirm == "No") return
+					var confirm = input(editor, "Region data will be lost in clipped plots. Continue?", "Resize Region") as null|anything in list("Continue")
+					if(!confirm) return
 				// Resize Region
 				R.setSize(width, height)
 				// If we're still in the region, reveal the current plot
@@ -475,11 +514,39 @@ interface/mapEditor/menu/furniturePalette
 		furnitureEditor.setup(0,52,10,1)
 		furnitureEditor.refresh(list(
 			new /interface/mapEditor/menu/paletteOption{ typePath=/furniture/deleter}(),
+			null,
 			new /interface/mapEditor/menu/paletteOption{ typePath=/furniture/tree}(),
-			new /interface/mapEditor/menu/paletteOption{ typePath=/tile/feature}(),
-			new /interface/mapEditor/menu/paletteOption{ typePath=/tile/interact}(),
-			new /interface/mapEditor/menu/paletteOption{ typePath=/tile/water}(),
+			new /interface/mapEditor/menu/furniturePalette/configure(),
+			//new /interface/mapEditor/menu/paletteOption{ typePath=/tile/feature}(),
+			//new /interface/mapEditor/menu/paletteOption{ typePath=/tile/interact}(),
+			//new /interface/mapEditor/menu/paletteOption{ typePath=/tile/water}(),
 		))
+	configure
+		parent_type = /interface/mapEditor/menu/paletteOption
+		icon = 'mapEditorCommands.dmi'
+		icon_state = "configure"
+		New()
+			. = ..()
+			icon = initial(icon)
+			icon_state = initial(icon_state)
+		handleClick(furniture/object)
+			var /interface/mapEditor/editor = usr
+			if(!istype(editor)) return
+			if(istype(object))
+				object._configureMapEditor(editor)
+			else
+				var /plot/P = plot(object)
+				if(!P) return
+				var newId = input("Enter a warpId for this Plot.","Configure Plot", P.warpId) as text|null
+				if(!newId) return
+				var /game/G = system.getGame(editor.gameId)
+				var /region/R = G.getRegion(P.regionId)
+				R.setWarp(newId, P)
+
+
+furniture
+	proc/_configureMapEditor(interface/mapEditor/editor)
+		// A hook so furniture can configure itself when placed on the map
 
 
 //------------------------------------------------------------------------------
@@ -487,22 +554,6 @@ interface/mapEditor/menu/furniturePalette
 	//---------------------------------------
 
 /*
-Map Editor
-	Save Map
-	Load Map
-
-Region Editor
-	Change World Dimensions (in number of plots)
-	Create Region
-	Delete Region
-	Move Region (by number of plots)
-	Resize Region
-	Change Plot Terrain
-	- Set Warp Target
-	? Load Region
-	? Unload Region
-	? Save Region
-
 Plot Editor
 	Edit Tiles
 	Place Furniture

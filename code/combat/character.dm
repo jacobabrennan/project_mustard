@@ -56,16 +56,48 @@ character
 		del src*/
 
 	//-- Movement ---------------------------------------//
-	proc/transition(plot/newPlot, turf/newTurf)
-		if(newTurf)
-			var/offsetX = (dir&( EAST|WEST ))? 0 : step_x
-			var/offsetY = (dir&(NORTH|SOUTH))? 0 : step_y
-			var/success = Move(newTurf, 0 , offsetX, offsetY)
-			if(!success)
-				forceLoc(newTurf)
-		if(interface)
-			interface.transition(newPlot)
-		newPlot.activate(src)
+	proc
+		transition(plot/newPlot, turf/newTurf)
+			if(newTurf)
+				var/offsetX = (dir&( EAST|WEST ))? 0 : step_x
+				var/offsetY = (dir&(NORTH|SOUTH))? 0 : step_y
+				var/success = Move(newTurf, 0 , offsetX, offsetY)
+				if(!success)
+					forceLoc(newTurf)
+			if(interface)
+				interface.transition(newPlot)
+			newPlot.activate(src)
+		warp(warpId, regionId, gameId)
+			// Find Current Game
+			var /plot/currentPlot = plot(src)
+			if(!gameId && currentPlot)
+				gameId = currentPlot.gameId
+			var /game/G = system.getGame(gameId)
+			ASSERT(G)
+			// Find Target Region
+			if(!regionId && currentPlot) // Default target region to current region
+				regionId = currentPlot.regionId
+			var /region/targetRegion = G.getRegion(regionId)
+			ASSERT(targetRegion)
+			// Find Target Plot
+			var /plot/targetPlot = targetRegion.getWarp(warpId)
+			for(var/plot/P in targetRegion.plots.contents())
+				if(P.warpId)
+					diag(P.warpId, "found")
+			ASSERT(targetPlot)
+			// Find Target Tile
+			#warn Calculate tile from conditions (buildings, warps at south edge, center, etc)
+			var /tile/center = locate(
+				round((targetRegion.mapOffset.x+targetPlot.x+1/2)*PLOT_SIZE),
+				round((targetRegion.mapOffset.y+targetPlot.y+1/2)*PLOT_SIZE),
+				targetRegion.z()
+			)
+			//diag(center.x, center.y, center.z)
+			//world << "\icon [center]"
+			transition(targetPlot, center)
+
+
+	//-- Interface Coupling -----------------------------//
 	proc/refreshInterface(which, list/aList)
 		if(interface) interface.refresh(which, aList)
 
@@ -314,55 +346,3 @@ projectile/sword
 		. = ..()
 		centerLoc(owner)
 		dir = owner.dir
-
-
-
-
-
-
-/*
-
-Town Points
-	Unlock Plots
-	Change Tiles
-	Buy Buildings
-
-Hero Points
-	Buy Skills
-	Buy Stat Upgrades
-
-Gold
-	Buy Gear
-	Buy expendable Items
-
-
-
-
-
-
-
-
-
-
-Level Progression
-10mins
-	3hearts
-	Get a weapon
-	Get some money
-2hours
-	Introduce Goals:
-		Better Equipment
-		Better Skills
-		Better Location
-4days
-2weeks
-2months
-
-
-
-
-
-
-
-
-*/
