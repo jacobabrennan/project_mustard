@@ -27,7 +27,7 @@ item
 		. = ..()
 		if(instant)
 			del src
-	Cross(character/getChar)
+	Cross(character/partyMember/getChar)
 		if(world.time - timeStamp < TIME_ITEM_COLLECT) return ..()
 		if(!loc) return FALSE
 		if(istype(getChar))
@@ -189,6 +189,13 @@ item
 			icon_state = "plum"
 			use(character/user)
 				var result = user.adjustHp(10)
+				if(result)
+					. = ..()
+		magicBottle
+			icon = 'items.dmi'
+			icon_state = "bottle"
+			use(character/user)
+				var result = user.adjustMp(user.maxMp())
 				if(result)
 					. = ..()
 

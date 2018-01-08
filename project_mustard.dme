@@ -32,6 +32,8 @@
 #include "code\lighting.dm"
 #include "code\menu.dm"
 #include "code\party.dm"
+#include "code\quest.dm"
+#include "code\title_screen.dm"
 #include "code\utilities.dm"
 #include "code\combat\character.dm"
 #include "code\combat\combat.dm"
@@ -42,8 +44,10 @@
 #include "code\map\plot.dm"
 #include "code\map\region.dm"
 #include "code\map\terrain.dm"
-#include "code\map\terrain_forest.dm"
-#include "code\map\terrain_snow.dm"
 #include "code\map\tile.dm"
+#include "code\typedefs\enemies.dm"
+#include "code\typedefs\projectiles.dm"
+#include "code\typedefs\terrain_forest.dm"
+#include "code\typedefs\terrain_snow.dm"
 // END_INCLUDE
 

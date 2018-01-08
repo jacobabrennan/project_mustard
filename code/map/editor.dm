@@ -1,8 +1,4 @@
-client/DblClick()
-	. = ..()
-	var /character/C = interface:character
-	var /plot/P = plot(C)
-	C.warp(WARP_START, P.regionId, P.gameId)
+
 
 //-- Necessary Client Wrapper --------------------------------------------------
 
@@ -39,15 +35,6 @@ interface/mapEditor
 		gameId = G.gameId
 		// Find starting place and display to client
 		forceLoc(locate(round(world.maxx/2),round(world.maxy/2),1))
-		/*
-		var /region/overworld = G.loadRegion(OVERWORLD)
-		var /plot/startPlot = overworld.getPlot(overworld.startPlotCoords.x, overworld.startPlotCoords.y)
-		var /coord/startCoords = new( // Center
-			round((startPlot.x-0.5)*PLOT_SIZE)+1,
-			round((startPlot.y-0.5)*PLOT_SIZE)+1
-		)
-		var /tile/startTile = locate(startCoords.x, startCoords.y, overworld.z())
-		forceLoc(startTile)*/
 
 	//-- Saving & Loading ------------------------
 	/*
@@ -167,6 +154,9 @@ interface/mapEditor
 		menu = client.menu.addComponent(/interface/mapEditor/menu)
 		menu.setup()
 		client.menu.focus(menu)
+	Logout()
+		del menu
+		. = ..()
 interface/mapEditor/menu
 	parent_type = /component
 	var
@@ -189,7 +179,9 @@ interface/mapEditor/menu
 			icon = initial(typePath:icon)
 			icon_state = initial(typePath:icon_state)
 			if(ispath(typePath, /furniture))
-				icon_state = initial(typePath:thumbnailState)
+				var thumb = initial(typePath:thumbnailState)
+				if(thumb) icon_state = thumb
+				else icon_state = initial(typePath:icon_state)
 		Click()
 			var /interface/mapEditor/editor = usr
 			ASSERT(istype(editor))
@@ -274,9 +266,17 @@ interface/mapEditor/menu/basicPalette
 				var height = input("Set World Height (#plots)", "Resize World", currentHeight) as num|null
 				width  = round(width ) || currentWidth
 				height = round(height) || currentHeight
+				// Remove editor from position (to prevent disconnects)
+				var /turf/oldLoc = editor.loc
+				var oldZ = editor.z
+				editor.loc = null
 				// Set world size (in plots)
 				if(width  != currentWidth ) world.maxx = width *PLOT_SIZE
 				if(height != currentHeight) world.maxy = height*PLOT_SIZE
+				// Re-place editor
+				var success = editor.Move(oldLoc)
+				if(!success)
+					editor.loc = locate(world.maxx, world.maxy, oldZ)
 		createRegion
 			icon_state = "regionCreateRegion"
 			Click()
@@ -515,6 +515,7 @@ interface/mapEditor/menu/furniturePalette
 		furnitureEditor.refresh(list(
 			new /interface/mapEditor/menu/paletteOption{ typePath=/furniture/deleter}(),
 			null,
+			new /interface/mapEditor/menu/paletteOption{ typePath=/memory/entrance}(),
 			new /interface/mapEditor/menu/paletteOption{ typePath=/furniture/tree}(),
 			new /interface/mapEditor/menu/furniturePalette/configure(),
 			//new /interface/mapEditor/menu/paletteOption{ typePath=/tile/feature}(),

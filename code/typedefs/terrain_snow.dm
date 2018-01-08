@@ -115,7 +115,7 @@ terrain/desert
 				del src
 	// Enemy Selection
 	infantry = list(
-		/terrain/forest/enemy/ruttle1,
-		/terrain/forest/enemy/ruttle2,
-		/terrain/forest/enemy/ruttle3,
+		/enemy/ruttle1,
+		/enemy/ruttle2,
+		/enemy/ruttle3,
 	)

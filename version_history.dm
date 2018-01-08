@@ -18,35 +18,53 @@ system
 /*-- Feature List - Remember: It's the map and Bosses! COMBAT! -----------------
 
 Focus - Things which must be done this version
-	Deprecate startPlotCoords
-	Dungeons that you can walk into
+	New Enemies
 
 Upcomming - Feature candidates for the next version
-	Quest System to track what the player has done in the world, save with game.
+	Redo player status menues
+		Player1 can manage each character
+		other players can manage their own character
+	Menu for player management (single+)
 
 Set In Stone - Features that have to be finished for 1.0
-	Diagonal Enemies are cheap
-		They should randomize starting direction at plot/activate()
-		Maybe move slower when first activated
 	Title Screen
 		With Animation
 		Join Game in progress
 		Start Own Game
 		Enter map editor
-	Menu for player management (single+)
 	Intro Boss Fight
 		Maybe no other players (not single+)
 		Regressia Hero against Lorcan (legend, not true)
 		Convey basic story, but make them FEEL AWESOME!
 		SPECTACLE!
-
-Spectulative - Ideas for new features to make the game better.
-	Plot Backgrounds that show distant scenary,
-		like you're walking on a mountain ridge looking out at the sunset
+	Player Profile data
+		Data about the player that persists among all games
+		Preferences
+		Accomplishments
+	Goblin Town
 	Revive meter that fills over fainted character
 		only fills if a character is reviving
 		resets if reviving stops
 		revives once full
+
+Spectulative - Ideas for new features to make the game better.
+	Plot Backgrounds that show distant scenary,
+		like you're walking on a mountain ridge looking out at the sunset
+	Languages - Portuguese!
+	Submersion
+	Wind
+	Will-o-wisps
+	Things in lighting plane only appear opaque when lit
+	The Khandroma - Red Caps
+	Enemy roles:
+		fodder
+		hp drain (pingers)
+		treasure carrier
+		blockers
+		challengers
+		all: slow player movement, prevent from reaching areas
+	differences of: kind, flavor, scale
+	"Modes" learned through memories that effect the overworld
 
 Deferred - Low Priority Optional Features
 	Savefile versions
@@ -55,6 +73,11 @@ Deferred - Low Priority Optional Features
 /*
 
 Internal 0.0.7 -- Now you're playing with Power
+	Quest System: Tracks arbitrary values across maps and sessions
+	Player Saving and Loading Capacity
+		Saving works, but no currently no player interface
+		Inventory: Unified and managed by the party
+		Improved party member path finding
 
 Internal 0.0.6 -- DEATH PUFF
 	Added Death Puffs
@@ -118,3 +141,10 @@ Internal Not Numbered
 	The HUD / menuing system, including robust menuing components
 	Player keyboard input (key state)
 */
+
+
+
+
+
+
+

@@ -33,7 +33,7 @@ furniture/bed
 	interact(character/character)
 		character.adjustHp(character.maxHp())
 		character.adjustMp(character.maxMp())
-furniture/innNPC
+/*furniture/innNPC
 	icon = 'cq.dmi'
 	interact(character/character)
 		character.adjustHp(character.maxHp())
@@ -44,7 +44,7 @@ furniture/innNPC
 			var/itemType = pick(typesof(/item/gear)-/item/gear)
 			itemList.Add(new itemType())
 		C.setup(itemList)
-		character.interface.client.menu.focus(C)
+		character.interface.client.menu.focus(C)*/
 
 client
 	var/C
@@ -101,6 +101,7 @@ furniture/tree
 			//W.forceLoc(loc)
 			icon_state = "stump"
 			movement = MOVEMENT_FLOOR
+			density = FALSE
 			spawn(TIME_RESOURCE_RESTORE)
 				restore()
 		//else if(interactFlags & INTERACTION_WIND)
@@ -110,3 +111,29 @@ furniture/tree
 		cut = initial(cut)
 		icon_state = initial(icon_state)
 		movement = initial(movement)
+		density = initial(density)
+
+
+//------------------------------------------------------------------------------
+
+memory
+	entrance
+		parent_type = /furniture
+		icon = 'memory.dmi'
+		icon_state = "test"
+		var
+			warpRegion
+			// warpPlot defaults to "start"
+		toJSON()
+			var /list/objectData = ..()
+			objectData["warpRegion"] = warpRegion
+			return objectData
+		fromJSON(list/objectData)
+			. = ..()
+			warpRegion = objectData["warpRegion"]
+		_configureMapEditor()
+			warpRegion = input("Enter target region for warp", "Memory Entrance", warpRegion)
+		activate()
+			spawn(40)
+				var /game/G = game(src)
+				G.party.changeRegion(warpRegion)

@@ -43,19 +43,20 @@ enemy
 	die()
 		if(rand() < ITEM_DROP_RATE)
 			var/itemType = pick(
-				/item/instant/coin,
+				///item/instant/coin,
 				/item/instant/berry,
 				/item/instant/berry,
 				/item/instant/berry,
 				/item/instant/berry,
 				/item/instant/plum,
+				/item/instant/magicBottle,
 			)
 			var/item/instant/I = new itemType()
 			I.centerLoc(src)
 		. = ..()
 
 
-	// Archetypes
+//-- Archetypes ----------------------------------------------------------------
 
 	normal
 		takeTurn()
@@ -76,7 +77,8 @@ enemy
 	diagonal
 		New()
 			. = ..()
-			dir = pick(NORTH,SOUTH,EAST,WEST)
+			spawn()
+				dir = pick(NORTH,SOUTH,EAST,WEST)
 		takeTurn()
 			var/S = speed()
 			var/oldDir = dir

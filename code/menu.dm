@@ -156,8 +156,6 @@ component
 				S = addComponent(/component/sprite)
 				S.imprint('chrome.dmi', "border_s")
 				S.screen_loc = "[rect.x+1]:-8,[rect.y]:-8 to [rect.x+rect.width-2]:8,[rect.y]:-8"
-			else
-				world << "Narrow Width: [rect.width]"
 			if(rect.height > 2)
 				S = addComponent(/component/sprite)
 				S.imprint('chrome.dmi', "border_w")
@@ -165,8 +163,6 @@ component
 				S = addComponent(/component/sprite)
 				S.imprint('chrome.dmi', "border_e")
 				S.screen_loc = "[rect.x+rect.width-2]:8,[rect.y+1]:-8 to [rect.x+rect.width-2]:8,[rect.y+rect.height-2]:8"
-			else
-				world << "Short Height: [rect.height]"
 			if(rect.width > 2 && rect.height > 2)
 				S = addComponent(/component/sprite)
 				S.imprint('chrome.dmi', "border_c")
@@ -293,7 +289,7 @@ component
 			cursor.positionScreen(Xfull-2, Yfull-2)
 
 
-//==== Main Menu ============================================================
+//-- Main Menu -----------------------------------------------------------------
 
 menu
 	parent_type = /component
@@ -331,7 +327,7 @@ menu
 		transition.setup(terrainText)
 
 
-//==== Hud ==================================================================
+//-- Hud -----------------------------------------------------------------------
 
 menu/hud
 	parent_type = /component
@@ -410,7 +406,7 @@ menu/hud
 				for(var/I = 1 to 3)
 					var/usable/U = client.menu.status.hotKeys[I]
 					slot = slots[I+1]
-					if(!(U in (interface.character.inventory + interface.character.equipment)))
+					if(!(U in (interface.character.party.inventory + interface.character.equipment)))
 						client.menu.status.clearHotKey(U)
 						U = null
 					slot.imprint(U)
@@ -456,12 +452,12 @@ menu/hud
 					potion.icon_state = state
 				potionSprites.len = mpMax
 			if("coins")
-				coinLabel.imprint(interface.character.coins)
+				coinLabel.imprint(interface.character.party.coins)
 				coinIcon.screen_loc = "7:8,1:12"
 				coinLabel.screen_loc = "8:1,1:12"
 
 
-//==== Status =====================================================================
+//-- Status -----------------------------------------------------------------------
 
 menu/status
 	parent_type = /component
@@ -602,7 +598,8 @@ menu/status
 			if(hotKeys[I] == U) hotKeys[I] = null
 
 
-//==== Item Info ================================================================
+//-- Item Info ------------------------------------------------------------------
+
 menu/itemInfo
 	parent_type = /component
 	//
@@ -642,7 +639,7 @@ menu/itemInfo
 			var/interface/rpg/int = client.interface
 			if(usable in int.character.equipment) optionNames.Add("Unequip")
 			else optionNames.Add("Equip")
-		optionNames.Add("Drop")
+		//optionNames.Add("Drop")
 		position = 1
 		for(var/index = 1 to 4)
 			var/component/label/optionLabel
@@ -713,10 +710,10 @@ menu/itemInfo
 					if("Back")
 						hide()
 						client.menu.status.cursor.show()
-					if("Drop")
+					/*if("Drop")
 						hide()
 						client.menu.status.cursor.show()
-						int.character.drop(slot.usable)
+						int.character.drop(slot.usable)*/
 					if("Equip")
 						hide()
 						client.menu.status.cursor.show()
@@ -736,7 +733,8 @@ menu/itemInfo
 		return TRUE
 
 
-//== Transition ============================================================
+//-- Transition ----------------------------------------------------------------
+
 menu/transition
 	parent_type = /component
 	var
@@ -761,8 +759,8 @@ menu/transition
 			del src
 
 
-//== Store =================================================================
-
+//-- Store ---------------------------------------------------------------------
+/*
 menu/store
 	parent_type = /component
 	var
@@ -1032,364 +1030,5 @@ menu/store
 				var/component/label/statLabel = statLabels[index]
 				statIcon.screen_loc = "8:8,[10-index]:8"
 				statLabel.screen_loc = "9:8,[10-index]:8"
-
-
-//== Crafting ==============================================================
-/*
-menu/crafting
-	parent_type = /component
-	var
-		materialsLength = 6
-		//
-		menu/crafting/progressList/progress
-		menu/crafting/inventory/inventory
-		menu/crafting/info/info
-		component/box/material
-		component/label/title
-		usable/cancel = new /usable{icon = 'specials.dmi'; icon_state = "cancel"}()
-		usable/submit = new /usable{icon = 'specials.dmi'; icon_state = "submit"}()
-		usable/empty  = new /usable{icon = 'specials.dmi'; icon_state = "empty"}( )
-	setup()
-		. = ..()
-		chrome(rect(2,4,14,12))
-		// Setup Portrait
-		var/component/sprite/portrait = addComponent(/component/sprite)
-		portrait.icon = 'portraits.dmi'
-		portrait.icon_state = "48"
-		portrait.screen_loc = "2,12"
-		// Setup Recipe Area
-		title = addComponent(/component/label)
-		title.imprint("Crafting&nbsp;Recipe:")
-		title.screen_loc = "5:8,14"
-		material = addComponent(/component/box)
-		material.setup(78, 206, materialsLength+2, 1)
-		var /list/materialList = list()
-		for(var/I = 1 to materialsLength)
-			materialList.Add(empty)
-		materialList.Add(submit)
-		materialList.Add(cancel)
-		material.refresh(materialList)
-		// Setup Inventory Box
-		inventory = addComponent(/menu/crafting/inventory)
-		inventory.setup()
-		// Setup In Progress List
-		progress = addComponent(/menu/crafting/progressList)
-		progress.setup()
-		//
-		focus(material)
-	focus(component/newFocus)
-		if(!newFocus)
-			inventory.hide()
-			focus(material)
-			progress.show()
-		else
-			. = ..()
-	// Control, Cancel, Submit, Manage dislay state
-	control()
-		return TRUE
-	commandDown(command)
-		. = TRUE
-		// Navigate recipe editor
-		if(focus == material)
-			switch(command)
-				if(STATUS)
-					close()
-					return TRUE
-				if(PRIMARY)	openInventory()
-				if(SOUTH)
-					if(progress.jobs.len)
-						focus(progress)
-				else . = ..()
-		// Navigate jobs list
-		else if(focus == progress)
-			if(..()) return TRUE
-			. = TRUE
-			switch(command)
-				if(STATUS)
-					close()
-				if(NORTH)
-					if(progress.position == 1) focus(material)
-		// Navigate ingredient selection
-		else if(focus == inventory)
-			if(command == STATUS)
-				focus()
-			if(command == PRIMARY)
-				selectItem()
-			else
-				. = ..()
-	proc/close()
-		client.menu.focus(null)
-		cancel()
-		del src
-	proc/openInventory()
-		var /usable/U = material.select()
-		if(     U == cancel) cancel()
-		else if(U == submit) submit()
-		else
-			progress.hide()
-			focus(inventory)
-	proc/selectItem()
-		var /component/slot/S = material.slots[material.position]
-		var /character/char = client.character()
-		// If there was a previously selected item, return it to the character's inventory
-		if(S.usable)
-			char.get(S.usable)
-		// Retrieve selected item
-		var /usable/U = inventory.select()
-		// Imprint item on slot, use "empty" if the player selected an empty slot
-		if(U)
-			S.imprint(U)
-			// Remove item from character's inventory
-			char.unget(U)
-			// Advance cursor to next slot
-			material.commandDown(EAST)
-		else
-			S.imprint(empty)
-		// Return focus
-		focus()
-	proc/cancel()
-		for(var/I = 1 to materialsLength)
-			var /component/slot/S = material.slots[I]
-			if(S.usable == empty) continue
-			var /character/_char = client.character()
-			_char.get(S.usable)
-			S.imprint(empty)
-	proc/submit()
-		var /craft/job/job = FALSE
-		// Compile list of materials
-		var /list/items = list()
-		for(var/I = 1 to materialsLength)
-			var /component/slot/S = material.slots[I]
-			if(!S.usable) continue
-			if(S.usable == empty) continue
-			items.Add(S.usable)
-		// Attempt to create a Job
-		var /character/_char = client.character()
-		job = _char.addJob(items)
-		#warn Handle no recipe condition
-		if(!job) return
-		// Clear materials list if successful
-		for(var/I = 1 to materialsLength)
-			var /component/slot/S = material.slots[I]
-			if(S.usable == empty) continue
-			S.imprint(empty)
-		// Add job to progress list
-		progress.refresh()
-		progress.scroll(0)
-		material.position = 1
-		material.positionCursor()
-	// Components
-	inventory
-		parent_type = /component
-		autoShow = FALSE
-		var
-			component/box/items
-			component/label/title
-		setup()
-			. = ..()
-			items = addComponent(/component/box)
-			items.setup(150, 172, 4, 6)
-			title = addComponent(/component/label)
-			title.imprint("Select a Crafting Component", 10*8, height=24)
-			title.positionScreen(88, 158)
-		focused()
-			. = ..()
-			focus(items)
-		show()
-			var /character/char = client.character()
-			items.refresh(char.inventory)
-			. = ..()
-		proc/select()
-			return items.select()
-	progressList
-		parent_type = /component
-		var
-			component/sprite/cursor
-			component/label/title
-			menu/crafting/progressList/inspector/inspector
-			//
-			list/jobs = list()
-			// Cursor and Scrolling
-			position = 1
-			displayLength = 6
-			displayOffset = 0
-		setup()
-			. = ..()
-			cursor = addComponent(/component/sprite)
-			cursor.icon = 'specials.dmi'
-			cursor.icon_state = "pointer_large"
-			cursor.autoShow = FALSE
-			title = addComponent(/component/label)
-			title.imprint("In&nbsp;Progress:")
-			title.screen_loc = "5:8,12"
-			//
-			var /character/_char = client.character()
-			if(!_char.jobs.len)
-				_char.jobs = newlist(
-					)
-				for(var/I = 1 to _char.jobs.len)
-					var /craft/job/R = _char.jobs[I]
-					R.materials = newlist(/item/gear/cloth, /item/gear/buckler, /item/gear/talaria, /item/gear/plate, /item/gear/shield, /item/gear/ring)
-			refresh()
-		show()
-			. = ..()
-			scroll(0)
-		focused()
-			position = 1
-			positionCursor()
-			cursor.show()
-			. = ..()
-		blurred()
-			cursor.hide()
-		control()
-			return TRUE
-		commandDown(command)
-			. = ..()
-			if(.) return .
-			switch(command)
-				if(NORTH)
-					if(position != 1) . = TRUE
-					position = max(1, position-1)
-					if(position <= displayOffset)
-						scroll(position-1)
-					positionCursor()
-				if(SOUTH)
-					position = min(jobs.len, position+1)
-					if(position-displayOffset > displayLength)
-						scroll(position - displayLength)
-					positionCursor()
-				if(PRIMARY)
-					if(!inspector)
-						inspect()
-					else
-						var option = inspector.select()
-						del inspector
-						if(option == "stop")
-							var /menu/crafting/progressList/job/job = jobs[position]
-							var /character/char = client.character()
-							char.removeJob(job.job)
-							refresh()
-							show()
-							cursor.show()
-							if(!jobs.len)
-								client.menu.commandDown(NORTH)
-						else
-							show()
-							cursor.show()
-					return TRUE
-				if(STATUS)
-					if(inspector)
-						del inspector
-						show()
-						cursor.show()
-						return TRUE
-
-		proc
-			scroll(offset)
-				displayOffset = max(0, min(jobs.len-displayLength, offset))
-				for(var/I = 1 to jobs.len)
-					var /menu/crafting/progressList/job/R = jobs[I]
-					var indexPos = I-displayOffset
-					if(indexPos <= 0 || indexPos > displayLength)
-						R.hide()
-					else
-						R.reindex(I, indexPos)
-						R.show()
-			positionCursor()
-				var pos = position - displayOffset
-				cursor.positionScreen(26, (12*TILE_SIZE) - (pos*(TILE_SIZE+4)))
-			addJob(job)
-				var /menu/crafting/progressList/job/R = addComponent(/menu/crafting/progressList/job)
-				jobs.Add(R)
-				R.setup(job)
-				var indexNo  = jobs.Find(R)
-				var indexPos = indexNo-displayOffset
-				R.reindex(indexNo, indexPos)
-			refresh()
-				var /character/_char = client.character()
-				for(var/job in jobs)
-					del job
-				jobs = list()
-				for(var/I = 1 to _char.jobs.len)
-					var/craft/job/job = _char.jobs[I]
-					addJob(job)
-				if(position > jobs.len)
-					position = jobs.len
-					positionCursor()
-			inspect()
-				// Hide non-inspector components
-				title.hide()
-				cursor.hide()
-				for(var/menu/crafting/progressList/job/job in jobs)
-					job.hide()
-				// Retrieve selected job component
-				var/menu/crafting/progressList/job/job = jobs[position]
-				// Create Inspector
-				inspector = addComponent(/menu/crafting/progressList/inspector)
-				inspector.setup(job)
-				focus(inspector)
-		job
-			parent_type = /component
-			autoShow = FALSE
-			var
-				craft/job/job
-				component/label/index
-				component/label/progress
-				component/box/materials
-			setup(craft/job/_job)
-				job = _job
-				//
-				index = addComponent(/component/label)
-				//
-				progress = addComponent(/component/label)
-				var costString = (job.cost >= 1000)? "?" : job.cost
-				progress.imprint("[job.progress]/[costString]", 7*8, align="right")
-				//
-				materials = addComponent(/component/box)
-				materials.setup(0,0,6,1)
-				materials.refresh(job.materials)
-			show()
-				. = ..()
-				materials.cursor.hide()
-			proc/reindex(_index, position)
-				index.imprint("[_index]:", 3*8, align="right")
-				index.positionScreen(    48, 3+(12*TILE_SIZE) - (position*(TILE_SIZE+4)))
-				progress.positionScreen( 72, 3+(12*TILE_SIZE) - (position*(TILE_SIZE+4)))
-				materials.reposition(   114,   (12*TILE_SIZE) - (position*(TILE_SIZE+4)))
-		inspector
-			parent_type = /component
-			var
-				position = 1
-				component/select/options
-			setup(menu/crafting/progressList/job/jobComponent)
-				var /craft/job/job = jobComponent.job
-				//
-				var /component/label/query = addComponent(/component/label)
-				query.imprint("Cancel&nbsp;this&nbsp;job?")
-				query.positionScreen(40, 172)
-				//
-				options = addComponent(/component/select)
-				options.setup(32, 152, list("No"="back", "Yes"="stop"))
-				//
-				var /component/box/materials = addComponent(/component/box)
-				materials.setup(114, 152, 6, 2)
-				materials.refresh(job.materials)
-				//
-				var /component/label/progress = addComponent(/component/label)
-				var costString = (job.cost >= 1000)? "?" : job.cost
-				progress.imprint("[job.progress]/[costString]", 7*8)
-				progress.positionScreen(134, 140)
-				//
-				focus(options)
-			control()
-				return TRUE
-			commandDown(command)
-				..()
-				. = TRUE
-				switch(command)
-					if(PRIMARY) return FALSE
-					if(STATUS) return FALSE
-			proc/select()
-				return options.select()
 
 */

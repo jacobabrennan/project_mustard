@@ -27,7 +27,7 @@ system
 		. = ..()
 		system = src
 		loadVersion()
-		spawn(10)
+		spawn()
 			startProject()
 	proc
 		diagnostic(list/messages, file, line)
@@ -63,10 +63,20 @@ system
 			// Inform game about its map placement (Set zOffset on game)
 			newGame.zOffset = (slotIndex-1)*MAP_DEPTH+1
 			return newGame
-
 		deregisterGame(game/oldGame)
-			#warn Don't forget about me
-			// Shrink Maxz if possible
+			// Remove game from games list
+			games.Remove(oldGame)
+			// Remove game from mapSlots
+			var slotIndex
+			for(var/index = 1 to mapSlots.len)
+				if(mapSlots[index] == oldGame)
+					slotIndex = index
+					mapSlots[slotIndex] = null
+					break
+			// Shrink World, if possible
+			if(slotIndex == mapSlots.len)
+				while(!mapSlots[mapSlots.len])
+					mapSlots.len--
 		getGame(gameId) // Called by any part of the game to get the game from a gameId
 			return games[gameId]
 		newGame(_playerId, _saveId)
@@ -126,28 +136,10 @@ system
 		registerPlayer(client/client) // Called by /interface/clay/New()
 			if(!_ready)
 				_waitingClients.Add(client)
+				spawn(1)
+					diag("System is Loading")
 				return
 			// Check games in progress for disconnected player.
 				// Already done. Clay is never created if there's already another interface waiting
-			// Check for saved games
-			// Start a new game
-
-			//Temp code
-
-			// Direct Players to Edit Map
-			#ifdef EDIT_MAP
-			new /interface/mapEditor(client)
-			return
-
-			#else
-			// Direct Players to Play Game
-			var/game/newGame
-				//Check if a game is in progress, add as spectator
-			if(games.len)
-				newGame = games[games[1]]
-				newGame.addSpectator(client)
-				return
-			newGame = newGame(client.ckey, "test")
-			newGame.createNew()
-			newGame.start()
-			#endif
+			// Send player to title screen
+			new /titleScreen(client)

@@ -10,6 +10,8 @@ party
 		gameId = _gameId
 	//-------------------------
 	var
+		coins = 0
+		list/inventory[INVENTORY_MAX]
 		character/mainCharacter
 		list/characters = new()
 
@@ -18,14 +20,19 @@ party
 
 party
 	toJSON()
-		var/list/dataObject = ..()
-		dataObject["characters"] = list2JSON(characters)
-		return dataObject
-	fromJSON(list/dataObject)
+		var/list/objectData = ..()
+		objectData["characters"] = list2JSON(characters)
+		objectData["inventory"] = list2JSON(inventory)
+		objectData["coins"] = coins
+		return objectData
+	fromJSON(list/objectData)
+		. = ..()
+		coins = objectData["coins"] || 0
 		characters = new()
-		for(var/list/characterData in dataObject["characters"])
-			characters.Add(json2Object(characterData))
-		mainCharacter = characters[1]
+		for(var/item/inventoryItem in json2List(objectData["inventory"] || list()))
+			get(inventoryItem)
+		for(var/list/characterData in objectData["characters"])
+			addPartyMember(json2Object(characterData))
 		return
 	proc
 		createNew()
@@ -77,6 +84,77 @@ party
 					if(member.partyId != role) continue
 					new /interface/rpg(C, member)
 					break
+
+
+//-- Inventory -----------------------------------------------------------------
+
+party
+	proc
+		get(item/newItem)
+			if(!istype(newItem)) return FALSE
+			if(newItem in inventory) return FALSE
+			var placed = FALSE
+			for(var/I = 1 to inventory.len)
+				if(!inventory[I])
+					inventory[I] = newItem
+					placed = TRUE
+					break;
+			if(placed)
+				newItem.forceLoc(null)
+				refreshInterface("inventory", inventory)
+				return newItem
+		unget(item/newItem)
+			inventory.Remove(newItem)
+			inventory.len = INVENTORY_MAX
+			refreshInterface("inventory", inventory)
+		refreshInterface(key, value)
+			for(var/character/partyMember/char in characters)
+				char.refreshInterface(key, value)
+
+character/partyMember
+	proc
+		adjustCoins(amount)
+			if(party)
+				party.coins += amount
+				party.refreshInterface("coins", party.coins)
+		get(item/newItem)
+			if(party)
+				return party.get(newItem)
+	equip(item/gear/newGear)
+		if(!istype(newGear)) return
+		// Un equip old gear
+		var oldGear = equipment[newGear.position]
+		if(oldGear) unequip(oldGear)
+		// Equip new gear
+		equipment[newGear.position] = newGear
+		newGear.equipped(src)
+		// Remove Item from Party Inventory
+		if(party)
+			if(newGear in party.inventory)
+				party.unget(newGear)
+		// Refresh party interface
+			party.refreshInterface("equipment", equipment)
+			party.refreshInterface("hp")
+			party.refreshInterface("mp")
+		//
+		return oldGear
+	unequip(item/gear/oldGear)
+		if(!istype(oldGear)) return
+		// Unequip gear
+		equipment[oldGear.position] = null
+		oldGear.unequipped(src)
+		// Add gear to party inventory
+		if(party)
+			get(oldGear)
+		// Refresh party interface
+			party.refreshInterface("inventory", party.inventory)
+			party.refreshInterface("equipment", equipment)
+			party.refreshInterface("hp")
+			party.refreshInterface("mp")
+		//
+		return oldGear
+	use(usable/_usable)
+		_usable.use(src)
 
 
 //-- Game Over handling ------------------------------------------//
@@ -134,28 +212,26 @@ plot
 //-- Movement and Behavior ---------------------------------------//
 
 party
-	proc/changeRegion(region/newRegion, plot/newPlot)
+	proc/changeRegion(regionId, warpId)
 		// Find the Start Plot
-		if(!newPlot) // Try for startPlotCoords (deprecated)
-			#warn Deprecate Start Plot Coords
-			if(newRegion.startPlotCoords)
-				newPlot = newRegion.getPlot(newRegion.startPlotCoords.x, newRegion.startPlotCoords.y)
-		if(!newPlot) // Try to find a WARP_START warpId plot
-			newPlot = newRegion.getWarp(WARP_START)
-		if(!newPlot) // Get plot at (0,0)
-			newPlot = newRegion.getPlot(0, 0)
-		ASSERT(newPlot)
-		newPlot.reveal()
+		var /game/G = game(src)
+		var /region/R = G.getRegion(regionId)
+		if(!warpId) warpId = WARP_START
+		var /plot/startPlot = R.getWarp(warpId)
+		if(!startPlot)
+			startPlot = R.getPlot(0, 0)
+		ASSERT(startPlot)
+		startPlot.reveal()
 		// Find the Start Tile (currently the center) of that Plot
 		var /coord/startCoords = new( // Center
-			round((newPlot.x+newRegion.mapOffset.x+0.5)*PLOT_SIZE)+1,
-			round((newPlot.y+newRegion.mapOffset.y+0.5)*PLOT_SIZE)+1
+			round((startPlot.x+R.mapOffset.x+0.5)*PLOT_SIZE)+1,
+			round((startPlot.y+R.mapOffset.y+0.5)*PLOT_SIZE)+1
 		)
-		var /tile/startTile = locate(startCoords.x, startCoords.y, newRegion.z())
+		var /tile/startTile = locate(startCoords.x, startCoords.y, R.z())
 		// Move each character in the party to the Start Tile
 		for(var/character/C in characters)
 			C.forceLoc(startTile)
-			C.transition(newPlot)
+			C.transition(startPlot)
 
 atom/movable/Cross()
 	return TRUE
@@ -164,7 +240,7 @@ character/partyMember
 	var
 		partyId
 		party/party
-		partyDistance = 1 // The number of tiles away from the player that this character will generally stay
+		partyDistance = 16 // The number of tiles away from the player that this character will generally stay
 	behavior()
 		// Check for blocking
 		var block = ..()
@@ -174,17 +250,26 @@ character/partyMember
 		if(party.mainCharacter.dead) rescue = shouldIRescue()
 		// If rescue is needed
 		if(rescue)
-			var success = step_to(src, party.mainCharacter, 0, speed())
+			var success = stepTo(src, party.mainCharacter, -1)
 			if(!success)
 				movement = MOVEMENT_ALL
-				density = FALSE
-				success = step_to(src, party.mainCharacter, 0, speed())
+				//density = FALSE
+				success = stepTo(src, party.mainCharacter, -1)
 			movement = initial(movement)
-			density  = initial(density )
+			//density  = initial(density )
 		// Move toward player
-		var success = step_to(src, party.mainCharacter, partyDistance, speed())
+		var success = stepTo(src, party.mainCharacter, partyDistance)
 		if(!success && aloc(src) != aloc(party.mainCharacter))
 			forceLoc(party.mainCharacter.loc)
+	proc/stepTo(src, target, minDist)
+		// If we're close enough to the target and in the same plot, do nothing.
+		if(bounds_dist(src, target) <= minDist)
+			if(plot(src) == plot(target)) return TRUE
+		// Walk to the target, factoring density
+		density = TRUE
+		var success = step_to(src, target, 0, speed())
+		density = initial(density)
+		return success
 	proc
 		attackWithWeapon()
 			var /usable/weapon = equipment[WEAR_WEAPON]
@@ -201,7 +286,7 @@ character/partyMember
 			else if(partyId == CHARACTER_SOLDIER)
 				for(var/character/partyMember/M in party.characters)
 					if(M != src && !M.dead)
-						rescue = TRUE
+						rescue = FALSE
 			return rescue
 
 
@@ -219,7 +304,7 @@ character/partyMember
 	cleric
 		icon = 'cleric.dmi'
 		partyId = CHARACTER_CLERIC
-		partyDistance = 0
+		partyDistance = 12
 		baseHp = 4
 		baseMp = 3
 		baseAuraRegain = 9
@@ -240,10 +325,10 @@ character/partyMember
 	soldier
 		icon = 'soldier.dmi'
 		partyId = CHARACTER_SOLDIER
-		partyDistance = 1
+		partyDistance = 0
 		baseHp = 10
 		var
-			enemy/target
+			combatant/target
 		behavior()
 			// Check if rescue is needed
 			if(party.mainCharacter.dead && shouldIRescue())
@@ -270,21 +355,21 @@ character/partyMember
 				// If current target is too far away, forget about it
 				if(target && bounds_dist(party.mainCharacter, target) > 80)
 					target = null
-				// If we don't have a target, target the closest enemy
+				// If we don't have a target, target the closest combatant
 				if(!target && bounds_dist(party.mainCharacter, closeEnemy) <= 80)
 					target = closeEnemy
 				// If we have a target, advance towards it
 				if(target)
-					step_to(src, target, 0, speed())
+					stepTo(src, target)
 					return
 			// If we didn't advance on a target, seek out the player
 			. = ..()
 	goblin
 		icon = 'goblin.dmi'
 		partyId = CHARACTER_GOBLIN
-		partyDistance = 0
-		//baseSpeed =
-		roughWalk = 4
+		partyDistance = 24
+		//baseSpeed = 4
+		roughWalk = 16
 		baseHp = 6
 		behaviorName = "archer"
 
@@ -296,8 +381,8 @@ behaviors
 		storage
 		combatant/target
 	proc
-		archer2(combatant/owner)
-			var /item/weapon/bow/bow = owner:equipment[WEAR_WEAPON]
+		archer2(character/owner)
+			var /item/weapon/bow/bow = owner.equipment[WEAR_WEAPON]
 			if(!istype(bow)) return
 			if(!bow.ready()) return
 			var /plot/plotArea/A = aloc(owner)
@@ -359,7 +444,7 @@ behaviors
 				owner.shoot()
 				target = null
 				return TRUE
-			// If we can't shoot anything (and there's no target), try to target the enemy that requires the least movement to align with
+			// If we can't shoot anything (and there's no target), try to target the combatant that requires the least movement to align with
 			if(!target)
 				var closestAlignTarget
 				var closestAlignDist = alignMax
@@ -380,7 +465,7 @@ behaviors
 					target = null
 					if(step_away(owner, target)) return TRUE
 				else
-					//if(step_to(owner, target, 2, owner.speed())) return TRUE
+					//if(step_to(owner, target, 2, owner.speed())) return TRUE // see stepTo()
 					var axisHorizontal = (abs(deltasX[target]) <= abs(deltasY[target]))? TRUE : FALSE
 					if(axisHorizontal)
 						if(deltasX[target] > 0)
@@ -395,18 +480,18 @@ behaviors
 					return FALSE
 			//  Otherwise, walk toward the player
 			return FALSE
-		archer(combatant/owner)
+		archer(character/owner)
 			ASSERT(!owner.dead)
 			// Check if rescue is needed
 			if(owner:party.mainCharacter.dead && owner:shouldIRescue())
 				return ..()
-			var /item/weapon/bow/bow = owner:equipment[WEAR_WEAPON]
+			var /item/weapon/bow/bow = owner.equipment[WEAR_WEAPON]
 			if(!istype(bow)) return
 			if(!bow.ready()) return
 			var /plot/plotArea/A = aloc(owner)
 			var fastestDir
-			var /enemy/fastestHit
-			var /enemy/fastestTime = 1000
+			var /combatant/fastestHit
+			var /combatant/fastestTime = 1000
 			var /list/deltasX = new()
 			var /list/deltasY = new()
 			var alignMax = 32
@@ -465,7 +550,7 @@ behaviors
 				owner:attackWithWeapon()
 				target = null
 				return TRUE
-			// If we can't shoot anything (and there's no target), try to target the enemy that requires the least movement to align with
+			// If we can't shoot anything (and there's no target), try to target the combatant that requires the least movement to align with
 			if(!target && !toFar)
 				var closestAlignTarget
 				var closestAlignDist = alignMax
@@ -486,7 +571,7 @@ behaviors
 					target = null
 					return FALSE
 				else
-					//if(step_to(owner, target, 2, owner.speed())) return TRUE
+					//if(step_to(owner, target, 2, owner.speed())) return TRUE // see stepTo()
 					var axisHorizontal = (abs(deltasX[target]) <= abs(deltasY[target]))? TRUE : FALSE
 					var success
 					if(axisHorizontal)

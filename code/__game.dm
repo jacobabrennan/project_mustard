@@ -13,90 +13,61 @@ game
 		ownerId = _ownerId
 		saveId = _saveId
 		gameId = "[_ownerId]_[_saveId]"
+		//spawn(30)
+			//save()
 		//
 		//environment = json2Object(saveData["environment"])
 		//diag(" -- Loading Climate & Time")
 		//environment.load()
-		//diag(" -- Attempting to Load Town Data")
-		//town = new(OVERWORLD)
-		//interior = new(INTERIOR)
-		//if(!interior.load())
-		//	interior.setSize(town.width, town.height, "interior")
-		//if(!town.load())
-		//	diag(" -- No town data. Generating New Town")
-		//	town.generateOverworld(DEFAULT_PLOTS, DEFAULT_PLOTS, "forest")
-		//diag(" -- Loading Characters")
-		//for(var/interface/clay/waitingPlayer)
-		//	new /interface/rpg(waitingPlayer.client)
-		//diag(" -- Finished Loading")
 		//spawn(1)
 		//	environment.activate()
 	proc
 		save()
-			var filePath = "[FILE_PATH_GAMES]/[gameId].json"
+			var filePath = "[FILE_PATH_GAMES]/[ownerId]/[saveId].json"
 			replaceFile(filePath, json_encode(toJSON()))
-			var/interface/rpg/RPG = new()
-			RPG.key = ownerId
-		load(saveData)
-			//var/filePath = "[FILE_PATH_GAMES]/[saveId].json"
-			//ASSERT(fexists(filePath))
-			//var/list/saveData = json_decode(file2text(filePath))
-			//
-			//environment = json2Object(saveData["environment"])
-			//diag("Loading World")
-			//diag(" -- Loading Climate & Time")
-			//environment.load()
-			//diag(" -- Attempting to Load Town Data")
-			//town = new(OVERWORLD)
-			//interior = new(INTERIOR)
-			//if(!interior.load())
-			//	interior.setSize(town.width, town.height, "interior")
-			//if(!town.load())
-			//	diag(" -- No town data. Generating New Town")
-			//	town.generateOverworld(DEFAULT_PLOTS, DEFAULT_PLOTS, "forest")
-			//diag(" -- Loading Characters")
-			//for(var/interface/clay/waitingPlayer)
-			//	new /interface/rpg(waitingPlayer.client)
-			//diag(" -- Finished Loading")
-			//spawn(1)
-			//	environment.activate()
+		load()
+			var/filePath = "[FILE_PATH_GAMES]/[ownerId]/[saveId].json"
+			ASSERT(fexists(filePath))
+			var/list/saveData = json_decode(file2text(filePath))
+			fromJSON(saveData)
 	toJSON()
 		var /list/objectData = ..()
 		objectData["gameId"] = gameId
 		objectData["ownerId"] = ownerId
 		objectData["saveId"] = saveId
 		objectData["party"] = party.toJSON()
+		objectData["quest"] = party.toJSON()
 		return objectData
 
 	fromJSON(list/objectData)
 		gameId = objectData["gameId"]
 		ownerId = objectData["ownerId"]
 		saveId = objectData["saveId"]
-		party = json2Object(objectData["party"])
+		party = new(gameId)
+		party.fromJSON(objectData["party"])
+		quest = json2Object(objectData["quest"])
 
 
 	//--------------------------
 	var
 		party/party
+		quest/quest
 	proc
 		createNew()
 			party = new(gameId)
 			party.createNew()
+			quest = new()
 		start()
-			spawn(10)
-				diag("Game Starting")
-				var /client/player
-				for(var/client/C)
-					if(C.ckey == ckey(ownerId))
-						player = C
-				party.addPlayer(player, CHARACTER_HERO)
-				party.changeRegion(getRegion(REGION_TEST))
-				var /region/derp = getRegion("derp")
-				for(var/plot/P in derp.plots.contents())
-					P.reveal()
+			diag("Game Starting")
+			var /client/player
+			for(var/client/C)
+				if(C.ckey == ckey(ownerId))
+					player = C
+			party.addPlayer(player, CHARACTER_HERO)
+			party.changeRegion(REGION_TEST)
 		respawn()
 			party.respawn()
-			party.changeRegion(getRegion(REGION_TEST))
+			party.changeRegion(REGION_TEST)
 		gameOver()
 			for(var/regionKey in regions)
 				var /region/R = regions[regionKey]
@@ -113,7 +84,7 @@ game
 			new /interface/holding(client)
 			client.eye = party.mainCharacter.interface
 			//
-			spawn(10)
+			spawn(1)
 				var role = pick(CHARACTER_SOLDIER, CHARACTER_GOBLIN, CHARACTER_CLERIC)
 				party.addPlayer(client, role)
 
@@ -149,13 +120,5 @@ game
 				// Can't use json2Object() because registerRegion() must be called before fromJSON()
 			registerRegion(newRegion)
 			newRegion.fromJSON(regionData)
-			// Reveal Start Plot
-			if(newRegion.startPlotCoords)
-				var /plot/startPlot = newRegion.getPlot(
-					newRegion.startPlotCoords.x,
-					newRegion.startPlotCoords.y
-				)
-				startPlot.reveal()
-			//
 			return newRegion
 

@@ -102,6 +102,8 @@ plot
 	proc/activate(character/entrant)
 		if(active) return
 		active = TRUE
+		// Make sure this plot is revealed
+		if(!revealed) reveal()
 		// Reveal other Plots Nearby
 		var /game/G = system.getGame(gameId)
 		var /region/ownRegion = G.getRegion(regionId)
@@ -138,11 +140,6 @@ plot
 		var /region/ownRegion = G.getRegion(regionId)
 		ownRegion.activePlots.Remove(src)
 		active = FALSE
-		/*for(var/enemy/E in area)
-			del E
-		for(var/character/char in area)
-			if(!(char.faction&FACTION_PLAYER))
-				del char*/
 		for(var/actor/A in area)
 			del A
 	proc/populate(activationDir)
@@ -161,13 +158,13 @@ plot
 		var/infantryLevel = min(1, terrainModel.infantry.len)
 		var/cavalryLevel  = min(1, terrainModel.cavalry.len )
 		var/officerLevel  = min(1, terrainModel.officer.len )
-		var/enemy/infantryType = infantryLevel? terrainModel.infantry[infantryLevel] : null
-		var/enemy/cavalryType  = cavalryLevel? terrainModel.cavalry[  cavalryLevel] : null
-		var/enemy/officerType  = officerLevel? terrainModel.officer[  officerLevel] : null
+		var/combatant/infantryType = infantryLevel? terrainModel.infantry[infantryLevel] : null
+		var/combatant/cavalryType  = cavalryLevel? terrainModel.cavalry[  cavalryLevel] : null
+		var/combatant/officerType  = officerLevel? terrainModel.officer[  officerLevel] : null
 		var/tries = 15
 		for(var/I = 1 to 4)
 			if(!infantryType) break
-			var/enemy/E = new infantryType()
+			var/combatant/E = new infantryType()
 			var success
 			for(var/T = 1 to tries)
 				var/posX = area.x + rand(minX, maxX)
@@ -179,7 +176,7 @@ plot
 			if(!success) del E
 		for(var/I = 1 to 2)
 			if(!cavalryType) break
-			var/enemy/E = new cavalryType()
+			var/combatant/E = new cavalryType()
 			var success
 			for(var/T = 1 to tries)
 				var/posX = area.x + rand(minX, maxX)
@@ -191,7 +188,7 @@ plot
 			if(!success) del E
 		for(var/I = 1 to 1)
 			if(!officerType) break
-			var enemy/E = new officerType()
+			var combatant/E = new officerType()
 			var success
 			for(var/T = 1 to tries)
 				var/posX = area.x + rand(minX, maxX)

@@ -1,5 +1,6 @@
 #define REGION_TEST "test"
 //#define EDIT_MAP
+#define SAVE_TEST "savvy"
 
 //------------------------------------------------------------------------------
 
@@ -13,7 +14,7 @@
 	// Time between plot environment effects
 #define TIME_LAG_DISCONNECT 40
 	// The time* before a interface deletes after a client has logged out
-#define TIME_PLOT_DEACTIVATION 1
+#define TIME_PLOT_DEACTIVATION 600
 	// The time* that a plot will stay active after all characters leave
 #define TIME_HURT 10
 	// The time* in which a combatant in invulnerable after being hurt
@@ -68,7 +69,7 @@
 	// The region id for the overworld
 #define INTERIOR "interior"
 	// The region id for plots representing the interiors of buildings
-#define MAP_DEPTH 4
+#define MAP_DEPTH 1
 	// The number of z levels each game is allocated to place its regions
 #define TILE_SIZE 16
 	// The width/height of a Tile, like a turf or the standard size of an atom/movable
@@ -135,3 +136,5 @@
 	// The id of the "game owner" when editing the map
 #define WARP_START "start"
 	// The default plot.warpId when warping to a region
+
+#define INVENTORY_MAX 24

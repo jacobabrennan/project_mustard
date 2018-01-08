@@ -6,7 +6,7 @@ world/mob = /interface/clay
 interface/clay // Player that has just connected
 	New()
 		. = ..()
-		spawn(1)
+		spawn() // Necessary for reboots
 			system.registerPlayer(client)
 
 
@@ -62,7 +62,7 @@ interface/holding // A way to contain the player while the world does what it ne
 
 interface/rpg
 	var
-		character/character
+		character/partyMember/character
 		event/transition/transitionEvent
 		commandsDown = 0
 			// Logs commands pressed between calls to control()
@@ -75,19 +75,13 @@ interface/rpg
 	Login()
 		. = ..()
 		client.eye = src
-		if(!character)
-			var /character/newCharacter = new()
-			character = newCharacter
-			character.interface = src
-			//character.load(client.ckey) // load comes after character.interface = src
-			character.owner = client.ckey
-		else
-			character.interface = src
-			var /plot/currentPlot = plot(character)
-			if(currentPlot)
-				transition(currentPlot)
+		ASSERT(character)
+		character.interface = src
+		var /plot/currentPlot = plot(character)
+		if(currentPlot)
+			transition(currentPlot)
 		client.menu.hud.show(src)
-		client.menu.refresh("inventory", character.inventory)
+		client.menu.refresh("inventory", character.party.inventory)
 		client.menu.refresh("equipment", character.equipment)
 	//
 	proc/checkCommands()

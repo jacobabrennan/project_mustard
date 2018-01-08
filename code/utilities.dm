@@ -4,7 +4,7 @@
 
 
 //-- Development Utilities -----------------------------------------------------
-// None
+#define TAG #warn Unfinished
 
 
 //-- Movement Utilities --------------------------------------------------------
@@ -72,7 +72,7 @@ actor
 			// Can be set to fractional values, bounded by TICK_DELAY
 		baseSpeed = 1
 			// Number of pixels moved every turn.
-			// The actual speed of an enemy is speed / turnDelay.
+			// The actual speed of a combatant is speed / turnDelay.
 		roughWalk = 0
 			// When determining walking speed, this value is subtracted from the tiles' roughness.
 	New()
@@ -327,7 +327,21 @@ proc/terrain(atom/contained)
 	var/plot/P = plot(contained)
 	var/terrain/T = terrains[P.terrain]
 	if(istype(T)) return T
-
+proc/game(atom/contained)
+	var gameId
+	// Case: gameId supplied
+	if(istext(contained))
+		gameId = contained
+	if(!gameId)
+	// Case: object has gameId
+		if("gameId" in contained.vars)
+			gameId = contained:gameId
+	// Case: object is on the map
+		else
+			var/plot/P = plot(contained)
+			if(P) gameId = P.gameId
+	if(gameId)
+		return system.getGame(gameId)
 
 //-- File System Utilities ------------------------------------------------
 

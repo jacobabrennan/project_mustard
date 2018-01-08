@@ -9,7 +9,6 @@ region
 		id
 		loaded = FALSE
 		coord/mapOffset // Used to place region on map offset from player's personal mapping area.
-		coord/startPlotCoords
 		width
 		height
 		grid/plots
@@ -24,7 +23,6 @@ region
 		var/list/regionData = ..()
 		regionData["id"] = id
 		regionData["mapOffset"] = mapOffset?.toJSON()
-		regionData["startPlotCoords"] = startPlotCoords?.toJSON()
 		regionData["width"] = width
 		regionData["height"] = height
 		regionData["gridText"] = gridText
@@ -34,7 +32,6 @@ region
 	fromJSON(list/objectData)
 		id = objectData["id"]
 		mapOffset = json2Object(objectData["mapOffset"])
-		startPlotCoords = json2Object(objectData["startPlotCoords"])
 		width = objectData["width"]
 		height = objectData["height"]
 		world.maxx = max(world.maxx, PLOT_SIZE*width)
