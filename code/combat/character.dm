@@ -15,7 +15,7 @@ character
 		interface/rpg/interface
 		list/equipment[4]
 
-	//-- Saving & Loading -------------------------------//
+	//-- Saving & Loading --------------------------//
 	toJSON()
 		var/list/jsonObject = ..()
 		jsonObject["name"] = name
@@ -26,7 +26,7 @@ character
 		for(var/item/equipItem in json2List(objectData["equipment"] || list()))
 			equip(equipItem)
 
-	//-- Movement ---------------------------------------//
+	//-- Movement ----------------------------------//
 	proc
 		transition(plot/newPlot, turf/newTurf)
 			if(newTurf)
@@ -74,13 +74,14 @@ character
 			//world << "\icon [center]"
 			transition(targetPlot, center)
 
-	//-- Interface Coupling -----------------------------//
+	//-- Interface Coupling ------------------------//
 	proc/refreshInterface(which, list/aList)
 		if(interface) interface.refresh(which, aList)
 
-	//-- Health and Magic -------------------------------//
+	//-- Health and Magic --------------------------//
 	var
 		baseAuraRegain = 0
+		// Nonconfigurable:
 		_auraRegainCounter = 0
 	maxHp()
 		var/fullHp = ..()
@@ -107,15 +108,17 @@ character
 		var regainDegree = auraRegain()
 		// (0: 544), 1:512, 2:480, 3:448 ... 15:64, 16:32
 		return max(0, 17-(regainDegree))*32
-	takeTurn()
+	takeTurn(delay)
 		. = ..()
 		if(mp >= maxMp())
 			_auraRegainCounter = 0
-		else if(!dead && _auraRegainCounter++ >= auraRegainDelay())
-			_auraRegainCounter = 0
-			adjustMp(1)
+		else if(!dead)
+			_auraRegainCounter += delay
+			if(_auraRegainCounter > auraRegainDelay())
+				_auraRegainCounter = 0
+				adjustMp(1)
 
-	//-- Equipment Management ---------------------------//
+	//-- Equipment Management ----------------------//
 	proc
 		equip(item/gear/newGear)
 			if(!istype(newGear)) return
@@ -132,15 +135,40 @@ character
 		use(usable/_usable)
 			_usable.use(src)
 
-	//-- Combat Redefinitions ---------------------------//
+	//-- Combat Redefinitions ----------------------//
 	shoot(projType)
 		if(projType) return ..(projType)
 		var /item/weapon/W = equipment[WEAR_WEAPON]
 		if(W)
 			return W.use(src)
 		. = ..()
+	defend(projectile/proxy, combatant/attacker, damage)
+		if(dead) return
+		if(proxy.omnidirectional) return
+		var /item/shield/S = equipment[WEAR_SHIELD]
+		if(!istype(S)) return
+		if(icon_state) return // Values other than "" or null
+		// Calculate the angle between src and projectile
+		var /vector/vectorTo = new()
+		vectorTo.from(src, proxy)
+		// Change angle to src's reference (0 is direction src is facing)
+		switch(dir)
+			if(NORTH) vectorTo.rotate(- 90)
+			if(SOUTH) vectorTo.rotate(-270)
+			if( WEST) vectorTo.rotate(-180)
+		switch(vectorTo.dir)
+		// If the projectile hit clearly on the back or sides
+			if(60 to 300) return
+		// If the projectile hit clearly on the front
+			// if(0 to 45, 315 to 360
+		// If the projectile dit not hit clearly, check direction it was travelling
+			if(46 to 60, 300 to 314)
+				if(dir != turn(proxy.dir, 180))
+					return
+		// Success, have the shield try to defend
+		return S.defend(proxy, attacker, damage)
 
-	//-- Interface Control ------------------------------//
+	//-- Interface Control -------------------------//
 	control()
 		. = ..()
 		if(.) return

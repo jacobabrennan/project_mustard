@@ -1,12 +1,12 @@
 
-
+//------------------------------------------------
 //------------------------------------------------------------------------------
 
 system
-	var/versionMotto = "Now you're playing with Power"
+	var/versionMotto = "Shooty McStupid-Face"
 	proc/loadVersion()
 		system.versionType = "Internal"
-		system.versionNumber = "0.0.7"
+		system.versionNumber = "0.0.8"
 		system.versionHub = 0
 		spawn(1)
 			world << "<b>Version [versionType] [versionNumber]</b>: [versionMotto]"
@@ -18,13 +18,16 @@ system
 /*-- Feature List - Remember: It's the map and Bosses! COMBAT! -----------------
 
 Focus - Things which must be done this version
-	New Enemies
 
 Upcomming - Feature candidates for the next version
+	Don't let enemies push players over a plot border
+	Push enemies away from edge when player tries to enter plot.
 	Redo player status menues
 		Player1 can manage each character
 		other players can manage their own character
 	Menu for player management (single+)
+	Make Enemies smarter about "shooting" with melee only in melee range
+	Certain characters can only equip certain things
 
 Set In Stone - Features that have to be finished for 1.0
 	Title Screen
@@ -46,8 +49,11 @@ Set In Stone - Features that have to be finished for 1.0
 		only fills if a character is reviving
 		resets if reviving stops
 		revives once full
+	Hit Animation
 
 Spectulative - Ideas for new features to make the game better.
+	Cleric behavior includes attacking
+		attack with wand when enemies are close and we can't escape or heal
 	Plot Backgrounds that show distant scenary,
 		like you're walking on a mountain ridge looking out at the sunset
 	Languages - Portuguese!
@@ -65,12 +71,33 @@ Spectulative - Ideas for new features to make the game better.
 		all: slow player movement, prevent from reaching areas
 	differences of: kind, flavor, scale
 	"Modes" learned through memories that effect the overworld
+	Refactor Character & Party
+		Remove /character/partyMember
+		(this seems to be the only big difference between character & combatant)
+		Allow for parties not as the main game party, for enemy parties!
 
 Deferred - Low Priority Optional Features
 	Savefile versions
 
 */
 /*
+
+Internal 0.0.8 -- Shooty McStupid-Face
+	Combat:
+		Combatants have a defend method.
+		Defaults to checking frontProtection to block projectiles.
+	Gear:
+		Shields: Provide front protection with a damage threshold
+		Wands: Weak melee attack Cleric, that also use MP for projectiles.
+	Enemy Archetypes Added:
+		Normal: Random Movement, Gridded Movement, Random Shooting
+		Diagonal: With random direction changing and reflection settings
+		Ranged: Represents cowardly archers and mages. Fully configurable.
+		Fixated: Homing Missiles and Determinators.
+		Snaking: Compound enemies of variable length
+		Ball: Compound mass of enemies around a central enemy
+	Map Editor:
+		Set enemyLevel (difficulty) per plot
 
 Internal 0.0.7 -- Now you're playing with Power
 	Quest System: Tracks arbitrary values across maps and sessions

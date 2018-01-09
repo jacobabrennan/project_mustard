@@ -8,7 +8,7 @@ party
 	New(_gameId)
 		. = ..()
 		gameId = _gameId
-	//-------------------------
+	//------------------------------------------------
 	var
 		coins = 0
 		list/inventory[INVENTORY_MAX]
@@ -16,7 +16,7 @@ party
 		list/characters = new()
 
 
-//-- Saving / Loading --------------------------------------------//
+//-- Saving / Loading ----------------------------------------------------------
 
 party
 	toJSON()
@@ -37,12 +37,13 @@ party
 	proc
 		createNew()
 			addPartyMember(new /character/partyMember/hero())
-			addPartyMember(new /character/partyMember/cleric())
-			var /character/partyMember/soldier/soldier = addPartyMember(new /character/partyMember/soldier())
-			var /character/partyMember/goblin/goblin   = addPartyMember(new /character/partyMember/goblin())
+			//addPartyMember(new /character/partyMember/cleric())
+			//var /character/partyMember/soldier/soldier = addPartyMember(new /character/partyMember/soldier())
+			//var /character/partyMember/goblin/goblin   = addPartyMember(new /character/partyMember/goblin())
 			mainCharacter.equip(new /item/weapon/sword())
-			soldier.equip(      new /item/weapon/axe(  ))
-			goblin.equip(       new /item/weapon/bow(  ))
+			mainCharacter.equip(new /item/shield())
+			//soldier.equip(      new /item/weapon/axe(  ))
+			//goblin.equip(       new /item/weapon/bow(  ))
 		addPartyMember(character/partyMember/newMember)
 			if(newMember.partyId == CHARACTER_KING || newMember.partyId == CHARACTER_HERO)
 				mainCharacter = newMember
@@ -53,7 +54,7 @@ party
 			return newMember
 
 
-//-- Player Tracker ----------------------------------------------//
+//-- Player Tracker ------------------------------------------------------------
 
 party
 	var
@@ -157,7 +158,7 @@ character/partyMember
 		_usable.use(src)
 
 
-//-- Game Over handling ------------------------------------------//
+//-- Game Over handling --------------------------------------------------------
 
 party
 	proc
@@ -209,7 +210,7 @@ plot
 		. = ..()
 
 
-//-- Movement and Behavior ---------------------------------------//
+//-- Movement and Behavior -----------------------------------------------------
 
 party
 	proc/changeRegion(regionId, warpId)
@@ -250,26 +251,17 @@ character/partyMember
 		if(party.mainCharacter.dead) rescue = shouldIRescue()
 		// If rescue is needed
 		if(rescue)
-			var success = stepTo(src, party.mainCharacter, -1)
+			var success = stepTo(party.mainCharacter, -1)
 			if(!success)
 				movement = MOVEMENT_ALL
 				//density = FALSE
-				success = stepTo(src, party.mainCharacter, -1)
+				success = stepTo(party.mainCharacter, -1)
 			movement = initial(movement)
 			//density  = initial(density )
 		// Move toward player
-		var success = stepTo(src, party.mainCharacter, partyDistance)
+		var success = stepTo(party.mainCharacter, partyDistance)
 		if(!success && aloc(src) != aloc(party.mainCharacter))
 			forceLoc(party.mainCharacter.loc)
-	proc/stepTo(src, target, minDist)
-		// If we're close enough to the target and in the same plot, do nothing.
-		if(bounds_dist(src, target) <= minDist)
-			if(plot(src) == plot(target)) return TRUE
-		// Walk to the target, factoring density
-		density = TRUE
-		var success = step_to(src, target, 0, speed())
-		density = initial(density)
-		return success
 	proc
 		attackWithWeapon()
 			var /usable/weapon = equipment[WEAR_WEAPON]
@@ -289,8 +281,7 @@ character/partyMember
 						rescue = FALSE
 			return rescue
 
-
-	//
+	//------------------------------------------------
 	regressiaHero
 		icon = 'regressia_hero.dmi'
 		partyId = CHARACTER_KING
@@ -337,8 +328,7 @@ character/partyMember
 			var closeDist = 49
 			var closeEnemy
 			for(var/combatant/E in range(4, src))
-				if(E.faction & faction) continue
-				if(E.dead) continue
+				if(!hostile(E)) continue
 				var testDist = bounds_dist(src, E)
 				//if(testDist >= TILE_SIZE && bounds_dist(party.mainCharacter, E) > 80) continue
 				if(testDist >= closeDist) continue
@@ -360,7 +350,7 @@ character/partyMember
 					target = closeEnemy
 				// If we have a target, advance towards it
 				if(target)
-					stepTo(src, target)
+					stepTo(target)
 					return
 			// If we didn't advance on a target, seek out the player
 			. = ..()
@@ -371,144 +361,37 @@ character/partyMember
 		//baseSpeed = 4
 		roughWalk = 16
 		baseHp = 6
-		behaviorName = "archer"
-
-
-//-- Combatant Behaviors (needs refactor out) --------------------//
-
-behaviors
-	var
-		storage
-		combatant/target
-	proc
-		archer2(character/owner)
-			var /item/weapon/bow/bow = owner.equipment[WEAR_WEAPON]
+		var
+			combatant/target
+		behavior()
+			if(shouldIRescue()) return ..()
+			if(tryToShoot()) return TRUE
+			. = ..()
+		proc/tryToShoot()
+			// Check if we have a bow equipped
+			var /item/weapon/bow/bow = equipment[WEAR_WEAPON]
 			if(!istype(bow)) return
 			if(!bow.ready()) return
-			var /plot/plotArea/A = aloc(owner)
-			var fastestDir
-			var /combatant/fastestHit
-			var /combatant/fastestTime = 1000
-			var /list/deltasX = new()
-			var /list/deltasY = new()
-			var alignMax = 96
 			// If there's a target, check if it's still aligned to attack
-			if(target)
-				var deltaX = ((target.x-A.x)*TILE_SIZE + target.bound_width /2 + target.step_x) - ((owner.x-A.x)*TILE_SIZE + owner.bound_width /2 + owner.step_x)
-				var deltaY = ((target.y-A.y)*TILE_SIZE + target.bound_height/2 + target.step_y) - ((owner.y-A.y)*TILE_SIZE + owner.bound_height/2 + owner.step_y)
-				if(target.dead || min(abs(deltaX), abs(deltaY)) > alignMax)
-					target = null
-			// Check for targets of opportunity. Shoot the one that can be hit the fastest with an arrow
-			for(var/combatant/E in A)
-				if(E.dead) continue
-				if(E.faction & owner.faction) continue
-				var deltaX = ((E.x-A.x)*TILE_SIZE + E.bound_width /2 + E.step_x) - ((owner.x-A.x)*TILE_SIZE + owner.bound_width /2 + owner.step_x)
-				var deltaY = ((E.y-A.y)*TILE_SIZE + E.bound_height/2 + E.step_y) - ((owner.y-A.y)*TILE_SIZE + owner.bound_height/2 + owner.step_y)
-				deltasX[E] = deltaX
-				deltasY[E] = deltaY
-				var directX
-				var directY
-				var closingX
-				var closingY
-				//if((abs(deltaY) < TILE_SIZE/2) && !(E.dir&(NORTH|SOUTH))) directX = TRUE
-				//if((abs(deltaX) < TILE_SIZE/2) && !(E.dir&(EAST | WEST))) directY = TRUE // Doesn't target stationary targets
-				if(abs(deltaY) < TILE_SIZE/2) directX = TRUE
-				if(abs(deltaX) < TILE_SIZE/2) directY = TRUE
-				if     (deltaX > 0 && (E.dir&WEST )) closingX = TRUE
-				else if(deltaX < 0 && (E.dir&EAST )) closingX = TRUE
-				if     (deltaY > 0 && (E.dir&SOUTH)) closingY = TRUE
-				else if(deltaY < 0 && (E.dir&NORTH)) closingY = TRUE
-				if(!(closingX || closingY || directX || directY)) continue // Enemy is not crossing over cardinal direction
-				var testTime = fastestTime+1
-				var testDir
-				if(closingX || directY) // Attack Vertically
-					if(abs(deltaY) > bow.arrowRange) continue
-					var deltaT = abs(deltaX / E.speed())
-					var arrowT = abs(deltaY / bow.arrowSpeed)
-					if(directY || abs(deltaT - arrowT) <= 4)
-						testTime = deltaT
-						testDir = (deltaY > 0)? NORTH : SOUTH
-				if(closingY || directX) // Attack Horizontally
-					if(abs(deltaX) > bow.arrowRange) continue
-					var deltaT = abs(deltaY / E.speed())
-					var arrowT = abs(deltaX / bow.arrowSpeed)
-					if((deltaT < testTime) && (directX || abs(deltaT - arrowT) <= 5))
-						testTime = deltaT
-						testDir = (deltaX > 0)? EAST  : WEST
-				if(testTime < fastestTime)
-					fastestTime = testTime
-					fastestHit = E
-					fastestDir = testDir
-			if(fastestHit)
-				owner.dir = fastestDir
-				owner.shoot()
-				target = null
-				return TRUE
-			// If we can't shoot anything (and there's no target), try to target the combatant that requires the least movement to align with
-			if(!target)
-				var closestAlignTarget
-				var closestAlignDist = alignMax
-				for(var/combatant/E in A)
-					if(E.dead) continue
-					if(E.faction & owner.faction) continue
-					var deltaX = abs(deltasX[E])
-					var deltaY = abs(deltasY[E])
-					var minDelta = min(deltaX, deltaY)
-					if(minDelta < closestAlignDist)
-						closestAlignTarget = E
-						closestAlignDist = minDelta
-				if(closestAlignTarget)
-					target = closestAlignTarget
-			// If we have a target, move towards it and shoot it
-			if(target)
-				if(bounds_dist(owner, target) < TILE_SIZE*2)
-					target = null
-					if(step_away(owner, target)) return TRUE
-				else
-					//if(step_to(owner, target, 2, owner.speed())) return TRUE // see stepTo()
-					var axisHorizontal = (abs(deltasX[target]) <= abs(deltasY[target]))? TRUE : FALSE
-					if(axisHorizontal)
-						if(deltasX[target] > 0)
-							owner.go(owner.speed(), 0)
-						else
-							owner.go(-owner.speed(), 0)
-					else
-						if(deltasY[target] > 0)
-							owner.go(0, owner.speed())
-						else
-							owner.go(0, -owner.speed())
-					return FALSE
-			//  Otherwise, walk toward the player
-			return FALSE
-		archer(character/owner)
-			ASSERT(!owner.dead)
-			// Check if rescue is needed
-			if(owner:party.mainCharacter.dead && owner:shouldIRescue())
-				return ..()
-			var /item/weapon/bow/bow = owner.equipment[WEAR_WEAPON]
-			if(!istype(bow)) return
-			if(!bow.ready()) return
-			var /plot/plotArea/A = aloc(owner)
-			var fastestDir
-			var /combatant/fastestHit
-			var /combatant/fastestTime = 1000
-			var /list/deltasX = new()
-			var /list/deltasY = new()
 			var alignMax = 32
+			var /plot/plotArea/A = aloc(src)
+			var /list/deltasX = new()
+			var /list/deltasY = new()
 			var toFar
-			if(bounds_dist(owner, owner:party.mainCharacter) > 112) toFar = TRUE
-			// If there's a target, check if it's still aligned to attack
+			if(bounds_dist(src, party.mainCharacter) > 112) toFar = TRUE
 			if(target)
-				var deltaX = ((target.x-A.x)*TILE_SIZE + target.bound_width /2 + target.step_x) - ((owner.x-A.x)*TILE_SIZE + owner.bound_width /2 + owner.step_x)
-				var deltaY = ((target.y-A.y)*TILE_SIZE + target.bound_height/2 + target.step_y) - ((owner.y-A.y)*TILE_SIZE + owner.bound_height/2 + owner.step_y)
+				var deltaX = ((target.x-A.x)*TILE_SIZE + target.bound_width /2 + target.step_x) - ((x-A.x)*TILE_SIZE + bound_width /2 + step_x)
+				var deltaY = ((target.y-A.y)*TILE_SIZE + target.bound_height/2 + target.step_y) - ((y-A.y)*TILE_SIZE + bound_height/2 + step_y)
 				if(target.dead || min(abs(deltaX), abs(deltaY)) > alignMax || toFar)
 					target = null
 			// Check for targets of opportunity. Shoot the one that can be hit the fastest with an arrow
+			var fastestDir
+			var /combatant/fastestHit
+			var /combatant/fastestTime = 1000
 			for(var/combatant/E in A)
-				if(E.dead) continue
-				if(E.faction & owner.faction) continue
-				var deltaX = ((E.x-A.x)*TILE_SIZE + E.bound_width /2 + E.step_x) - ((owner.x-A.x)*TILE_SIZE + owner.bound_width /2 + owner.step_x)
-				var deltaY = ((E.y-A.y)*TILE_SIZE + E.bound_height/2 + E.step_y) - ((owner.y-A.y)*TILE_SIZE + owner.bound_height/2 + owner.step_y)
+				if(!hostile(E)) continue
+				var deltaX = ((E.x-A.x)*TILE_SIZE + E.bound_width /2 + E.step_x) - ((x-A.x)*TILE_SIZE + bound_width /2 + step_x)
+				var deltaY = ((E.y-A.y)*TILE_SIZE + E.bound_height/2 + E.step_y) - ((y-A.y)*TILE_SIZE + bound_height/2 + step_y)
 				deltasX[E] = deltaX
 				deltasY[E] = deltaY
 				if(min(abs(deltaX), abs(deltaY)) > bow.arrowRange) continue
@@ -546,8 +429,8 @@ behaviors
 					fastestHit = E
 					fastestDir = testDir
 			if(fastestHit)
-				owner.dir = fastestDir
-				owner:attackWithWeapon()
+				dir = fastestDir
+				attackWithWeapon()
 				target = null
 				return TRUE
 			// If we can't shoot anything (and there's no target), try to target the combatant that requires the least movement to align with
@@ -555,8 +438,7 @@ behaviors
 				var closestAlignTarget
 				var closestAlignDist = alignMax
 				for(var/combatant/E in A)
-					if(E.dead) continue
-					if(E.faction & owner.faction) continue
+					if(!hostile(E)) continue
 					var deltaX = abs(deltasX[E])
 					var deltaY = abs(deltasY[E])
 					var minDelta = min(deltaX, deltaY)
@@ -567,7 +449,7 @@ behaviors
 					target = closestAlignTarget
 			// If we have a target, move towards it and shoot it
 			if(target)
-				if(bounds_dist(owner, target) < TILE_SIZE*2)
+				if(bounds_dist(src, target) < TILE_SIZE*2)
 					target = null
 					return FALSE
 				else
@@ -575,21 +457,25 @@ behaviors
 					var axisHorizontal = (abs(deltasX[target]) <= abs(deltasY[target]))? TRUE : FALSE
 					var success
 					if(axisHorizontal)
-						if(deltasX[target] > 0)
-							success = owner.go(owner.speed(), 0)
-						else
-							success = owner.go(-owner.speed(), 0)
+						if(deltasX[target] > 0) success = go(speed(), 0)
+						else success = go(-speed(), 0)
 					else
-						if(deltasY[target] > 0)
-							success = owner.go(0, owner.speed())
-						else
-							success = owner.go(0, -owner.speed())
+						if(deltasY[target] > 0) success = go(0, speed())
+						else success = go(0, -speed())
 					return success
 			//  Otherwise, walk toward the player
 			return FALSE
 
 
-//-- Character Fainting & Revive Assist --------------------------//
+//-- Combatant Behaviors (needs refactor out) ----------------------------------
+
+/*behaviors
+	var
+		storage
+		combatant/target*/
+
+
+//-- Character Fainting & Revive Assist ----------------------------------------
 
 character/partyMember
 	die()
@@ -629,6 +515,7 @@ character/partyMember
 		// Show HUD
 		if(interface && interface.client)
 			interface.client.menu.hud.show()
+
 sequence/fainted
 	var
 		faintTime = 40 // The time before the character can be revived
@@ -649,7 +536,7 @@ sequence/fainted
 		return TRUE
 
 
-//-- Health & Magic Bars -----------------------------------------//
+//-- Health & Magic Bars -------------------------------------------------------
 
 system
 	var

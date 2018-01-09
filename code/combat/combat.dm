@@ -4,11 +4,6 @@
 
 combatant
 	parent_type = /actor
-	density = FALSE
-		// Mobs can move other each other to attack, and tile entry is determined by Movement flags
-	movement = MOVEMENT_FLOOR
-	step_size = 1
-		// Must be set in order to turn on pixel movement, even if using step() manually
 	var
 		disposable = TRUE
 			// If the combatant disappears after death
@@ -17,7 +12,26 @@ combatant
 		hp = maxHp()
 		mp = maxMp()
 
-	/*// Submersion
+
+	//-- Movement ------------------------------------
+	density = FALSE
+		// Mobs can move other each other to attack, and tile entry is determined by Movement flags
+	movement = MOVEMENT_FLOOR
+	step_size = 1
+		// Must be set in order to turn on pixel movement, even if using step() manually
+	Move(newLoc, newdir, newStepX, newStepY)
+		var deltaX = (x*TILE_SIZE)+step_x
+		var deltaY = (y*TILE_SIZE)+step_y
+		. = ..()
+		if(!.) return
+		deltaX = (x*TILE_SIZE)+step_x - deltaX
+		deltaY = (y*TILE_SIZE)+step_y - deltaY
+		if(!deltaX || !deltaY) return
+		if(abs(deltaX) >= abs(deltaY))
+			dir  &= ~(NORTH|SOUTH)
+		else dir &= ~(EAST |WEST )
+
+	/*-- Submersion ----------------------------------
 	appearance_flags = KEEP_TOGETHER
 	var
 		combatant/submersion/submerged
@@ -51,25 +65,28 @@ combatant
 		icon = 'specials.dmi'
 		icon_state = "submersion"*/
 
-	//-- Behavior ---------------------------------//
+	//-- Behavior Hierarchy --------------------------
 	var
+	//	behaviorName
+	//	behaviors/behaviorObject
+		// Nonconfigurable:
 		list/controllers[0]
-		behaviorName
-		behaviors/behaviorObject
-	New()
+	/*New()
 		if(istext(behaviorName))
 			behaviorObject = new()
 			if(!hascall(behaviorObject, behaviorName)) del behaviorObject
-		. = ..()
-	takeTurn()
-		if(invincible) invincible--
+		. = ..()*/
+	takeTurn(delay)
+		if(invincible > 0)
+			invincible -= delay
+			if(invincible < 0) invincible = 0
 		. = ..()
 		if(.) return // blocked
 		. = control()
 		if(.) return .
-		if(hascall(behaviorObject, behaviorName))
+		/*if(hascall(behaviorObject, behaviorName))
 			. = call(behaviorObject, behaviorName)(src)
-			if(.) return
+			if(.) return*/
 		. = behavior()
 	proc
 		behavior()
@@ -82,7 +99,7 @@ combatant
 			else if(controller) block = TRUE
 			if(block) return block
 
-	//-- Controller & Sequence --------------------//
+	//-- Controller & Sequence -----------------------
 	proc/addController(sequence/controller)
 		// Insert low priority controllers at the start of the list
 		if(istype(controller) && !controller.priority)
@@ -112,10 +129,12 @@ sequence
 
 combatant
 	var
-		hp = 0
-		mp = 0
 		baseHp = 3
 		baseMp = 0
+		frontProtection = FALSE
+		// Nonconfigurable:
+		hp = 0
+		mp = 0
 		dead = FALSE
 		invincible
 	proc
@@ -142,6 +161,8 @@ combatant
 			return deltaMp
 		hurt(amount, combatant/attacker, projectile/proxy)
 			if(invincible) return
+			if(proxy && defend(proxy, attacker, amount))
+				return
 			. = adjustHp(-amount)
 			if(. < 0) invincible(TIME_HURT)
 			if(!dead && (attacker || proxy))
@@ -155,12 +176,17 @@ combatant
 					del src
 		attack(combatant/target, amount, proxy)
 			return target.hurt(amount, src, proxy)
+		defend(projectile/proxy, combatant/attacker, amount)
+			if(!istype(proxy)) return
+			if(proxy.omnidirectional) return
+			if(frontProtection && (cardinalTo(proxy) == dir))
+				return TRUE
 		invincible(amount)
 			invincible = max(invincible, amount)
 
-	//-- Projectiles & Shooting -------------------//
+	//-- Projectiles & Shooting ----------------------
 	var
-		projectileType = /projectile // the kind of projectile, if any, the combatant shoots by default
+		projectileType // the kind of projectile, if any, the combatant shoots by default
 		list/projectiles[0]
 	proc
 		shoot(typePath)
@@ -177,19 +203,31 @@ projectile
 	movement = MOVEMENT_FLOOR|MOVEMENT_WATER
 	density = FALSE
 	baseSpeed = 4
+	roughWalk = 16
 	var
-		combatant/owner
 		potency = 1
+			// Damage done to other combatants (in HP)
+		interactionProperties = INTERACTION_NONE
+			// Triggers interaction with tiles and furniture with same settings
+		omnidirectional = FALSE
+			// Cannot be blocked by shields or front protection.
+			// Usually for stationary projectiles
 		projecting = TRUE
+			// Does the projectile move out from the combatant once created
 		persistent = FALSE
+			// Will not disappear after hitting a combatant
 		explosive = FALSE
+			// Triggers explode() on impacting combatant
 		terminalExplosion = FALSE
+			// Triggers explode() at maxRange or maxTime
 		maxRange
 		maxTime
+			// Will delete after reaching maxRange or MaxTime
+		// Nonconfigurable:
+		combatant/owner
+		coord/vel
 		currentRange
 		currentTime
-		interactionProperties = INTERACTION_NONE
-		coord/vel
 	New(var/combatant/_owner)
 		. = ..()
 		vel = new(0,0)
@@ -202,6 +240,10 @@ projectile
 			dir = owner.dir
 			if(projecting)
 				project()
+	Del()
+		if(owner)
+			owner.projectiles.Remove(src)
+		. = ..()
 	centerLoc(var/atom/movable/_center)
 		if(!_center && owner) _center = owner
 		. = ..()
@@ -214,7 +256,7 @@ projectile
 				if(SOUTH) vel.y = -speed()
 				if(EAST ) vel.x =  speed()
 				if(WEST ) vel.x = -speed()
-	takeTurn()
+	takeTurn(delay)
 		. = ..()
 		if((vel.x || vel.y) && !translate(vel.x, vel.y))
 			if(explosive)
@@ -230,11 +272,11 @@ projectile
 			if(currentTime  >= maxTime )
 				if(terminalExplosion) explode()
 				else del src
-			currentTime++
+			currentTime += delay
 		for(var/combatant/_combatant in obounds(src))
 			if(_combatant.dead) continue
 			if(_combatant.invincible) continue
-			if(_combatant.faction & faction) continue
+			if(!hostile(_combatant)) continue
 			impact(_combatant)
 		for(var/tile/interact/I in obounds(src))
 			if(I.interaction & interactionProperties)

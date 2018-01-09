@@ -2,7 +2,7 @@
 
 //-- Character Projectiles -----------------------------------------------------
 
-//-- Arrows shot by bow weapons ---------
+//-- Arrows shot by bow weapons ------------------
 projectile/bowArrow
 	icon = 'projectiles.dmi'
 	icon_state = "arrow"
@@ -10,9 +10,7 @@ projectile/bowArrow
 	bound_height = 3
 	bound_width  = 3
 	movement = MOVEMENT_ALL
-	projecting = FALSE
 	persistent = FALSE
-	roughWalk = 16
 	var
 		long_width = 16
 		short_width = 3
@@ -27,13 +25,14 @@ projectile/bowArrow
 				bound_height = short_width
 				bound_width = long_width
 
-//-- Swiping Melee Attacks (Axe) --------
+//-- Swiping Melee Attacks (Axe) -----------------
 projectile/axe
 	parent_type = /projectile/swipe
 projectile/swipe
 	icon = 'projectiles.dmi'
 	icon_state = "axe"
 	var
+		// Nonconfigurable:
 		time = 0
 	movement = MOVEMENT_ALL
 	baseSpeed = 0
@@ -45,13 +44,13 @@ projectile/swipe
 		var/character/O = owner
 		if(istype(O))
 			O.addController(src)
-		takeTurn()
+		takeTurn(0)
 	Del()
-		owner.icon_state = ""
+		if(owner && !owner.dead) owner.icon_state = ""
 		. = ..()
 	proc/interrupt()
 		del src
-	takeTurn()
+	takeTurn(delay)
 		if(!owner) del src
 		owner.icon_state = "attack"
 		centerLoc(owner)
@@ -74,18 +73,19 @@ projectile/swipe
 			if(SOUTH    ){                           deltaY -= bound_height  }
 			if(SOUTHEAST){ deltaX += bound_width -3; deltaY -= bound_height-3}
 		var dirStorage = dir
-		//step_size = offset
 		translate(deltaX, deltaY)
 		dir = dirStorage
-		//step(src, dir)
 		. = ..()
-		//centerLoc(owner)
 
-//-- Stabbing Melee Attacks -------------
+//-- Stabbing Melee Attacks - (sword, wand) ------
+projectile/wand
+	parent_type = /projectile/sword
+	stateName = "wand"
 projectile/sword
 	icon = 'projectiles.dmi'
-	icon_state = "sword_6"
 	var
+		stateName = "sword"
+		// Nonconfigurable:
 		time = 0
 		stage = 0
 	movement = MOVEMENT_ALL
@@ -103,12 +103,13 @@ projectile/sword
 				bound_width = 8
 			if(EAST,  WEST )
 				bound_height = 8
+		loc = null
 	Del()
-		owner.icon_state = ""
+		if(owner && !owner.dead) owner.icon_state = ""
 		. = ..()
 	proc/interrupt()
 		del src
-	takeTurn()
+	takeTurn(delay)
 		if(!owner) del src
 		owner.icon_state = "attack"
 		centerLoc(owner)
@@ -116,15 +117,15 @@ projectile/sword
 		var/offset = 0
 		var/deltaX = 0
 		var/deltaY = 0
-		switch(time++)
-			if(0,5)	stage = 1
-			if(1,4) stage = 2
-			if(2,3) stage = 3
-			if(6) del src
+		switch(++time)
+			if(1,6)	stage = 1
+			if(2,5) stage = 2
+			if(3,4) stage = 3
+			if(7) del src
 		switch(stage)
-			if(1){ icon_state = "sword_6" ; offset =  6}
-			if(2){ icon_state = "sword_11"; offset = 11}
-			if(3){ icon_state = "sword_16"; offset = 16}
+			if(1){ icon_state = "[stateName]_6" ; offset =  6}
+			if(2){ icon_state = "[stateName]_11"; offset = 11}
+			if(3){ icon_state = "[stateName]_16"; offset = 16}
 		switch(dir)
 			if(NORTH){ deltaY += offset; pixel_y =  TILE_SIZE}
 			if(SOUTH){ deltaY -= offset; pixel_y = -TILE_SIZE}
@@ -138,6 +139,22 @@ projectile/sword
 
 
 //-- CQ Projectiles ------------------------------------------------------------
+
+projectile
+	fire1
+		//parent_type = /projectile/magic1
+		icon_state = "fire_ball"
+		bound_height = 6
+		bound_width = 6
+	/*
+	magic1
+		icon_state = "enemy_magic_1"
+		bound_height = 8
+		bound_width  = 8
+		persistent = FALSE
+		base_speed = 2
+		*/
+
 
 	/*fist{
 		icon_state = "fist"
@@ -221,103 +238,6 @@ projectile/sword
 		icon_state = "bolt"
 		long_bound_width = 12
 		}
-	sword{
-		icon = 'projectiles.dmi'
-		movement = MOVEMENT_ALL
-		impact(var/combatant/target){
-			owner.attack(target, potency)
-			}
-		bound_height = 4
-		bound_width  = 4
-		persistent = TRUE
-		potency = 2
-		var{
-			stage = 0
-			state_name = "sword"
-			}
-		New(){
-			. = ..()
-			vel.x = 0
-			vel.x = 0
-			}
-		behavior(event){
-			stage++
-			dir = owner.dir
-			owner.icon_state = "attack"
-			switch(stage){
-				if(1,5){
-					icon_state = "[state_name]_6"
-					switch(dir){
-						if(NORTH, SOUTH){
-							bound_height = 6
-							bound_width  = 4
-							}
-						if( EAST,  WEST){
-							bound_height = 4
-							bound_width  = 6
-							}
-						}
-					}
-				if(2,4){
-					icon_state = "[state_name]_11"
-					switch(dir){
-						if(NORTH, SOUTH){
-							bound_height = 11
-							bound_width  = 4
-							}
-						if( EAST,  WEST){
-							bound_height = 4
-							bound_width  = 11
-							}
-						}
-					}
-				if(3){
-					icon_state = "[state_name]_16"
-					switch(dir){
-						if(NORTH, SOUTH){
-							bound_height = 16
-							bound_width  = 4
-							}
-						if( EAST,  WEST){
-							bound_height = 4
-							bound_width  = 16
-							}
-						}
-					}
-				if(6){
-					owner.icon_state = initial(owner.icon_state)
-					del src
-					}
-				}
-			switch(dir){
-				if(NORTH){
-					step_x = owner.step_x + (owner.bound_width-bound_width)/2
-					step_y = owner.step_y + owner.bound_height
-					pixel_x = -6
-					}
-				if(SOUTH){
-					step_x = owner.step_x + (owner.bound_width-bound_width)/2
-					step_y = owner.step_y - bound_height
-					pixel_x = -6
-					pixel_y = -(16-bound_height)
-					}
-				if( EAST){
-					step_x = owner.step_x + owner.bound_width
-					step_y = owner.step_y + (owner.bound_height-bound_height)/2
-					pixel_y = -6
-					}
-				if( WEST){
-					step_x = owner.step_x - bound_width
-					step_y = owner.step_y + (owner.bound_height-bound_height)/2
-					pixel_y = -6
-					pixel_x = -(16-bound_width)
-					}
-				}
-			for(var/atom/movable/M in obounds(src,0)){
-				M.Crossed(src)
-				}
-			}
-		}
 	spear{
 		icon_state = "spear"
 		bound_height = 3
@@ -343,75 +263,6 @@ projectile/sword
 					}
 				}
 			}
-		}
-	axe{
-		parent_type = /projectile/sword
-		interactionProperties = INTERACTION_PROPERTY_CUT
-		icon_state = "axe"
-		bound_height = 16
-		bound_width  = 16
-		persistent = TRUE
-		potency = 2
-		state_name = "axe"
-		behavior(){
-			stage++
-			owner.icon_state = "attack"
-			loc = owner.loc
-			switch(stage){
-				if(1,2){ dir = turn(owner.dir, -45)}
-				if(3,4){ dir =      owner.dir      }
-				if(5,6){ dir = turn(owner.dir,  45)}
-				if(7){
-					owner.icon_state = initial(owner.icon_state)
-					del src
-					}
-				}
-			switch(dir){
-				if(EAST     ){
-					step_x = owner.step_x+(16)
-					step_y = owner.step_y
-					}
-				if(SOUTHEAST){
-					step_x = owner.step_x+(16)
-					step_y = owner.step_y-(16)
-					}
-				if(SOUTH    ){
-					step_x = owner.step_x+2
-					step_y = owner.step_y-(16)
-					}
-				if(SOUTHWEST){
-					step_x = owner.step_x-(16)
-					step_y = owner.step_y-(16)
-					}
-				if(WEST     ){
-					step_x = owner.step_x-(16)
-					step_y = owner.step_y
-					}
-				if(NORTHWEST){
-					step_x = owner.step_x-(16)
-					step_y = owner.step_y+ 16
-					}
-				if(NORTH    ){
-					step_x = owner.step_x+2
-					step_y = owner.step_y+(16)
-					}
-				if(NORTHEAST){
-					step_x = owner.step_x+(16)
-					step_y = owner.step_y+(16)
-					}
-				}
-			for(var/atom/movable/M in obounds(src,0)){
-				M.Crossed(src)
-				}
-			}
-		}*/
-	/*
-	fire_1{
-		parent_type = /projectile/magic_1
-		movement = MOVEMENT_LAND | MOVEMENT_WATER
-		icon_state = "fire_ball"
-		bound_height = 6
-		bound_width = 6
 		}
 	fire_2{
 		parent_type = /projectile/fire_1

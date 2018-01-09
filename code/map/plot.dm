@@ -9,15 +9,18 @@ plot
 		x
 		y
 		warpId // Used to move the player between regions
-		revealed = FALSE
-		plot/plotArea/area
 		terrain
+		enemyLevel = 1 // Determines which enemies terrain populates
+		// Nonconfigurable:
+		revealed = FALSE
 		active = FALSE
-//		building/building
+		plot/plotArea/area
 		list/furnitureStorage // Only used in loading regions from json file
 	New(_regionId)
 		regionId = _regionId
 		. = ..()
+
+	//-- Saving & Loading ----------------------------
 	toJSON()
 		var/list/objectData = ..()
 		objectData["regionId"] = regionId
@@ -25,7 +28,7 @@ plot
 		objectData["y"] = y
 		objectData["warpId"] = warpId
 		objectData["terrain"] = terrain
-//		if(building) objectData["building"] = building.toJSON()
+		objectData["enemyLevel"] = enemyLevel
 		var/list/furnitureArray = list()
 		for(var/furniture/F in area)
 			furnitureArray[++furnitureArray.len] = F.toJSON()
@@ -38,9 +41,10 @@ plot
 		y = objectData["y"]
 		warpId = objectData["warpId"]
 		terrain = objectData["terrain"]
-//		if(objectData["building"])
-//			building = json2Object(objectData["building"])
 		furnitureStorage = objectData["furniture"]
+		enemyLevel = objectData["enemyLevel"]
+
+	//-- Revealing & Activation ----------------------
 	proc/reveal()
 		if(revealed) return
 		var/game/G = system.getGame(gameId)
@@ -65,8 +69,6 @@ plot
 				compoundY += parentRegion.mapOffset.y*PLOT_SIZE
 				compoundX += parentRegion.mapOffset.x*PLOT_SIZE
 				parentRegion.revealTileAt(compoundX, compoundY)
-//		if(building)
-//			building.place(building.x, building.y, src)
 		for(var/list/furnitureObject in furnitureStorage)
 			var/furniture/F = json2Object(furnitureObject)
 			var/_x = furnitureObject["x"]+area.x
@@ -94,11 +96,7 @@ plot
 		// Remove Area
 		area.icon = null
 		del area
-//		if(building)
-//			building.place(building.x, building.y, src)
 		revealed = FALSE
-	proc/buildAllow(interface/player, town/terrainModel/tileModel, buildX, buildY)
-		return TRUE
 	proc/activate(character/entrant)
 		if(active) return
 		active = TRUE
@@ -142,25 +140,31 @@ plot
 		active = FALSE
 		for(var/actor/A in area)
 			del A
-	proc/populate(activationDir)
+	proc/populate(activationDir, level)
+		// Determine enemy difficulty
+		if(level == null) level = enemyLevel
+		if(level <= 0) return
+		//
 		var /game/G = system.getGame(gameId)
 		var/region/parentRegion = G.getRegion(regionId)
-		var/minX = 0
-		var/minY = 0
-		var/maxX = PLOT_SIZE-1
-		var/maxY = PLOT_SIZE-1
+		var/minX = 1
+		var/minY = 1
+		var/maxX = PLOT_SIZE-2
+		var/maxY = PLOT_SIZE-2
 		switch(activationDir)
 			if(NORTH) maxY -= 5
 			if(SOUTH) minY += 5
 			if( EAST) maxX -= 5
 			if( WEST) minX += 5
+		// Get enemy models
 		var/terrain/terrainModel = terrains[terrain]
-		var/infantryLevel = min(1, terrainModel.infantry.len)
-		var/cavalryLevel  = min(1, terrainModel.cavalry.len )
-		var/officerLevel  = min(1, terrainModel.officer.len )
+		var/infantryLevel = min(level, terrainModel.infantry.len)
+		var/cavalryLevel  = min(level, terrainModel.cavalry.len )
+		var/officerLevel  = min(level, terrainModel.officer.len )
 		var/combatant/infantryType = infantryLevel? terrainModel.infantry[infantryLevel] : null
-		var/combatant/cavalryType  = cavalryLevel? terrainModel.cavalry[  cavalryLevel] : null
-		var/combatant/officerType  = officerLevel? terrainModel.officer[  officerLevel] : null
+		var/combatant/cavalryType  = cavalryLevel?  terrainModel.cavalry[  cavalryLevel] : null
+		var/combatant/officerType  = officerLevel?  terrainModel.officer[  officerLevel] : null
+		// Attempt to place enemies
 		var/tries = 15
 		for(var/I = 1 to 4)
 			if(!infantryType) break
@@ -210,7 +214,7 @@ plot
 			takeTurn()
 
 
-//------------------------------------------------------------------------------
+//-- Plot Area -----------------------------------------------------------------
 
 plot/plotArea
 	parent_type = /area
@@ -222,8 +226,6 @@ plot/plotArea
 	Enter(atom/movable/entrant)
 		if(istype(entrant) && entrant.transitionable)
 			return TRUE
-		/*else if(istype(entryChar, /interface/town))
-			return TRUE*/
 		if(!entrant.loc) return ..()
 		return FALSE
 	Entered(atom/entrant)

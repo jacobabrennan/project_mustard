@@ -1,9 +1,8 @@
 
 
-//------------------------------------------------------------------------------
+//-- Region - Organizes movement through the game on the largest scale ---------
 
 region
-	//
 	var
 		gameId // The game instance this region belongs to
 		id
@@ -15,9 +14,15 @@ region
 		list/activePlots = list()
 		gridText
 		coord/entrance // Mostly for use in dungeons
+	//
+	New(_regionId)
+		. = ..()
+		plots = new()
+		if(_regionId)
+			id = ckey(_regionId) // This becomes the identity on the file system
 
 
-//------------------------------------------------------------------------------
+//-- Saving & Loading ----------------------------------------------------------
 
 	toJSON()
 		var/list/regionData = ..()
@@ -41,47 +46,19 @@ region
 		plots = json2Object(objectData["plots"])
 		setLocation(mapOffset.x, mapOffset.y, mapOffset.z)
 		setSize(width, height)
-		/*var/list/plotsData = objectData["plots"]
-		plots.len = plotsData.len
-		for(var/I = 1 to plotsData.len)
-			plots[I] = json2Object(plotsData[I])
-		for(var/I = 1 to plotsData.len)
-			var/plot/P = plots[I]
-			//var/list/plotData = plotsData[I]
-			P.regionId = id
-		//	P.reveal()
-		*/
-	/*proc
-		load(saveData)
-			/*if(loadId)
-				ASSERT(!id)
-				id = loadId
-				town.registerRegion(src)*/
-			//var/filePath = "[FILE_PATH_REGIONS]/[id].json"
-			//if(!fexists(filePath)) return FALSE
-			// TODO: Check for version
-			//var/list/objectData = json_decode(file2text(filePath))
-			//if(!istype(objectData)) return FALSE
-			fromJSON(saveData)
-			loaded = TRUE
-			return src
-		save()
-			replaceFile("[FILE_PATH_REGIONS]/[id].json", json_encode(toJSON()))*/
 
 
-//------------------------------------------------------------------------------
+//-- Configuring Location & Size -----------------------------------------------
 
-	New(_regionId)
-		. = ..()
-		plots = new()
-		if(_regionId)
-			id = ckey(_regionId) // This becomes the identity on the file system
-	var/_z // cache atomic Z level value
+	//-- Cache & Retrieve Z level --------------------
+	var/_z
 	proc/z() // Calculate atomic Z level from map offset and game map allocation
 		if(_z) return _z
 		var/game/G = system.getGame(gameId)
 		_z = G.zOffset + mapOffset.z
 		return _z
+
+	//-- Set Size & Location -------------------------
 	proc/setLocation(_x, _y, _z)
 		mapOffset = new(_x, _y, _z)
 	proc/setSize(setWidth, setHeight, defaultTerrain)
@@ -157,70 +134,7 @@ region
 				_regionMarker.contents.Add(T)
 
 
-//------------------------------------------------------------------------------
-
-	proc
-		char2Type(tileChar)
-			var/tileType
-			switch(tileChar)
-				// Overworld Types
-				if("~") tileType = /tile/water/ocean
-				if(",") tileType = /tile/water
-				if("%") tileType = /tile/feature
-				if("&") tileType = /tile/interact
-				if("#") tileType = /tile/wall
-				if("."," ","+","'") tileType = /tile/land
-				// Town Interior Types
-				if("0") tileType = /tile/interior/black
-				if("1") tileType = /tile/interior/wallBottom
-				if("2") tileType = /tile/interior/wallMiddle
-				if("3") tileType = /tile/interior/blackTop
-				if("4") tileType = /tile/interior/wallBottomLeft
-				if("5") tileType = /tile/interior/wallBottomRight
-				if("6") tileType = /tile/interior/blackTopLeft
-				if("7") tileType = /tile/interior/blackTopRight
-				if("8") tileType = /tile/interior/blackBottomLeft
-				if("9") tileType = /tile/interior/blackBottomRight
-				if("a") tileType = /tile/interior/windowBottom
-				if("b") tileType = /tile/interior/windowMiddle
-				if("c") tileType = /tile/interior/warp
-				//
-				else
-					tileType = /tile/water/ocean
-					world << "Problem: [tileChar]"
-			return tileType
-		type2Char(tileType)
-			var/tileChar
-			switch(tileType)
-				// Overworld Types
-				if(/tile/water/ocean) tileChar = "~"
-				if(/tile/water) tileChar = ","
-				if(/tile/feature) tileChar = "%"
-				if(/tile/interact) tileChar = "&"
-				if(/tile/wall) tileChar = "#"
-				if(/tile/land) tileChar = "."
-				// Town Interior Types
-				if(/tile/interior/black) tileChar = "0"
-				if(/tile/interior/wallBottom) tileChar = "1"
-				if(/tile/interior/wallMiddle) tileChar = "2"
-				if(/tile/interior/blackTop) tileChar = "3"
-				if(/tile/interior/wallBottomLeft) tileChar = "4"
-				if(/tile/interior/wallBottomRight) tileChar = "5"
-				if(/tile/interior/blackTopLeft) tileChar = "6"
-				if(/tile/interior/blackTopRight) tileChar = "7"
-				if(/tile/interior/blackBottomLeft) tileChar = "8"
-				if(/tile/interior/blackBottomRight) tileChar = "9"
-				if(/tile/interior/windowBottom) tileChar = "a"
-				if(/tile/interior/windowMiddle) tileChar = "b"
-				if(/tile/interior/warp) tileChar = "c"
-				//
-				else
-					tileChar = "~"
-					world << "problem: [tileType]"
-			return tileChar
-
-
-//-- Handle Warp Points --------------------------------------------------------
+//-- Warp Points ---------------------------------------------------------------
 
 	var
 		list/warpPlots = list() // Associative: warpId => plot
@@ -234,7 +148,7 @@ region
 			return warpPlots[warpId]
 
 
-//------------------------------------------------------------------------------
+//-- Tile & Plot - Retreival, Revealing, Editing -------------------------------
 
 	proc/tileTypeAt(x, y)
 		// Change atomic coordinate into grid coordinate
@@ -311,12 +225,6 @@ region
 		posTile.icon = containingPlot.area.icon
 		containingPlot.area.contents += posTile
 		return posTile
-	proc/revealPlot(x, y) // Reveal plot at plot coordinates
-		//var compoundIndex = (y-1)*width + x
-		if(x < 0 || x >= width || y < 0 || y >= height) return
-		var plot/thePlot = plots.get(x, y)
-		thePlot.reveal()
-		return thePlot
 	proc/clearBorder(x, y, direction)
 		var/plot/thePlot = getPlot(x, y)
 		if(!thePlot) return FALSE
@@ -342,16 +250,85 @@ region
 					var compoundX = (x-1)*PLOT_SIZE + posX
 					revealTileAt(compoundX, compoundY)
 		return TRUE
+	proc/revealPlot(x, y) // Reveal plot at plot coordinates
+		//var compoundIndex = (y-1)*width + x
+		if(x < 0 || x >= width || y < 0 || y >= height) return
+		var plot/thePlot = plots.get(x, y)
+		thePlot.reveal()
+		return thePlot
 	proc/revealPlotAt(x, y) // Reveal plot containing atomic coordinates
 		x = round((x-1)/PLOT_SIZE) - mapOffset.x
 		y = round((y-1)/PLOT_SIZE) - mapOffset.y
 		return revealPlot(x, y)
-	proc/getPlotAt(x, y) // Plot containing atomic coordinates
-		x = round((x-1)/PLOT_SIZE) - mapOffset.x
-		y = round((y-1)/PLOT_SIZE) - mapOffset.y
-		return getPlot(x,y)
 	proc/getPlot(x, y) // Plot coordinates
 		if(x < 0 || x >= width || y < 0 || y >= height) return null
 		//var compoundIndex = (y-1)*width + x
 		var plot/thePlot = plots.get(x, y)
 		return thePlot
+	proc/getPlotAt(x, y) // Plot containing atomic coordinates
+		x = round((x-1)/PLOT_SIZE) - mapOffset.x
+		y = round((y-1)/PLOT_SIZE) - mapOffset.y
+		return getPlot(x,y)
+
+
+//-- Text / TileType Mapping ---------------------------------------------------
+
+	proc
+		char2Type(tileChar)
+			var/tileType
+			switch(tileChar)
+				// Overworld Types
+				if("~") tileType = /tile/water/ocean
+				if(",") tileType = /tile/water
+				if("%") tileType = /tile/feature
+				if("&") tileType = /tile/interact
+				if("#") tileType = /tile/wall
+				if("."," ","+","'") tileType = /tile/land
+				// Town Interior Types
+				/*if("0") tileType = /tile/interior/black
+				if("1") tileType = /tile/interior/wallBottom
+				if("2") tileType = /tile/interior/wallMiddle
+				if("3") tileType = /tile/interior/blackTop
+				if("4") tileType = /tile/interior/wallBottomLeft
+				if("5") tileType = /tile/interior/wallBottomRight
+				if("6") tileType = /tile/interior/blackTopLeft
+				if("7") tileType = /tile/interior/blackTopRight
+				if("8") tileType = /tile/interior/blackBottomLeft
+				if("9") tileType = /tile/interior/blackBottomRight
+				if("a") tileType = /tile/interior/windowBottom
+				if("b") tileType = /tile/interior/windowMiddle
+				if("c") tileType = /tile/interior/warp*/
+				//
+				else
+					tileType = /tile/water/ocean
+					world << "Problem: [tileChar]"
+			return tileType
+		type2Char(tileType)
+			var/tileChar
+			switch(tileType)
+				// Overworld Types
+				if(/tile/water/ocean) tileChar = "~"
+				if(/tile/water) tileChar = ","
+				if(/tile/feature) tileChar = "%"
+				if(/tile/interact) tileChar = "&"
+				if(/tile/wall) tileChar = "#"
+				if(/tile/land) tileChar = "."
+				// Town Interior Types
+				/*if(/tile/interior/black) tileChar = "0"
+				if(/tile/interior/wallBottom) tileChar = "1"
+				if(/tile/interior/wallMiddle) tileChar = "2"
+				if(/tile/interior/blackTop) tileChar = "3"
+				if(/tile/interior/wallBottomLeft) tileChar = "4"
+				if(/tile/interior/wallBottomRight) tileChar = "5"
+				if(/tile/interior/blackTopLeft) tileChar = "6"
+				if(/tile/interior/blackTopRight) tileChar = "7"
+				if(/tile/interior/blackBottomLeft) tileChar = "8"
+				if(/tile/interior/blackBottomRight) tileChar = "9"
+				if(/tile/interior/windowBottom) tileChar = "a"
+				if(/tile/interior/windowMiddle) tileChar = "b"
+				if(/tile/interior/warp) tileChar = "c"*/
+				//
+				else
+					tileChar = "~"
+					world << "problem: [tileType]"
+			return tileChar

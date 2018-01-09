@@ -21,8 +21,9 @@ event
 			direction = _direction
 			time = _time
 			speed = _speed
-		takeTurn()
-			if(!target || time-- <= 0) del src
+		takeTurn(delay)
+			time--
+			if(!target || (time < 0)) del src
 			var/oldDir = target.dir
 			step(target, direction, speed)
 			target.dir = oldDir
@@ -47,8 +48,9 @@ event
 				parentRegion.z()
 			)
 			time = get_dist(target, targetTile)
-		takeTurn()
-			if(!target || time-- <= 0) del src
+		takeTurn(delay)
+			time--
+			if(!target || (time < 0)) del src
 			target.forceLoc(get_step_towards(target, targetTile))
 			. = ..()
 	animate

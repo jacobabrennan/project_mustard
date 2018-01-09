@@ -1,28 +1,48 @@
+
+
+//-- Enemy Type - For use directly ---------------------------------------------
+
 enemy
+	eyeMass
+		parent_type = /enemy/ball
+		icon = 'large.dmi'
+		icon_state = "eye_1"
+		//
+		groupSize = 18
+		childType = /enemy/eyeMass/groupMember
+		respawnTime = 32
+		rotationRate = 0
+		groupMember
+			parent_type = /enemy/ball/groupMember
+			icon = 'enemies.dmi'
+			icon_state = "eye_1"
+	bowser
+		parent_type = /enemy/snaking
+		icon = 'enemies.dmi'
+		icon_state = "dragon_head_1"
+		bodyState = "dragon_body_1"
+		tailState = "dragon_tail_1"
+		length = 8
+		bodyRadius = 6
+		bodyHealth = 1
+		baseSpeed = 3
+		roughWalk = 16
+	iceBerserker
+		parent_type = /enemy/fixated
+		icon = 'ice_berserker.dmi'
+		baseHp = 6
+		baseSpeed = 6
+		turnDelay = 10
+		roughWalk = 16
+		projectileType = /projectile/axe
+		shootFrequency = 1
 	goblin
-		parent_type = /character
+		parent_type = /enemy/ranged
 		icon = 'goblin.dmi'
 		baseSpeed = 1
 		roughWalk = 4
 		baseHp = 6
-		behaviorName = "archer2"
-		faction = FACTION_ENEMY
-		disposable = TRUE
-		New()
-			equip(new /item/weapon/bow())
-			. = ..()
-		var
-			shootDelay = 32
-		takeTurn()
-			shootDelay--
-			. = ..()
-		shoot(projType)
-			if(!projType && shootDelay > 0) return
-				// Shoot() is called twice per this enemy's shot,
-				// once with an argument, once without.
-				// Checking shoot delay for both breaks it.
-			shootDelay = initial(shootDelay)
-			. = ..()
+		projectileType = /projectile/fire1
 	ruttle1
 		parent_type = /enemy/normal
 		icon = 'enemies.dmi'
@@ -33,16 +53,7 @@ enemy
 		parent_type = /enemy/ruttle1
 		icon = 'enemies.dmi'
 		icon_state = "bug_2"
-		behaviorName = "archer2"
 		baseHp = 4
-		var
-			arrowSpeed = 4
-		projectileType = /projectile/bowArrow
-		shoot()
-			var /projectile/P = ..()
-			P.baseSpeed = arrowSpeed
-			P.project()
-			return P
 	ruttle3
 		parent_type = /enemy/ruttle1
 		icon = 'enemies.dmi'
@@ -52,26 +63,20 @@ enemy
 		parent_type = /enemy/diagonal
 		icon = 'enemies.dmi'
 		icon_state = "bird_1"
-		movement = MOVEMENT_ALL
 		layer = MOB_LAYER+2
-		roughWalk = 200
 		baseHp = 1
 		baseSpeed = 2
 	bird2
 		parent_type = /enemy/diagonal
 		icon = 'enemies.dmi'
 		icon_state = "bird_1"
-		movement = MOVEMENT_ALL
 		layer = MOB_LAYER+2
-		roughWalk = 200
 		baseHp = 1
 		baseSpeed = 2
 	bird3
 		parent_type = /enemy/diagonal
 		icon = 'enemies.dmi'
 		icon_state = "bird_1"
-		movement = MOVEMENT_ALL
 		layer = MOB_LAYER+2
-		roughWalk = 200
 		baseHp = 1
 		baseSpeed = 2

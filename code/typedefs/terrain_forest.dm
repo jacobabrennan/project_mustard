@@ -9,13 +9,17 @@ terrain/desert
 terrain/ruins
 	id = "ruins"
 	icon = 'graveyard.dmi'
+	officer = list(
+		/enemy/bowser,
+		/enemy/ruttle3
+	)
 terrain/swamp
 	id = "swamp"
 	icon = 'swamp.dmi'
 terrain/dungeon
 	id = "dungeon"
 	icon = 'interior_castle.dmi'
-tile/interior
+/*tile/interior
 	icon = 'interior.dmi' // Not really, set by region. Just here for visibility in side bar.
 	movement = MOVEMENT_WALL
 	warp
@@ -65,7 +69,7 @@ tile/interior
 
 terrain/interior
 	id = "interior"
-	icon = 'interior.dmi'
+	icon = 'interior.dmi'*/
 terrain/forest
 	id = "forest"
 	icon = 'plains.dmi'
@@ -118,16 +122,18 @@ terrain/forest
 
 	//-- Enemy Selection --------------------
 	infantry = list(
-		/enemy/goblin,
+		/enemy/ruttle1,
 		/enemy/ruttle2,
-		/enemy/ruttle3,
+		///enemy/goblin,
 	)
 	cavalry = list(
 		/enemy/bird1,
+		/enemy/bird2,
 	)
 	officer = list(
+		/enemy/ruttle2,
 		/enemy/goblin,
-		/enemy/ruttle3
+		/enemy/eyeMass,
 	)
 	/*wind
 		parent = /event
@@ -148,8 +154,9 @@ terrain/forest
 			direction = _direction
 			time = _time
 			speed = _speed
-		takeTurn()
-			if(!target || time-- <= 0) del src
+		takeTurn(delay)
+			time -= delay
+			if(!target || time < 0) del src
 			var/oldDir = target.dir
 			step(target, direction, speed)
 			target.dir = oldDir

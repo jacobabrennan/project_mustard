@@ -1,10 +1,38 @@
 
 
-//------------------------------------------------------------------------------
-
-
 //-- Development Utilities -----------------------------------------------------
 #define TAG #warn Unfinished
+
+
+//-- Map Access Utilities ------------------------------------------------------
+
+proc/aloc(atom/contained)
+	if(!contained) return null
+	var/turf/locTurf = locate(contained.x, contained.y, contained.z)
+	if(!locTurf) return null
+	return locTurf.loc
+proc/plot(atom/contained)
+	var/plot/plotArea/PA = aloc(contained)
+	if(istype(PA)) return PA.plot
+proc/terrain(atom/contained)
+	var/plot/P = plot(contained)
+	var/terrain/T = terrains[P.terrain]
+	if(istype(T)) return T
+proc/game(atom/contained)
+	var gameId
+	// Case: gameId supplied
+	if(istext(contained))
+		gameId = contained
+	if(!gameId)
+	// Case: object has gameId
+		if("gameId" in contained.vars)
+			gameId = contained:gameId
+	// Case: object is on the map
+		else
+			var/plot/P = plot(contained)
+			if(P) gameId = P.gameId
+	if(gameId)
+		return system.getGame(gameId)
 
 
 //-- Movement Utilities --------------------------------------------------------
@@ -60,84 +88,15 @@ atom/movable/proc/centerLoc(var/atom/movable/_center)
 	step_y = _center.step_y + (_center.bound_y) + (_center.bound_height-bound_height)/2
 
 
-//-- Actor Definition -----------------------------------------------------
-
-actor
-	parent_type = /mob
-	var
-		faction = 0
-			// Bit flags that determine how actors interact
-		turnDelay = TICK_DELAY
-			// Delay, in 10ths of a second, between calls to takeTurn()
-			// Can be set to fractional values, bounded by TICK_DELAY
-		baseSpeed = 1
-			// Number of pixels moved every turn.
-			// The actual speed of a combatant is speed / turnDelay.
-		roughWalk = 0
-			// When determining walking speed, this value is subtracted from the tiles' roughness.
-	New()
-		. = ..()
-		spawn()
-			takeTurn()
-	proc/takeTurn()
-		spawn(turnDelay)
-			takeTurn()
-	// Movement
-	var/gridded = FALSE
-		// Moving with go() will guide the actor back into alignment with the 8x8 grid
-	proc
-		speed()
-			var tileTotal = 0
-			var totalRough = 0
-			for(var/tile/T in locs)
-				tileTotal++
-				totalRough += T.rough
-			var averageRough = totalRough/max(1,tileTotal)
-			averageRough -= roughWalk
-			return baseSpeed / max(1,averageRough)
-		/*go(amount, direction)
-			if(!amount) amount = speed()
-			if(!direction) direction = dir
-			/*. = step(src, direction, amount)
-			if(gridded)
-				var/oldDir = dir
-				if(dir & (NORTH|SOUTH))
-					var/pxOffset = ((step_x+4)%8)-4
-					if(pxOffset < 0) step(src,EAST,1)
-					if(pxOffset > 0) step(src,WEST,1)
-				if(dir & (EAST|WEST))
-					var/pxOffset = ((step_y+4)%8)-4
-					if(pxOffset < 0) step(src,NORTH,1)
-					if(pxOffset > 0) step(src,SOUTH,1)
-				dir = oldDir*/*/
-		translate(deltaX, deltaY)
-			var success = 0
-			if(deltaY > 0) success += step(src, NORTH, deltaY)
-			if(deltaY < 0) success += step(src, SOUTH,-deltaY)
-			if(deltaX > 0) success += step(src, EAST , deltaX)
-			if(deltaX < 0) success += step(src, WEST ,-deltaX)
-			/*
-			var/fullX = (x*TILE_SIZE)+step_x + deltaX
-			var/tileX = round((fullX-1)/TILE_SIZE)
-			var/offsetX = 1+ (fullX-1)%TILE_SIZE
-			var/fullY = (y*TILE_SIZE)+step_y + deltaY
-			var/tileY = round((fullY-1)/TILE_SIZE)
-			var/offsetY = 1+ (fullY-1)%TILE_SIZE
-			var success = Move(locate(tileX, tileY, z), 0, offsetX, offsetY)
-			if(!success)
-				if(
-				success += step(src,
-				success += Move(locate(tileX, y, z), 0 , offsetX, step_y)
-			if(
-			if(dir & (EAST|WEST)) dir &= (EAST|WEST)*/
-			return success
-
-
 //-- Math Utilities -------------------------------------------------------
 
 proc
 	exp(power)
 		return e**power
+proc/atan2(x, y)
+    if(!x && !y) return 0
+    return y >= 0 ? arccos(x / sqrt(x * x + y * y)) : -arccos(x / sqrt(x * x + y * y))
+
 
 coord
 	var
@@ -158,16 +117,62 @@ coord
 		x = objectData["x"]
 		y = objectData["y"]
 		if(objectData["z"]) z = objectData["z"]
+	//
 	proc/copy()
-		return new /coord(x, y, z)
-	proc/operator+(coord/addCoord)
-		return new /coord(x + addCoord.x, y + addCoord.y, z + addCoord.z)
-	proc/operator-(coord/addCoord)
-		return new /coord(x - addCoord.x, y - addCoord.y, z - addCoord.z)
-	proc/operator*(coord/addCoord)
-		return new /coord(x * addCoord.x, y * addCoord.y, z * addCoord.z)
-	proc/operator/(coord/addCoord)
-		return new /coord(x / addCoord.x, y / addCoord.y, z / addCoord.z)
+		return new type(x, y, z)
+	proc/place(atom/movable/M)
+		return M.forceLoc(locate(x, y, z))
+	// Operator Redefinition
+	proc
+		operator+(coord/addCoord)
+			return new /coord(x + addCoord.x, y + addCoord.y, z + addCoord.z)
+		operator-(coord/addCoord)
+			return new /coord(x - addCoord.x, y - addCoord.y, z - addCoord.z)
+		operator*(coord/addCoord)
+			return new /coord(x * addCoord.x, y * addCoord.y, z * addCoord.z)
+		operator/(coord/addCoord)
+			return new /coord(x / addCoord.x, y / addCoord.y, z / addCoord.z)
+
+atomicCoord
+	parent_type = /coord
+	var
+		stepX
+		stepY
+	New(newX, newY, newZ, newStepX, newStepY)
+		var /atom/movable/model = newX
+		// Get coordinates from arguments
+		if(!istype(model))
+			. = ..()
+		// Copy coordinates from atom
+		else
+			newX = model.x
+			newY = model.y
+			newZ = model.z
+			. = ..(newX, newY, newZ)
+			newStepX = model.step_x
+			newStepY = model.step_y
+		//
+		stepX = newStepX
+		stepY = newStepY
+	toJSON()
+		var/list/objectData = ..()
+		objectData["stepX"] = stepX
+		objectData["stepY"] = stepY
+		return objectData
+	fromJSON(list/objectData)
+		. = ..()
+		stepX = objectData["stepX"]
+		stepY = objectData["stepY"]
+	//
+	copy()
+		var /atomicCoord/C = ..()
+		C.stepX = stepX
+		C.stepY = stepY
+		return C
+	place(atom/movable/M)
+		. = ..()
+		M.step_x = stepX
+		M.step_y = stepY
 
 
 vector
@@ -187,6 +192,18 @@ vector
 		dir = objectData["dir"]
 	proc/copy()
 		return new /vector(mag,dir)
+	proc/from(atom/movable/start, atom/movable/end)
+		var deltaX = (end.x*TILE_SIZE + end.step_x + end.bound_width /2) - (start.x*TILE_SIZE + start.step_x + start.bound_width /2)
+		var deltaY = (end.y*TILE_SIZE + end.step_y + end.bound_height/2) - (start.y*TILE_SIZE + start.step_y + start.bound_height/2)
+		mag = sqrt(deltaX*deltaX + deltaY*deltaY)
+		if(mag)
+			dir = atan2(deltaX, deltaY)
+			var oldDir = dir
+			rotate(0)
+	proc/rotate(degrees)
+		dir += degrees
+		while(dir < 0) dir += 360
+		while(dir >= 360) dir -= 360
 
 rect
 	parent_type = /coord
@@ -313,44 +330,12 @@ grid
 			world << "[posX],[posY],[value]"
 	*/
 
-//-- Mapping Utilities ----------------------------------------------------
 
-proc/aloc(atom/contained)
-	if(!contained) return null
-	var/turf/locTurf = locate(contained.x, contained.y, contained.z)
-	if(!locTurf) return null
-	return locTurf.loc
-proc/plot(atom/contained)
-	var/plot/plotArea/PA = aloc(contained)
-	if(istype(PA)) return PA.plot
-proc/terrain(atom/contained)
-	var/plot/P = plot(contained)
-	var/terrain/T = terrains[P.terrain]
-	if(istype(T)) return T
-proc/game(atom/contained)
-	var gameId
-	// Case: gameId supplied
-	if(istext(contained))
-		gameId = contained
-	if(!gameId)
-	// Case: object has gameId
-		if("gameId" in contained.vars)
-			gameId = contained:gameId
-	// Case: object is on the map
-		else
-			var/plot/P = plot(contained)
-			if(P) gameId = P.gameId
-	if(gameId)
-		return system.getGame(gameId)
-
-//-- File System Utilities ------------------------------------------------
+//-- Saving / Loading Utilities -------------------------------------------
 
 proc/replaceFile(filePath, fileText)
 	if(fexists(filePath)) fdel(filePath)
 	return text2file(fileText, filePath)
-
-
-//-- Saving / Loading Utilities -------------------------------------------
 
 datum/proc/toJSON() // hook
 	var/jsonObject = list()

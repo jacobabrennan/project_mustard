@@ -237,6 +237,7 @@ interface/mapEditor/menu/basicPalette
 			new /interface/mapEditor/menu/basicPalette/regionOption/moveRegion(),
 			new /interface/mapEditor/menu/basicPalette/regionOption/resizeRegion(),
 			new /interface/mapEditor/menu/basicPalette/regionOption/changeTerrain(),
+			new /interface/mapEditor/menu/basicPalette/regionOption/changeEnemyLevel(),
 		))
 		tileEditor = addComponent(/component/box)
 		tileEditor.setup(0,34,10,1)
@@ -496,6 +497,27 @@ interface/mapEditor/menu/basicPalette
 				var terrainId = input("Set Terrain of this Plot", "Change Terrain", P.terrain) in terrains
 				// Set terrain on plot and redisplay
 				P.terrain = terrainId
+				P.unreveal()
+				// Reveal the current plot and trigger movement
+				var oldLoc = editor.loc
+				editor.loc = null
+				P.reveal()
+				editor.Move(oldLoc)
+		changeEnemyLevel
+			icon_state = "regionEnemyLevel"
+			Click()
+				var /interface/mapEditor/editor = usr
+				ASSERT(istype(editor))
+				// Ensure we're currently in a plot
+				var /plot/P = plot(editor)
+				if(!P)
+					alert("You are not currently in a region.")
+					return
+				// Prompt user for a new terrain
+				var enemyLevel = input("Set Enemy Level of this Plot", "Change Enemy Level", P.enemyLevel) as num|null
+				if(enemyLevel == null) return
+				// Set enemyLevel on plot and redisplay
+				P.enemyLevel = enemyLevel
 				P.unreveal()
 				// Reveal the current plot and trigger movement
 				var oldLoc = editor.loc

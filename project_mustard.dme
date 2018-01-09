@@ -10,6 +10,7 @@
 #define FILE_DIR "rsc"
 #define FILE_DIR "rsc/img"
 #define FILE_DIR "rsc/img/characters"
+#define FILE_DIR "rsc/img/enemies"
 // END_FILE_DIR
 
 // BEGIN_PREFERENCES
@@ -27,6 +28,7 @@
 #include "code\__01_system.dm"
 #include "code\__game.dm"
 #include "code\__wrapper.dm"
+#include "code\actor.dm"
 #include "code\event.dm"
 #include "code\interface.dm"
 #include "code\lighting.dm"

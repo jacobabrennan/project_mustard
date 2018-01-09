@@ -1,25 +1,26 @@
 
 
-//------------------------------------------------------------------------------
+//-- Usable - Objects that can be "used" by combatant --------------------------
 
 usable
 	parent_type = /obj
 	proc/use(combatant/user)
 
 
-//------------------------------------------------------------------------------
+//-- Items - can be placed on the map. Combatants can "get" --------------------
 
 item
 	parent_type = /usable
 	icon = 'weapons.dmi'
 	icon_state = "potion"
 	var
-		timeStamp
 		price = 1
 		instant = FALSE
 			// Items, like Coins, that are used as soon as picked up.
 		ingredientSignature
 			// What this item counts as when crafting, such as SIG_WOOD.
+		// Nonconfigurable:
+		timeStamp
 	New()
 		. = ..()
 		timeStamp = world.time
@@ -45,6 +46,8 @@ item
 		proc
 			equipped(character/equipper)
 			unequipped(character/unequipper)
+
+	//-- Instance definitions - factor out -----------
 		plate
 			name = "Plate"
 			position = WEAR_BODY
@@ -59,14 +62,6 @@ item
 			boostHp = 2
 			icon = 'armor.dmi'
 			icon_state = "cloth"
-		shield
-			name = "Shield"
-			position = WEAR_SHIELD
-			price = 20
-			boostHp = 1
-			icon = 'armor.dmi'
-			icon_state = "shield"
-			ingredientSignature = SIG_SHIELD
 		buckler
 			name = "Buckler"
 			position = WEAR_SHIELD
@@ -100,6 +95,17 @@ item
 				var/building/dungeon/D = new()
 				D.build(user.x, user.y+1, plot(user))
 			*/
+
+	//-- Gear - Basic Archetypes ---------------------
+	shield
+		parent_type = /item/gear
+		position = WEAR_SHIELD
+		var
+			threshold = 1 // Projectiles with potency <= value will be blocked
+		proc
+			defend(projectile/proxy, combatant/attacker, damage)
+				. = TRUE
+				if(damage > threshold) return FALSE
 	weapon
 		parent_type = /item/gear
 		position = WEAR_WEAPON
@@ -108,25 +114,15 @@ item
 		var
 			potency = 1
 			projectileType = /projectile/sword
-		/*New()
-			. = ..()
-			icon_state = pick("sword", "axe", "crossbow")
-			switch(icon_state)
-				if("crossbow") potency = 1
-				if("sword") potency = 2
-				if("axe") potency = 4
-			name = icon_state
-		*/
 		use(combatant/user)
 			var/projectile/P = user.shoot(projectileType)
 			if(!P) return
 			P.potency = potency
 			return P
-			//user.adjustHp(user.maxHp())
 		sword
 			icon_state = "sword"
 			projectileType = /projectile/sword
-			potency = 2
+			potency = 1
 		axe
 			icon_state = "axe"
 			projectileType = /projectile/axe
@@ -138,20 +134,44 @@ item
 			var
 				arrowSpeed = 6
 				arrowRange = 240
+				// Nonconfigurable:
 				projectile/bowArrow/currentArrow
-			use(character/partyMember/user)
+			use(combatant/user)
 				del currentArrow
 				var /projectile/bowArrow/A = ..()
 				if(!A) return
 				A.baseSpeed = arrowSpeed
 				A.maxRange = arrowRange
-				A.projecting = TRUE
 				A.project()
 				currentArrow = A
 				return A
 			proc/ready()
 				if(!currentArrow) return TRUE
+		wand // Weak Melee attack plus magic projectile
+			icon_state = "wand"
+			projectileType = /projectile/wand
+			potency = 1
+			var
+				spellCost = 1
+				spellProjectileType = /projectile/fire1
+				spellPotency
+				spellSpeed = 6
+				spellRange = 240
+			use(combatant/user)
+				. = ..()
+				if(user.mp < spellCost) return
+				user.adjustMp(-spellCost)
+				var /projectile/P = user.shoot(spellProjectileType)
+				if(!P) return
+				P.baseSpeed = spellSpeed || P.baseSpeed
+				P.maxRange = spellRange || P.maxRange
+				P.project()
+				return P
 
+
+
+
+//-- Enemy Drops (eg: hearts) --------------------------------------------------
 
 	instant
 		instant = TRUE
@@ -200,7 +220,7 @@ item
 					. = ..()
 
 
-//------------------------------------------------------------------------------
+//-- Skill - Can be hot keyed --------------------------------------------------
 
 skill
 	parent_type = /usable

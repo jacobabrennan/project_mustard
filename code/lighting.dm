@@ -73,7 +73,7 @@ lightSource
 		Del()
 			del light
 			. = ..()
-		takeTurn()
+		takeTurn(delay)
 			. = ..()
 			if(!target) del src
 			centerLoc(target)

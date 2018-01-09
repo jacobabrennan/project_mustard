@@ -119,3 +119,6 @@ terrain/desert
 		/enemy/ruttle2,
 		/enemy/ruttle3,
 	)
+	officer = list(
+		/enemy/iceBerserker,
+	)
