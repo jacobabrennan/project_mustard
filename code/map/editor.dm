@@ -14,8 +14,10 @@ client
 	MouseUp(object, turf/location, control, params)
 		. = ..()
 		if(!istype(location) || !istype(_mouseStorage)) return
+		var /interface/mapEditor/editor = interface
+		if(!istype(editor)) return
 		for(var/tile/T in block(location, _mouseStorage))
-			interface.click(object, T)
+			editor.click(object, T)
 
 
 //-- Map Editor Interface ------------------------------------------------------
@@ -25,7 +27,7 @@ interface/mapEditor
 	var
 		gameId
 	New(client/client)
-		client.view = "[PLOT_SIZE*3]x[PLOT_SIZE*3]"
+		//client.view = "[PLOT_SIZE*3]x[PLOT_SIZE*3]"
 		world.maxx = PLOT_SIZE*3
 		world.maxy = world.maxx
 		// Connect Client
@@ -105,7 +107,7 @@ interface/mapEditor
 	//-- Click Controls --------------------------
 	var
 		storedCommand
-	click(object, tile/location, control, params)
+	proc/click(object, tile/location, control, params)
 		if(!istype(location)) return
 		if(hascall(storedCommand, "handleClick"))
 			storedCommand:handleClick(object, location)
@@ -166,10 +168,6 @@ interface/mapEditor/menu
 		basicPalette = addComponent(/interface/mapEditor/menu/basicPalette)
 		basicPalette.setup()
 		basicPalette.show()
-		//
-		furniturePalette = addComponent(/interface/mapEditor/menu/furniturePalette)
-		furniturePalette.setup()
-		furniturePalette.show()
 	paletteOption
 		parent_type = /usable
 		var
@@ -224,9 +222,10 @@ interface/mapEditor/menu/basicPalette
 	var
 		component/box/tileEditor
 		component/box/regionEditor
+		component/box/furnitureEditor
 	setup()
 		regionEditor = addComponent(/component/box)
-		regionEditor.setup(0,16,10,1)
+		regionEditor.setup(16,16,10,1)
 		regionEditor.refresh(list(
 			new /interface/mapEditor/menu/basicPalette/regionOption/resizeWorld(),
 			new /interface/mapEditor/menu/basicPalette/regionOption/createRegion(),
@@ -240,7 +239,7 @@ interface/mapEditor/menu/basicPalette
 			new /interface/mapEditor/menu/basicPalette/regionOption/changeEnemyLevel(),
 		))
 		tileEditor = addComponent(/component/box)
-		tileEditor.setup(0,34,10,1)
+		tileEditor.setup(16,32,10,1)
 		tileEditor.refresh(list(
 			new /interface/mapEditor/menu/paletteOption{ typePath=/tile/land}(),
 			new /interface/mapEditor/menu/paletteOption{ typePath=/tile/wall}(),
@@ -248,8 +247,38 @@ interface/mapEditor/menu/basicPalette
 			new /interface/mapEditor/menu/paletteOption{ typePath=/tile/interact}(),
 			new /interface/mapEditor/menu/paletteOption{ typePath=/tile/water}(),
 		))
+		furnitureEditor = addComponent(/component/box)
+		furnitureEditor.setup(16,48,10,1)
+		furnitureEditor.refresh(list(
+			new /interface/mapEditor/menu/paletteOption{ typePath=/furniture/deleter}(),
+			null,
+			new /interface/mapEditor/menu/paletteOption{ typePath=/memory/entrance}(),
+			new /interface/mapEditor/menu/paletteOption{ typePath=/furniture/tree}(),
+			new /interface/mapEditor/menu/basicPalette/configure(),
+		))
+
 	//-- Plot Editing ------------------------------------
-	//   Handled by interface/mapEditor/menu/paletteOption
+	configure
+		parent_type = /interface/mapEditor/menu/paletteOption
+		icon = 'mapEditorCommands.dmi'
+		icon_state = "configure"
+		New()
+			. = ..()
+			icon = initial(icon)
+			icon_state = initial(icon_state)
+		handleClick(furniture/object)
+			var /interface/mapEditor/editor = usr
+			if(!istype(editor)) return
+			if(istype(object))
+				object._configureMapEditor(editor)
+			else
+				var /plot/P = plot(object)
+				if(!P) return
+				var newId = input("Enter a warpId for this Plot.","Configure Plot", P.warpId) as text|null
+				if(!newId) return
+				var /game/G = system.getGame(editor.gameId)
+				var /region/R = G.getRegion(P.regionId)
+				R.setWarp(newId, P)
 
 	//-- Region Editing ----------------------------------
 	regionOption
@@ -526,59 +555,8 @@ interface/mapEditor/menu/basicPalette
 				editor.Move(oldLoc)
 
 
-//-- Furniture Palette ---------------------------------------------------------
 
-interface/mapEditor/menu/furniturePalette
-	var
-		component/box/furnitureEditor
-	setup()
-		furnitureEditor = addComponent(/component/box)
-		furnitureEditor.setup(0,52,10,1)
-		furnitureEditor.refresh(list(
-			new /interface/mapEditor/menu/paletteOption{ typePath=/furniture/deleter}(),
-			null,
-			new /interface/mapEditor/menu/paletteOption{ typePath=/memory/entrance}(),
-			new /interface/mapEditor/menu/paletteOption{ typePath=/furniture/tree}(),
-			new /interface/mapEditor/menu/furniturePalette/configure(),
-			//new /interface/mapEditor/menu/paletteOption{ typePath=/tile/feature}(),
-			//new /interface/mapEditor/menu/paletteOption{ typePath=/tile/interact}(),
-			//new /interface/mapEditor/menu/paletteOption{ typePath=/tile/water}(),
-		))
-	configure
-		parent_type = /interface/mapEditor/menu/paletteOption
-		icon = 'mapEditorCommands.dmi'
-		icon_state = "configure"
-		New()
-			. = ..()
-			icon = initial(icon)
-			icon_state = initial(icon_state)
-		handleClick(furniture/object)
-			var /interface/mapEditor/editor = usr
-			if(!istype(editor)) return
-			if(istype(object))
-				object._configureMapEditor(editor)
-			else
-				var /plot/P = plot(object)
-				if(!P) return
-				var newId = input("Enter a warpId for this Plot.","Configure Plot", P.warpId) as text|null
-				if(!newId) return
-				var /game/G = system.getGame(editor.gameId)
-				var /region/R = G.getRegion(P.regionId)
-				R.setWarp(newId, P)
-
-
+	//-- Furniture Configure Hook ---------
 furniture
 	proc/_configureMapEditor(interface/mapEditor/editor)
 		// A hook so furniture can configure itself when placed on the map
-
-
-//------------------------------------------------------------------------------
-
-	//---------------------------------------
-
-/*
-Plot Editor
-	Edit Tiles
-	Place Furniture
-	- Place Houses and Dungeons that Warp to other areas
-*/

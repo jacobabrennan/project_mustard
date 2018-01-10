@@ -1,7 +1,29 @@
 
 
 //-- Development Utilities -----------------------------------------------------
+
 #define TAG #warn Unfinished
+client/verb/reboot()
+	system.restart()
+client/verb/forceReboot()
+	system.restartWithoutSave()
+
+client
+	var/C
+	New()
+		. = ..()
+		C = pick("red","green","blue","darkred","darkblue","darkgreen","darkgrey")
+		world << {"<i style="color:grey"> - [key] has joined.</i>"}
+	Del()
+		world << {"<i style="color:grey"> - [key] has left.</i>"}
+		. = ..()
+client/verb/say(what as text)
+	world << {"<b style="color:[C]">[key]</b>: [what]"}
+
+client/New()
+	. = ..()
+	spawn(10)
+		world.SetMedal("Logged into the fucking game hell yeah", src)
 
 
 //-- Map Access Utilities ------------------------------------------------------
@@ -37,6 +59,17 @@ proc/game(atom/contained)
 
 //-- Movement Utilities --------------------------------------------------------
 
+	//-- Keep Things in the map system we define -----
+	//   Would be nice to refactor this elsewhere.
+world/area = /area/border
+area/border
+	icon = 'test.dmi'
+	icon_state = "areaDefault"
+	Enter(interface/entrant)
+		if(!istype(entrant)) return
+		. = ..()
+
+	//------------------------------------------------
 mob/density = FALSE
 atom/movable/var/transitionable = FALSE // Most movable atoms cannot move between plots
 atom/movable/step_size = 1 // Necessary for all objects to use pixel movement
@@ -88,7 +121,7 @@ atom/movable/proc/centerLoc(var/atom/movable/_center)
 	step_y = _center.step_y + (_center.bound_y) + (_center.bound_height-bound_height)/2
 
 
-//-- Math Utilities -------------------------------------------------------
+//-- Math Utilities ------------------------------------------------------------
 
 proc
 	exp(power)
@@ -198,7 +231,6 @@ vector
 		mag = sqrt(deltaX*deltaX + deltaY*deltaY)
 		if(mag)
 			dir = atan2(deltaX, deltaY)
-			var oldDir = dir
 			rotate(0)
 	proc/rotate(degrees)
 		dir += degrees
@@ -331,7 +363,48 @@ grid
 	*/
 
 
-//-- Saving / Loading Utilities -------------------------------------------
+//-- Atomic Conversion Utilities -----------------------------------------------
+
+proc
+	coords2ScreenLoc(x, y, width, height)
+		// Default width and height to 0, and round to tile increments
+		// Width & Height don't work in px increments in screen_loc
+		if(!width )  width = 0
+		else width  = -round(-width /TILE_SIZE) * TILE_SIZE
+		if(!height) height = 0
+		else height = -round(-height/TILE_SIZE) * TILE_SIZE
+		// Split coordinates into atomic & pixel components
+		var atomX = round(x/TILE_SIZE)+1
+		var atomY = round(y/TILE_SIZE)+1
+		var pixelX = x%TILE_SIZE
+		var pixelY = y%TILE_SIZE
+		// Construct string for SOUTHWEST corner
+		var xString = "[atomX]"
+		if(pixelX) xString = "[xString]:[pixelX]"
+		var yString = "[atomY]"
+		if(pixelY) yString = "[yString]:[pixelY]"
+		var stringSW = "[xString],[yString]"
+		// If we don't need to stretch anything, return the string
+		if(!width && !height)
+			return stringSW
+		// Otherwise, compute coordinates for NORTHEAST corner
+		if(width ) x = x+ (width -TILE_SIZE)
+		if(height) y = y+ (height-TILE_SIZE)
+		// Split coordinates into atomic & pixel components
+		atomX = round(x/TILE_SIZE)+1
+		atomY = round(y/TILE_SIZE)+1
+		pixelX = x%TILE_SIZE
+		pixelY = x%TILE_SIZE
+		// Construct string for SOUTHWEST corner
+		xString = "[atomX]"
+		if(pixelX) xString = "[xString]:[pixelX]"
+		yString = "[atomY]"
+		if(pixelY) yString = "[yString]:[pixelY]"
+		// Construct and return final string
+		return "[stringSW] to [xString],[yString]"
+
+
+//-- Saving / Loading Utilities ------------------------------------------------
 
 proc/replaceFile(filePath, fileText)
 	if(fexists(filePath)) fdel(filePath)
@@ -374,7 +447,7 @@ proc
 		return jsonList
 
 
-//-- Key State Control (with Kaiochao.AnyMacro) ---------------------------
+//-- Key State Control (with Kaiochao.AnyMacro) --------------------------------
 
 client/New()
 	. = ..()

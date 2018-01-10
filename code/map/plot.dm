@@ -225,6 +225,10 @@ plot/plotArea
 		raining
 	Enter(atom/movable/entrant)
 		if(istype(entrant) && entrant.transitionable)
+			// Check if player is being pushed over edge
+			for(var/event/push/pushEvent in aloc(entrant))
+				if(pushEvent.target == entrant) return FALSE
+			// Otherwise, allow
 			return TRUE
 		if(!entrant.loc) return ..()
 		return FALSE
@@ -243,8 +247,20 @@ plot/plotArea
 	Exited(character/leaver)
 		. = ..()
 		if(istype(leaver) && (leaver.faction&FACTION_PLAYER))
-			for(var/character/remaining in contents)
-				if(remaining.faction & FACTION_PLAYER) return
+			var activeEnemies = FALSE
+			for(var/combatant/C in contents)
+			// If there are players, don't deactivate
+				if(C.faction & FACTION_PLAYER)
+					return
+			// If there are enemies, deactivate
+				// Keeps the player from retreating between attacks
+				// Also prevents collisions with enemies on reentry
+				if(C.faction & FACTION_ENEMY)
+					activeEnemies = TRUE
+			if(activeEnemies)
+				plot.deactivate()
+				return
+			// Otherwise, the player has cleared the area, let it rest.
 			timer = new(plot)
 	deactivateTimer
 		parent_type = /datum

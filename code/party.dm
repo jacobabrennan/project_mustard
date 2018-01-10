@@ -12,7 +12,7 @@ party
 	var
 		coins = 0
 		list/inventory[INVENTORY_MAX]
-		character/mainCharacter
+		character/partyMember/mainCharacter
 		list/characters = new()
 
 
@@ -42,6 +42,8 @@ party
 			//var /character/partyMember/goblin/goblin   = addPartyMember(new /character/partyMember/goblin())
 			mainCharacter.equip(new /item/weapon/sword())
 			mainCharacter.equip(new /item/shield())
+			for(var/I = 1 to 24)
+				mainCharacter.get(new /item/gear/plate())
 			//soldier.equip(      new /item/weapon/axe(  ))
 			//goblin.equip(       new /item/weapon/bow(  ))
 		addPartyMember(character/partyMember/newMember)
@@ -283,18 +285,23 @@ character/partyMember
 
 	//------------------------------------------------
 	regressiaHero
-		icon = 'regressia_hero.dmi'
+		name = "Regressia"
 		partyId = CHARACTER_KING
+		icon = 'regressia_hero.dmi'
 		baseHp = 6
 		baseMp = 4
 	hero
-		icon = 'hero.dmi'
+		name = "Hero"
 		partyId = CHARACTER_HERO
+		icon = 'hero.dmi'
+		portrait = "Hero"
 		baseHp = 6
 		baseMp = 4
 	cleric
-		icon = 'cleric.dmi'
+		name = "Cleric"
 		partyId = CHARACTER_CLERIC
+		icon = 'cleric.dmi'
+		portrait = "Cleric"
 		partyDistance = 12
 		baseHp = 4
 		baseMp = 3
@@ -314,8 +321,10 @@ character/partyMember
 			else
 				return ..()
 	soldier
-		icon = 'soldier.dmi'
+		name = "Soldier"
 		partyId = CHARACTER_SOLDIER
+		icon = 'soldier.dmi'
+		portrait = "Soldier"
 		partyDistance = 0
 		baseHp = 10
 		var
@@ -355,8 +364,10 @@ character/partyMember
 			// If we didn't advance on a target, seek out the player
 			. = ..()
 	goblin
-		icon = 'goblin.dmi'
+		name = "Goblin"
 		partyId = CHARACTER_GOBLIN
+		icon = 'goblin.dmi'
+		portrait = "Goblin"
 		partyDistance = 24
 		//baseSpeed = 4
 		roughWalk = 16

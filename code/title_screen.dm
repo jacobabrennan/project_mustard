@@ -33,7 +33,7 @@ titleScreen/menu
 	var
 		component/select/options
 	setup()
-		chrome(rect(2,2,14,14))
+		chrome(rect(TILE_SIZE, TILE_SIZE, 14*TILE_SIZE, 14*TILE_SIZE))
 		var /component/label/L = addComponent(/component/label)
 		L.imprint("Project&nbsp;Mustard")
 		L.positionScreen(40, 224)

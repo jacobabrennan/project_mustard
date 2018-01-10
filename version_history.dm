@@ -3,10 +3,10 @@
 //------------------------------------------------------------------------------
 
 system
-	var/versionMotto = "Shooty McStupid-Face"
+	var/versionMotto = "Single+"
 	proc/loadVersion()
 		system.versionType = "Internal"
-		system.versionNumber = "0.0.8"
+		system.versionNumber = "0.0.9"
 		system.versionHub = 0
 		spawn(1)
 			world << "<b>Version [versionType] [versionNumber]</b>: [versionMotto]"
@@ -18,16 +18,19 @@ system
 /*-- Feature List - Remember: It's the map and Bosses! COMBAT! -----------------
 
 Focus - Things which must be done this version
-
-Upcomming - Feature candidates for the next version
-	Don't let enemies push players over a plot border
-	Push enemies away from edge when player tries to enter plot.
 	Redo player status menues
 		Player1 can manage each character
 		other players can manage their own character
 	Menu for player management (single+)
+	Setup hotKeys to "equip"
+		Otherwise multiple players can use the same item
+
+Upcomming - Feature candidates for the next version
 	Make Enemies smarter about "shooting" with melee only in melee range
 	Certain characters can only equip certain things
+	Social Systems
+		Chat Within Games
+		Help Newbies
 
 Set In Stone - Features that have to be finished for 1.0
 	Title Screen
@@ -52,6 +55,10 @@ Set In Stone - Features that have to be finished for 1.0
 	Hit Animation
 
 Spectulative - Ideas for new features to make the game better.
+	Air Ship
+		RACING!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+		Aerial Bombardment
+		Sky Hooks
 	Cleric behavior includes attacking
 		attack with wand when enemies are close and we can't escape or heal
 	Plot Backgrounds that show distant scenary,
@@ -60,8 +67,15 @@ Spectulative - Ideas for new features to make the game better.
 	Submersion
 	Wind
 	Will-o-wisps
-	Things in lighting plane only appear opaque when lit
 	The Khandroma - Red Caps
+	"Modes" learned through memories that effect the overworld
+	Refactor Character & Party
+		Remove /character/partyMember
+		(this seems to be the only big difference between character & combatant)
+		Allow for parties not as the main game party, for enemy parties!
+	//
+	Things in lighting plane only appear opaque when lit
+	differences of: kind, flavor, scale
 	Enemy roles:
 		fodder
 		hp drain (pingers)
@@ -69,18 +83,14 @@ Spectulative - Ideas for new features to make the game better.
 		blockers
 		challengers
 		all: slow player movement, prevent from reaching areas
-	differences of: kind, flavor, scale
-	"Modes" learned through memories that effect the overworld
-	Refactor Character & Party
-		Remove /character/partyMember
-		(this seems to be the only big difference between character & combatant)
-		Allow for parties not as the main game party, for enemy parties!
 
 Deferred - Low Priority Optional Features
 	Savefile versions
 
 */
 /*
+
+Internal 0.0.9 -- Single+
 
 Internal 0.0.8 -- Shooty McStupid-Face
 	Combat:

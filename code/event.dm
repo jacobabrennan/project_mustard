@@ -17,6 +17,7 @@ event
 			speed
 		New(combatant/_target, _direction, _time, _speed)
 			. = ..()
+			forceLoc(_target.loc) // necessary so it can be locate()d later.
 			target = _target
 			direction = _direction
 			time = _time

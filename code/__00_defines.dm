@@ -1,6 +1,6 @@
 #define REGION_TEST "test"
-//#define EDIT_MAP
 #define SAVE_TEST "savvy"
+
 
 //------------------------------------------------------------------------------
 
@@ -14,7 +14,7 @@
 	// Time between plot environment effects
 #define TIME_LAG_DISCONNECT 40
 	// The time* before a interface deletes after a client has logged out
-#define TIME_PLOT_DEACTIVATION 600
+#define TIME_PLOT_DEACTIVATION 1800
 	// The time* that a plot will stay active after all characters leave
 #define TIME_HURT 10
 	// The time* in which a combatant in invulnerable after being hurt
@@ -138,3 +138,16 @@
 	// The default plot.warpId when warping to a region
 
 #define INVENTORY_MAX 24
+
+
+//-- Configure project's BYOND settings ----------------------------------------
+
+world
+	tick_lag = TICK_DELAY
+	icon_size = TILE_SIZE
+	view = PLOT_SIZE/2
+	map_format = SIDE_MAP
+	maxx = PLOT_SIZE
+	maxy = PLOT_SIZE
+	maxz = MAP_DEPTH
+client/perspective = EYE_PERSPECTIVE

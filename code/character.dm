@@ -5,13 +5,14 @@
 character
 	parent_type = /combatant
 	icon = 'cq.dmi'
-	//icon_state = "clams"
 	baseSpeed = 2
 	disposable = FALSE
 	baseHp = 3
 	baseMp = 0
 	faction = FACTION_PLAYER
 	var
+		portrait = "test" // The icon_state of the portrait to show from portraits.dmi
+		//
 		interface/rpg/interface
 		list/equipment[4]
 

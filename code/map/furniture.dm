@@ -1,6 +1,6 @@
 
 
-//------------------------------------------------------------------------------
+//-- Furniture -----------------------------------------------------------------
 
 furniture
 	parent_type = /obj
@@ -45,18 +45,6 @@ furniture/bed
 			itemList.Add(new itemType())
 		C.setup(itemList)
 		character.interface.client.menu.focus(C)*/
-
-client
-	var/C
-	New()
-		. = ..()
-		C = pick("red","green","blue","darkred","darkblue","darkgreen","darkgrey")
-		world << {"<i style="color:grey"> - [key] has joined.</i>"}
-	Del()
-		world << {"<i style="color:grey"> - [key] has left.</i>"}
-		. = ..()
-client/verb/say(what as text)
-	world << {"<b style="color:[C]">[key]</b>: [what]"}
 
 furniture/deleter
 	icon = 'specials.dmi'
