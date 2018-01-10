@@ -20,9 +20,9 @@
 // BEGIN_INCLUDE
 #include <kaiochao\anymacro\AnyMacro.dme>
 #include <oasiscircle\mathematics\Mathematics.dme>
-#include "__bugs.dm"
+#include "bugs.dm"
 #include "version_history.dm"
-#include "asdf.dmf"
+#include "basic.dmf"
 #include "__secure\hub_password.dm"
 #include "code\__00_defines.dm"
 #include "code\__01_system.dm"

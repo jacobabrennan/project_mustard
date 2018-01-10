@@ -1,12 +1,19 @@
 
+
+//-- Version History, Planned Features, Brainstorming, Notes -------------------
+
 //------------------------------------------------
+
 //------------------------------------------------------------------------------
 
+//345678901234567890123456789012345678901234567890123456789012345678901234567890
+
+// ^ Blank Dividers for easy cut/paste. 80 & 50 characters long.
 system
-	var/versionMotto = "Single+"
+	var/versionMotto = "Come Together Over Me"
 	proc/loadVersion()
 		system.versionType = "Internal"
-		system.versionNumber = "0.0.9"
+		system.versionNumber = "0.0.10"
 		system.versionHub = 0
 		spawn(1)
 			world << "<b>Version [versionType] [versionNumber]</b>: [versionMotto]"
@@ -18,9 +25,8 @@ system
 /*-- Feature List - Remember: It's the map and Bosses! COMBAT! -----------------
 
 Focus - Things which must be done this version
-	Redo player status menues
-		Player1 can manage each character
-		other players can manage their own character
+	Certain characters can only equip certain things
+	Update other party members when someone edits a character
 	Menu for player management (single+)
 	Setup hotKeys to "equip"
 		Otherwise multiple players can use the same item
@@ -28,10 +34,14 @@ Focus - Things which must be done this version
 Upcomming - Feature candidates for the next version
 	Finish Clearing out Bugs List
 	Make Enemies smarter about "shooting" with melee only in melee range
-	Certain characters can only equip certain things
 	Social Systems
 		Chat Within Games
 		Help Newbies
+	Revive meter that fills over fainted character
+		only fills if a character is reviving
+		resets if reviving stops
+		revives once full
+	Hit Animation
 
 Set In Stone - Features that have to be finished for 1.0
 	Title Screen
@@ -49,31 +59,26 @@ Set In Stone - Features that have to be finished for 1.0
 		Preferences
 		Accomplishments
 	Goblin Town
-	Revive meter that fills over fainted character
-		only fills if a character is reviving
-		resets if reviving stops
-		revives once full
-	Hit Animation
 
 Spectulative - Ideas for new features to make the game better.
-	Air Ship
+	The Khandroma (airship) - Red Caps
+		File Bug report. This is necessary and won't get fixed otherwise.
 		RACING!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 		Aerial Bombardment
 		Sky Hooks
-	Cleric behavior includes attacking
-		attack with wand when enemies are close and we can't escape or heal
-	Plot Backgrounds that show distant scenary,
-		like you're walking on a mountain ridge looking out at the sunset
-	Languages - Portuguese!
-	Submersion
-	Wind
-	Will-o-wisps
-	The Khandroma - Red Caps
-	"Modes" learned through memories that effect the overworld
 	Refactor Character & Party
 		Remove /character/partyMember
 		(this seems to be the only big difference between character & combatant)
 		Allow for parties not as the main game party, for enemy parties!
+	Cleric behavior includes attacking
+		attack with wand when enemies are close and we can't escape or heal
+	Plot Backgrounds that show distant scenary,
+		like you're walking on a mountain ridge looking out at the sunset
+	Submersion
+	Languages - Portuguese!
+	Wind
+	Will-o-wisps
+	"Modes" learned through memories that effect the overworld
 	//
 	Things in lighting plane only appear opaque when lit
 	differences of: kind, flavor, scale
@@ -90,6 +95,8 @@ Deferred - Low Priority Optional Features
 
 */
 /*
+
+Internal 0.0.10 : Jan 10th 2018 -- Come Together Over Me
 
 Internal 0.0.9 -- Single+
 	Refactored Menu System
