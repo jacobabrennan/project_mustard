@@ -38,11 +38,6 @@ interface/mapEditor
 		// Find starting place and display to client
 		forceLoc(locate(round(world.maxx/2),round(world.maxy/2),1))
 
-	//-- Saving & Loading ------------------------
-	/*
-		World is saved as a list of regions
-	*/
-
 	//-- Movement & Control ----------------------
 	density = FALSE
 	movement = MOVEMENT_ALL

@@ -26,6 +26,7 @@ Focus - Things which must be done this version
 		Otherwise multiple players can use the same item
 
 Upcomming - Feature candidates for the next version
+	Finish Clearing out Bugs List
 	Make Enemies smarter about "shooting" with melee only in melee range
 	Certain characters can only equip certain things
 	Social Systems
@@ -91,6 +92,12 @@ Deferred - Low Priority Optional Features
 /*
 
 Internal 0.0.9 -- Single+
+	Refactored Menu System
+		Added Stat Component: Sprite + Label
+		Changed all positioning to use absolute coords instead of screen_loc.
+		Factored out RPG menues into /interface/rpg/menu
+	Added New Status Screen
+		Primary Player can edit equipment and see stats of all party members.
 
 Internal 0.0.8 -- Shooty McStupid-Face
 	Combat:

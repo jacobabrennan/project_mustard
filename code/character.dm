@@ -65,14 +65,12 @@ character
 			// Reveal plot, if needbe
 			targetPlot.reveal()
 			// Find Target Tile
-			#warn Calculate tile from conditions (buildings, warps at south edge, center, etc)
 			var /tile/center = locate(
 				round((targetRegion.mapOffset.x+targetPlot.x+1/2)*PLOT_SIZE),
 				round((targetRegion.mapOffset.y+targetPlot.y+1/2)*PLOT_SIZE),
 				targetRegion.z()
 			)
-			//diag(center.x, center.y, center.z)
-			//world << "\icon [center]"
+			//
 			transition(targetPlot, center)
 
 	//-- Interface Coupling ------------------------//

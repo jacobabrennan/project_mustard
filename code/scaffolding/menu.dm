@@ -141,6 +141,26 @@ component
 			if(height)
 				maptext_height = height
 
+	//-- Stat - Displays a number and sprite ---------
+	stat
+		parent_type = /component/sprite
+		var
+			component/label/label
+			statName
+			value
+		imprint(_statName, _value)
+			if(_statName) statName = _statName
+			if(_value) value = _value
+			//
+			if(!label)
+				label = addComponent(/component/label)
+			//
+			..('stats.dmi', _statName)
+			label.imprint(_value, length(_value)*8)
+		positionScreen(fullX, fullY)
+			..()
+			label.positionScreen(fullX+16, fullY)
+
 	//-- Slot - Represents a usable on screen --------
 	slot
 		var/usable/usable
@@ -231,7 +251,7 @@ component
 					position = min(options.len, position+1)
 					positionCursor()
 				if(PRIMARY) return FALSE
-				if(STATUS) return FALSE
+				if(BACK) return FALSE
 		proc
 			positionCursor()
 				cursor.positionScreen(posX, posY-((position-1)*16))
@@ -305,6 +325,7 @@ component
 		commandDown(command)
 			. = ..()
 			moveCursor(command)
+			if(command == BACK) return FALSE
 			return TRUE
 		proc/moveCursor(direction)
 			var oldPosition = position

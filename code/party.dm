@@ -37,15 +37,15 @@ party
 	proc
 		createNew()
 			addPartyMember(new /character/partyMember/hero())
-			//addPartyMember(new /character/partyMember/cleric())
-			//var /character/partyMember/soldier/soldier = addPartyMember(new /character/partyMember/soldier())
-			//var /character/partyMember/goblin/goblin   = addPartyMember(new /character/partyMember/goblin())
+			addPartyMember(new /character/partyMember/cleric())
+			var /character/partyMember/soldier/soldier = addPartyMember(new /character/partyMember/soldier())
+			var /character/partyMember/goblin/goblin   = addPartyMember(new /character/partyMember/goblin())
 			mainCharacter.equip(new /item/weapon/sword())
 			mainCharacter.equip(new /item/shield())
 			for(var/I = 1 to 24)
 				mainCharacter.get(new /item/gear/plate())
-			//soldier.equip(      new /item/weapon/axe(  ))
-			//goblin.equip(       new /item/weapon/bow(  ))
+			soldier.equip(      new /item/weapon/axe(  ))
+			goblin.equip(       new /item/weapon/bow(  ))
 		addPartyMember(character/partyMember/newMember)
 			if(newMember.partyId == CHARACTER_KING || newMember.partyId == CHARACTER_HERO)
 				mainCharacter = newMember
@@ -99,7 +99,8 @@ party
 			var placed = FALSE
 			for(var/I = 1 to inventory.len)
 				if(!inventory[I])
-					inventory[I] = newItem
+					inventory.Cut(I, I+1)
+					inventory.Insert(1, newItem)
 					placed = TRUE
 					break;
 			if(placed)
@@ -265,6 +266,7 @@ character/partyMember
 		if(!success && aloc(src) != aloc(party.mainCharacter))
 			forceLoc(party.mainCharacter.loc)
 	proc
+		tryToAttack()
 		attackWithWeapon()
 			var /usable/weapon = equipment[WEAR_WEAPON]
 			if(weapon)
@@ -331,8 +333,14 @@ character/partyMember
 			combatant/target
 		behavior()
 			// Check if rescue is needed
-			if(party.mainCharacter.dead && shouldIRescue())
-				return ..()
+			if(party.mainCharacter.dead && shouldIRescue())	return ..()
+			if(tryToAttack()) return TRUE
+			// If we didn't advance on a target, seek out the player
+			. = ..()
+		tryToAttack()
+			// Check if we have a axe equipped
+			var /item/weapon/axe/axe = equipment[WEAR_WEAPON]
+			if(!istype(axe)) return
 			// Check which threat is the closest
 			var closeDist = 49
 			var closeEnemy
@@ -348,7 +356,7 @@ character/partyMember
 				target = closeEnemy
 				dir = get_dir(src, target)
 				attackWithWeapon()
-				return
+				return TRUE
 			// If we have health, find and attack a target
 			if(hp > 0) // Change from zero to make her shy when wounded
 				// If current target is too far away, forget about it
@@ -360,9 +368,7 @@ character/partyMember
 				// If we have a target, advance towards it
 				if(target)
 					stepTo(target)
-					return
-			// If we didn't advance on a target, seek out the player
-			. = ..()
+					return TRUE
 	goblin
 		name = "Goblin"
 		partyId = CHARACTER_GOBLIN
@@ -376,9 +382,9 @@ character/partyMember
 			combatant/target
 		behavior()
 			if(shouldIRescue()) return ..()
-			if(tryToShoot()) return TRUE
+			if(tryToAttack()) return TRUE
 			. = ..()
-		proc/tryToShoot()
+		tryToAttack()
 			// Check if we have a bow equipped
 			var /item/weapon/bow/bow = equipment[WEAR_WEAPON]
 			if(!istype(bow)) return
@@ -505,7 +511,7 @@ character/partyMember
 			member.manDown(src)*/
 		// Hide HUD
 		if(interface && interface.client)
-			interface.client.menu.hud.hide()
+			interface.menu.hide()
 		// Check if the entire party is down (Game Over)
 		var gameOver = TRUE
 		for(var/character/partyMember/member in party.characters)
@@ -525,7 +531,7 @@ character/partyMember
 		overlays.Remove(system._faintOverlay)
 		// Show HUD
 		if(interface && interface.client)
-			interface.client.menu.hud.show()
+			interface.client.menu.focus(interface.menu)
 
 sequence/fainted
 	var

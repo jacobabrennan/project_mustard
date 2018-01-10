@@ -80,7 +80,7 @@
 #define SECONDARY 128
 #define TERTIARY 256
 #define QUATERNARY 512
-#define STATUS 1024
+#define BACK 1024
 	// Movement flags. Mobs/Objs that share a movement flag with a tile can enter it.
 #define MOVEMENT_NONE 0
 #define MOVEMENT_FLOOR 1

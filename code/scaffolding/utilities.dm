@@ -464,7 +464,7 @@ button_tracker
 		West = WEST, Numpad4= WEST, A= WEST,
 		Space=PRIMARY,
 		Z=SECONDARY, X=TERTIARY, C=QUATERNARY,
-		Tab  = STATUS
+		Tab  = BACK
 	)
 	var/commands = 0
 	//var/list/commandLoops = list()
