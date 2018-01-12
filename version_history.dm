@@ -10,10 +10,10 @@
 
 // ^ Blank Dividers for easy cut/paste. 80 & 50 characters long.
 system
-	var/versionMotto = "Come Together Over Me"
+	var/versionMotto = "What Test?"
 	proc/loadVersion()
 		system.versionType = "Internal"
-		system.versionNumber = "0.0.10"
+		system.versionNumber = "0.0.11"
 		system.versionHub = 0
 		spawn(1)
 			world << "<b>Version [versionType] [versionNumber]</b>: [versionMotto]"
@@ -25,13 +25,10 @@ system
 /*-- Feature List - Remember: It's the map and Bosses! COMBAT! -----------------
 
 Focus - Things which must be done this version
-	Certain characters can only equip certain things
-	Update other party members when someone edits a character
-	Menu for player management (single+)
-	Setup hotKeys to "equip"
-		Otherwise multiple players can use the same item
 
 Upcomming - Feature candidates for the next version
+	Game Settings Menu
+	Map Menu
 	Finish Clearing out Bugs List
 	Make Enemies smarter about "shooting" with melee only in melee range
 	Social Systems
@@ -42,6 +39,13 @@ Upcomming - Feature candidates for the next version
 		resets if reviving stops
 		revives once full
 	Hit Animation
+	Player Profile data
+		Data about the player that persists among all games
+		Preferences
+		Accomplishments
+	More Final Enemies
+	More Final Items
+	Begin Final Mapping
 
 Set In Stone - Features that have to be finished for 1.0
 	Title Screen
@@ -54,13 +58,11 @@ Set In Stone - Features that have to be finished for 1.0
 		Regressia Hero against Lorcan (legend, not true)
 		Convey basic story, but make them FEEL AWESOME!
 		SPECTACLE!
-	Player Profile data
-		Data about the player that persists among all games
-		Preferences
-		Accomplishments
 	Goblin Town
+	Party Editing with multiple character options for subscribers
 
 Spectulative - Ideas for new features to make the game better.
+	Pause Game when player 1 goes to status
 	The Khandroma (airship) - Red Caps
 		File Bug report. This is necessary and won't get fixed otherwise.
 		RACING!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -79,6 +81,7 @@ Spectulative - Ideas for new features to make the game better.
 	Wind
 	Will-o-wisps
 	"Modes" learned through memories that effect the overworld
+	Weapons: Flail, Spear/Lance, Instruments, Fist/Grappler?
 	//
 	Things in lighting plane only appear opaque when lit
 	differences of: kind, flavor, scale
@@ -89,14 +92,29 @@ Spectulative - Ideas for new features to make the game better.
 		blockers
 		challengers
 		all: slow player movement, prevent from reaching areas
+	//
+	Do you always grab things?
+	Revive member who fell down holl, etc
+
 
 Deferred - Low Priority Optional Features
 	Savefile versions
 
-*/
-/*
+
+//------------------------------------------------------------------------------
+
+Internal 0.0.11 : Jan 11th 2018 -- What Test?
+	Editing a character updates in real time anyone who can view that character.
+	Items placed in hot keys now removes them from inventory
+		this prevents multiple players from using one item at the same time.
+	Items & character now have equipFlags which determine who can use what.
+	Changed RPG menu system to use a new menu component, Pane, in status screen.
+	Added Player / Party Management Pane
 
 Internal 0.0.10 : Jan 10th 2018 -- Come Together Over Me
+    Cleaning Up Project
+        Added Readme
+        Changed locations of some files
 
 Internal 0.0.9 -- Single+
 	Refactored Menu System

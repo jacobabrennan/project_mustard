@@ -1,6 +1,6 @@
 
 
-//------------------------------------------------------------------------------
+//-- Combatant - Movement and Behavior -----------------------------------------
 
 combatant
 	parent_type = /actor
@@ -11,7 +11,6 @@ combatant
 		. = ..()
 		hp = maxHp()
 		mp = maxMp()
-
 
 	//-- Movement ------------------------------------
 	density = FALSE
@@ -67,15 +66,7 @@ combatant
 
 	//-- Behavior Hierarchy --------------------------
 	var
-	//	behaviorName
-	//	behaviors/behaviorObject
-		// Nonconfigurable:
 		list/controllers[0]
-	/*New()
-		if(istext(behaviorName))
-			behaviorObject = new()
-			if(!hascall(behaviorObject, behaviorName)) del behaviorObject
-		. = ..()*/
 	takeTurn(delay)
 		if(invincible > 0)
 			invincible -= delay
@@ -84,9 +75,6 @@ combatant
 		if(.) return // blocked
 		. = control()
 		if(.) return .
-		/*if(hascall(behaviorObject, behaviorName))
-			. = call(behaviorObject, behaviorName)(src)
-			if(.) return*/
 		. = behavior()
 	proc
 		behavior()
@@ -114,7 +102,7 @@ combatant
 		controllers.Add(controller)
 
 
-//------------------------------------------------------------------------------
+//-- Sequence - Maybe factor this out into event? ------------------------------
 
 sequence
 	var

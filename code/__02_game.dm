@@ -1,6 +1,6 @@
 
 
-//------------------------------------------------------------------------------
+//-- Game ----------------------------------------------------------------------
 
 var/game/game
 game
@@ -13,11 +13,8 @@ game
 		ownerId = _ownerId
 		saveId = _saveId
 		gameId = "[_ownerId]_[_saveId]"
-		//spawn(30)
-			//save()
 		//
 		//environment = json2Object(saveData["environment"])
-		//diag(" -- Loading Climate & Time")
 		//environment.load()
 		//spawn(1)
 		//	environment.activate()
@@ -81,12 +78,12 @@ game
 		list/spectators = new()
 	proc
 		addSpectator(client/client)
-			new /interface/holding(client)
-			client.eye = party.mainCharacter.interface
+			spectators.Add(new /game/spectator(client, gameId))
+			///client.eye = party.mainCharacter.interface
 			//
-			spawn(1)
+			/*spawn(1)
 				var role = pick(CHARACTER_SOLDIER, CHARACTER_GOBLIN, CHARACTER_CLERIC)
-				party.addPlayer(client, role)
+				party.addPlayer(client, role)*/
 
 
 	//-- Map Management --------
@@ -122,3 +119,19 @@ game
 			newRegion.fromJSON(regionData)
 			return newRegion
 
+
+//-- Spectator - Interface for users waiting to play ---------------------------
+
+game/spectator
+	parent_type = /interface
+	var
+		gameId
+	New(client/_client, _gameId)
+		. = ..()
+		gameId = _gameId
+		viewPlayer()
+	proc
+		viewPlayer()
+			var /game/G = system.getGame(gameId)
+			var /rpg/int = G.party.mainCharacter.interface
+			client.eye = int

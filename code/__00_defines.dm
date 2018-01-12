@@ -1,10 +1,26 @@
+
+
+//-- Wrapper - To be factored out or removed -----------------------------------
+
 #define REGION_TEST "test"
 #define SAVE_TEST "savvy"
 
+#define COMPOUND_INDEX(X,Y,WIDTH) (((Y)-1)*(WIDTH)+(X))
+#define DECOMPOSE_Y(INDEX,WIDTH) (1+round(((INDEX)-1)/(WIDTH)))
+#define DECOMPOSE_X(INDEX,WIDTH) (1+((INDEX)-1)%(WIDTH))
 
-//------------------------------------------------------------------------------
 
-// These settings can be configured
+//-- Global Defines ------------------------------------------------------------
+
+
+//-- Gameplay Metrics ----------------------------------------------------------
+
+#define ITEM_DROP_RATE (1/6)
+	// How often enemies drop items when they die
+#define INVENTORY_MAX 48
+	// Cannot be configured
+
+//-- Timing - (In tenths of a second) ------------
 // *: In tenths of a second
 #define DEFAULT_PLOTS 16
 	// The width/height of the world in number of plots
@@ -28,16 +44,18 @@
 	// The time a terrain notifier menu component stays on the screen.
 #define TIME_RESOURCE_RESTORE 3000
 	// The normal time after furniture has been interacted with before it restores.
+
+
+//-- File System --------------------------------------------------------------
+
 #define SAVEFILE_VERSION "0.1.0"
 #define FILE_PATH_GAMES "data/saved_games"
 #define FILE_PATH_REGIONS "data/regions"
 #define FILE_PATH_PROFILES "data/profiles"
-#define SALE_MARKDOWN (1/4)
-	// The amount you get back from selling items
-#define ITEM_DROP_RATE (1/6)
-	// How often enemies drop items when they die
 
-//Environment Variables:
+
+//-- Environment (weather system) Metrics --------------------------------------
+
 #define TIME_DILATION_FACTOR (24*60)
 	// The speed of gameworld time as compared to our own.
 	// MUST ENCLOSE IN PARENTHESIS!
@@ -49,26 +67,36 @@
 #define SUNDOWN 18
 #define SUNUP 6
 #define NOON 12
-
-// Character IDs
-#define CHARACTER_KING 0
-#define CHARACTER_HERO 1
-#define CHARACTER_CLERIC 2
-#define CHARACTER_SOLDIER 3
-#define CHARACTER_GOBLIN 4
+#define DAY_TICKS 864000
+	// The number of tenths of a second in a day. Non Configurable. 10*1*60*60*24 = 864000
+#define DAYS_PER_YEAR 360
+	// Must remain 360 because it's used directly by trigonometric functions
 
 
+//-- Display & Menu System -----------------------------------------------------
 
-// Nothing beneath this line can be configured
-	// Drawing Planes
+//-- Drawing Planes ------------------------------
 #define PLANE_WEATHER 15
 #define PLANE_LIGHTING 20
 #define PLANE_MENU 200
 
-#define OVERWORLD "overworld"
-	// The region id for the overworld
-#define INTERIOR "interior"
-	// The region id for plots representing the interiors of buildings
+//-- Menu System Controls ------------------------
+#define PRIMARY 64
+#define SECONDARY 128
+#define TERTIARY 256
+#define QUATERNARY 512
+#define BACK 1024
+
+//-- Menu System Pane IDs ------------------------
+#define PANE_GEAR 1
+#define PANE_GAME 2
+#define PANE_MAP 3
+#define PANE_PARTY 4
+
+
+//-- Mapping System ------------------------------------------------------------
+
+//-- Map Metrics ---------------------------------
 #define MAP_DEPTH 1
 	// The number of z levels each game is allocated to place its regions
 #define TILE_SIZE 16
@@ -76,18 +104,21 @@
 #define PLOT_SIZE 15
 	// The width/height of a plot
 #define WORLD_SIZE (DEFAULT_PLOTS * PLOT_SIZE)
-#define PRIMARY 64
-#define SECONDARY 128
-#define TERTIARY 256
-#define QUATERNARY 512
-#define BACK 1024
-	// Movement flags. Mobs/Objs that share a movement flag with a tile can enter it.
+
+//-- Default IDs ---------------------------------
+#define ID_SYSTEM "system"
+	// The id of the "game owner" when editing the map
+#define WARP_START "start"
+	// The default plot.warpId when warping to a region
+
+//-- Movement Flags ------------------------------
 #define MOVEMENT_NONE 0
 #define MOVEMENT_FLOOR 1
 #define MOVEMENT_WATER 2
 #define MOVEMENT_WALL 4
 #define MOVEMENT_ALL 7
-	// Projectile / Tile interactions
+
+//-- Interaction Flags----------------------------
 #define INTERACTION_NONE 0
 #define INTERACTION_TOUCH 1
 #define INTERACTION_CUT 2
@@ -105,49 +136,47 @@
 #define INTERACTION_0010000000000000 8192
 #define INTERACTION_0100000000000000 16384
 #define INTERACTION_1000000000000000 32768
-	// Gear positions
+
+
+//-- Party & Equipment ---------------------------------------------------------
+#define COMPANIONS_MAX 3
+
+//-- Character IDs -------------------------------
+#define CHARACTER_KING 0
+#define CHARACTER_HERO 1
+#define CHARACTER_CLERIC 2
+#define CHARACTER_SOLDIER 3
+#define CHARACTER_GOBLIN 4
+
+//-- Gear Positions ------------------------------
 #define WEAR_WEAPON 1
 #define WEAR_BODY 2
 #define WEAR_SHIELD 3
 #define WEAR_CHARM 4
-	// Factions
+
+//-- Gear Equip Flags ----------------------------
+#define EQUIP_ANY (~0)
+#define EQUIP_SWORD 1
+#define EQUIP_AXE 2
+#define EQUIP_WAND 4
+#define EQUIP_BOW 8
+#define EQUIP_SHIELD 16
+#define EQUIP_BOOK 32
+#define EQUIP_ARMOR 64
+#define EQUIP_ROBE 128
+#define EQUIP_0000000100000000 256
+#define EQUIP_0000001000000000 512
+#define EQUIP_0000010000000000 1024
+#define EQUIP_0000100000000000 2048
+#define EQUIP_0001000000000000 4096
+#define EQUIP_0010000000000000 8192
+#define EQUIP_0100000000000000 16384
+#define EQUIP_1000000000000000 32768
+
+
+//-- Combat Factions -----------------------------------------------------------
+
 #define FACTION_NONE 0
 #define FACTION_ENEMY 1
 #define FACTION_PLAYER 2
 #define FACTION_PACIFY ~0
-
-#define COMPOUND_INDEX(X,Y,WIDTH) (((Y)-1)*(WIDTH)+(X))
-#define DECOMPOSE_Y(INDEX,WIDTH) (1+round(((INDEX)-1)/(WIDTH)))
-#define DECOMPOSE_X(INDEX,WIDTH) (1+((INDEX)-1)%(WIDTH))
-	// Crafting Ingredient Signatures
-#define SIG_WOOD "woo"
-#define SIG_STONE "sto"
-#define SIG_IRON "iro"
-#define SIG_SWORD "swo"
-#define SIG_SHIELD "she"
-#define SIG_ARMOR "arm"
-
-#define DAY_TICKS 864000
-	// The number of tenths of a second in a day.  10*1*60*60*24 = 864000
-#define DAYS_PER_YEAR 360
-	// Must remain 360 because it's used directly by trigonometric functions
-
-#define ID_SYSTEM "system"
-	// The id of the "game owner" when editing the map
-#define WARP_START "start"
-	// The default plot.warpId when warping to a region
-
-#define INVENTORY_MAX 24
-
-
-//-- Configure project's BYOND settings ----------------------------------------
-
-world
-	tick_lag = TICK_DELAY
-	icon_size = TILE_SIZE
-	view = PLOT_SIZE/2
-	map_format = SIDE_MAP
-	maxx = PLOT_SIZE
-	maxy = PLOT_SIZE
-	maxz = MAP_DEPTH
-client/perspective = EYE_PERSPECTIVE

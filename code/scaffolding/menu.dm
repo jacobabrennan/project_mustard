@@ -87,14 +87,14 @@ component
 				newFocus.focused()
 		focused()
 			. = ..()
-			if(chrome)
+			/*if(chrome)
 				var /component/chrome/C = locate() in components
-				C.setColor("#fff", 2)
+				C.setColor("#fff", 2)*/
 		blurred()
 			. = ..()
-			if(chrome)
+			/*if(chrome)
 				var /component/chrome/C = locate() in components
-				C.setColor("#66f", 4)
+				C.setColor("#00f", 4)*/
 		chrome(rect/rect)
 			chrome = TRUE
 			var/component/chrome/C = addComponent(/component/chrome)
@@ -140,6 +140,13 @@ component
 			maptext_width = width
 			if(height)
 				maptext_height = height
+		commandDown(command)
+			. = ..()
+			if(.) return
+			switch(command)
+				if(BACK, PRIMARY) return FALSE
+				else return TRUE
+
 
 	//-- Stat - Displays a number and sprite ---------
 	stat
@@ -163,18 +170,18 @@ component
 
 	//-- Slot - Represents a usable on screen --------
 	slot
-		var/usable/usable
-		proc/imprint(usable/template)
-			usable = template
-			if(!usable)
+		var/atom/storage
+		proc/imprint(atom/template, stateName)
+			storage = template
+			if(!storage)
 				icon = null
 			else
-				icon = usable.icon
-				icon_state = usable.icon_state
+				icon = storage.icon
+				icon_state = stateName || storage.icon_state
 		//mouse_opacity = 2
 		Click(location, control, params)
-			if(!usable) return
-			usable.Click(location, control, params)
+			if(!storage) return
+			storage.Click(location, control, params)
 
 	//-- Chrome - Component window background --------
 	chrome
@@ -223,40 +230,91 @@ component
 	//-- Select - List of Options with cursor --------
 	select
 		var
+			component/sprite/cursor
 			list/options // Hash Table, Keys are Display text, values are returned values
+			list/optionComponents
 			posX
 			posY
+			length // How many options to display before scrolling
+			//
 			position = 1
-			component/sprite/cursor
-		setup(_x, _y, _options)
+			scroll = 0
+		setup(_x, _y, list/_options, _length)
 			posX = _x
 			posY = _y
+			length = _length
 			options = _options
-			for(var/I = 1 to options.len)
+			//
+			ASSERT(options || length)
+			if(_options && !length)
+				length = _options.len
+			if(!_options && length)
+				options = new(length)
+			//
+			optionComponents = new(length)
+			for(var/I = 1 to length)
 				var/component/label/option = addComponent(/component/label)
-				option.imprint(options[I])
 				option.positionScreen(posX+20, (4+posY)-((I-1)*16))
+				optionComponents[I] = option
 			cursor = addComponent(/component/sprite)
-			cursor.imprint('specials.dmi', "pointer_large")
+			cursor.imprint('menu16.dmi', "pointer_large")
+			refresh()
+		focused()
+			. = ..()
 			positionCursor()
+		blurred()
+			. = ..()
+			cursor.hide()
 		control()
 			return TRUE
 		commandDown(command)
-			. = TRUE
 			switch(command)
 				if(NORTH)
+					var oldPosition = position
 					position = max(1, position-1)
+					var scrollFloor = min(2, position)
+					if(position-scroll < scrollFloor)
+						--scroll
+						scroll()
 					positionCursor()
+					if(position != oldPosition) return TRUE
 				if(SOUTH)
+					var oldPosition = position
 					position = min(options.len, position+1)
+					var scrollCeiling = (position < options.len)? length-1 : length
+					if(position-scroll > scrollCeiling)
+						++scroll
+						scroll()
 					positionCursor()
+					if(position != oldPosition) return TRUE
 				if(PRIMARY) return FALSE
 				if(BACK) return FALSE
 		proc
 			positionCursor()
-				cursor.positionScreen(posX, posY-((position-1)*16))
+				var cursorPos = position-scroll
+				cursor.positionScreen(posX, posY-((cursorPos-1)*16))
 			select()
 				return options[options[position]]
+			scroll()
+				for(var/I = 1 to length)
+					var /component/label/option = optionComponents[I]
+					if(scroll > 0 && I == 1)
+						option.imprint("...")
+					else if(I == length && scroll < options.len - length)
+						option.imprint("...")
+					else
+						var optionValue
+						if(I+scroll <= options.len)
+							optionValue = options[I+scroll]
+						else
+							optionValue = ""
+						option.imprint(optionValue)
+			refresh(newOptions)
+				if(newOptions) options = newOptions
+				//if(options.len < length)
+				//options.len = length
+				scroll()
+				positionCursor()
 
 	//-- Box - Grid of usables with cursor -----------
 	box
@@ -282,10 +340,12 @@ component
 			cursor.icon_state = "cursor"
 			cursor.pixel_x = -20
 			cursor.pixel_y = -20
+			cursor.autoShow = FALSE
 			//
 			reposition(_x, _y)
 		focused()
 			. = ..()
+			cursor.show()
 			positionCursor()
 		blurred()
 			. = ..()
@@ -324,9 +384,9 @@ component
 			return TRUE
 		commandDown(command)
 			. = ..()
-			moveCursor(command)
-			if(command == BACK) return FALSE
-			return TRUE
+			. = moveCursor(command)
+			if(command == BACK || command == PRIMARY) return FALSE
+			return
 		proc/moveCursor(direction)
 			var oldPosition = position
 			switch(direction)
@@ -346,7 +406,7 @@ component
 				return TRUE
 		proc/select()
 			var /component/slot/posSlot = slots[position]
-			return posSlot.usable
+			return posSlot.storage
 		proc/positionCursor(newPosition)
 			if(!newPosition) newPosition = position
 			else position = newPosition

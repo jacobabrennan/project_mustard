@@ -92,7 +92,7 @@ projectile/sword
 	baseSpeed = 0
 	projecting = FALSE
 	persistent = TRUE
-	interactionProperties = INTERACTION_CUT
+	//interactionProperties = INTERACTION_CUT
 	New()
 		. = ..()
 		var/character/O = owner

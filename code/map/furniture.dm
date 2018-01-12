@@ -47,7 +47,7 @@ furniture/bed
 		character.interface.client.menu.focus(C)*/
 
 furniture/deleter
-	icon = 'specials.dmi'
+	icon = 'menu16.dmi'
 	icon_state = "cancel"
 	thumbnailState = "cancel"
 	New()

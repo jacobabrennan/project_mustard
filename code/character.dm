@@ -1,6 +1,6 @@
 
 
-//------------------------------------------------------------------------------
+//-- Character - Combatants that can equip and use items -----------------------
 
 character
 	parent_type = /combatant
@@ -13,69 +13,15 @@ character
 	var
 		portrait = "test" // The icon_state of the portrait to show from portraits.dmi
 		//
-		interface/rpg/interface
 		list/equipment[4]
-
-	//-- Saving & Loading --------------------------//
-	toJSON()
-		var/list/jsonObject = ..()
-		jsonObject["name"] = name
-		jsonObject["equipment"] = list2JSON(equipment)
-		return jsonObject
-	fromJSON(list/objectData)
-		name = objectData["name"]
-		for(var/item/equipItem in json2List(objectData["equipment"] || list()))
-			equip(equipItem)
 
 	//-- Movement ----------------------------------//
 	proc
-		transition(plot/newPlot, turf/newTurf)
-			if(newTurf)
-				var/offsetX = (dir&( EAST|WEST ))? 0 : step_x
-				var/offsetY = (dir&(NORTH|SOUTH))? 0 : step_y
-				var/success = Move(newTurf, 0 , offsetX, offsetY)
-				if(!success)
-					forceLoc(newTurf)
-			if(interface)
-				interface.transition(newPlot)
-			newPlot.activate(src)
 		go(deltaX, deltaY)
 			var/tile/interact/I = locate() in locs
 			if(I && I.interaction & INTERACTION_WALK)
 				I.interact(src, INTERACTION_WALK)
 			return translate(deltaX, deltaY)
-		warp(warpId, regionId, gameId)
-			// Find Current Game
-			var /plot/currentPlot = plot(src)
-			if(!gameId && currentPlot)
-				gameId = currentPlot.gameId
-			var /game/G = system.getGame(gameId)
-			ASSERT(G)
-			// Find Target Region
-			if(!regionId && currentPlot) // Default target region to current region
-				regionId = currentPlot.regionId
-			var /region/targetRegion = G.getRegion(regionId)
-			ASSERT(targetRegion)
-			// Find Target Plot
-			var /plot/targetPlot = targetRegion.getWarp(warpId)
-			for(var/plot/P in targetRegion.plots.contents())
-				if(P.warpId)
-					diag(P.warpId, "found")
-			ASSERT(targetPlot)
-			// Reveal plot, if needbe
-			targetPlot.reveal()
-			// Find Target Tile
-			var /tile/center = locate(
-				round((targetRegion.mapOffset.x+targetPlot.x+1/2)*PLOT_SIZE),
-				round((targetRegion.mapOffset.y+targetPlot.y+1/2)*PLOT_SIZE),
-				targetRegion.z()
-			)
-			//
-			transition(targetPlot, center)
-
-	//-- Interface Coupling ------------------------//
-	proc/refreshInterface(which, list/aList)
-		if(interface) interface.refresh(which, aList)
 
 	//-- Health and Magic --------------------------//
 	var
@@ -92,12 +38,6 @@ character
 		for(var/item/gear/G in equipment)
 			fullMp += G.boostMp
 		return fullMp
-	adjustHp()
-		. = ..()
-		if(interface) interface.refresh("hp")
-	adjustMp(amount)
-		. = ..()
-		if(interface) interface.refresh("mp")
 	proc/auraRegain()
 		var/fullRegain = baseAuraRegain
 		for(var/item/gear/G in equipment)
@@ -118,21 +58,28 @@ character
 				adjustMp(1)
 
 	//-- Equipment Management ----------------------//
+	var
+		equipFlags = 0
 	proc
 		equip(item/gear/newGear)
 			if(!istype(newGear)) return
+			if(!canEquip(newGear)) return
 			var oldGear = equipment[newGear.position]
 			if(oldGear) unequip(oldGear)
 			equipment[newGear.position] = newGear
 			newGear.equipped(src)
-			return oldGear
+			return TRUE
 		unequip(item/gear/oldGear)
 			if(!istype(oldGear)) return
 			equipment[oldGear.position] = null
 			oldGear.unequipped(src)
-			return oldGear
+			return TRUE
 		use(usable/_usable)
 			_usable.use(src)
+		canEquip(item/gear/newGear)
+			. = TRUE
+			if(!istype(newGear)) return FALSE
+			if(!(equipFlags & newGear.equipFlags)) return FALSE
 
 	//-- Combat Redefinitions ----------------------//
 	shoot(projType)
@@ -166,13 +113,3 @@ character
 					return
 		// Success, have the shield try to defend
 		return S.defend(proxy, attacker, damage)
-
-	//-- Interface Control -------------------------//
-	control()
-		. = ..()
-		if(.) return
-		if(interface)
-			interface.control(src)
-			return TRUE
-
-

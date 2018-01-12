@@ -31,11 +31,11 @@ event
 			. = ..()
 	transition
 		var
-			interface/rpg/target
+			rpg/target
 			plot/targetPlot
 			tile/targetTile
 			time
-		New(interface/rpg/_target, plot/_plot)
+		New(rpg/_target, plot/_plot)
 			. = ..()
 			target = _target
 			targetPlot = _plot

@@ -10,7 +10,6 @@ party
 		gameId = _gameId
 	//------------------------------------------------
 	var
-		coins = 0
 		list/inventory[INVENTORY_MAX]
 		character/partyMember/mainCharacter
 		list/characters = new()
@@ -23,11 +22,9 @@ party
 		var/list/objectData = ..()
 		objectData["characters"] = list2JSON(characters)
 		objectData["inventory"] = list2JSON(inventory)
-		objectData["coins"] = coins
 		return objectData
 	fromJSON(list/objectData)
 		. = ..()
-		coins = objectData["coins"] || 0
 		characters = new()
 		for(var/item/inventoryItem in json2List(objectData["inventory"] || list()))
 			get(inventoryItem)
@@ -55,6 +52,19 @@ party
 			newMember.adjustMp(0)
 			return newMember
 
+character/partyMember
+	toJSON()
+		var/list/objectData = ..()
+		objectData["name"] = name
+		objectData["equipment"] = list2JSON(equipment)
+		objectData["hotKeys"] = list2JSON(hotKeys)
+		return objectData
+	fromJSON(list/objectData)
+		name = objectData["name"]
+		for(var/item/equipItem in json2List(objectData["equipment"] || list()))
+			equip(equipItem)
+		hotKeys = json2List(objectData["hotKeys"])
+
 
 //-- Player Tracker ------------------------------------------------------------
 
@@ -73,7 +83,7 @@ party
 			ASSERT(member)
 			// Remove previous player from control
 			// Give new player control
-			var /interface/rpg/R = new(client, member)
+			var /rpg/R = new(client, member)
 			players[R] = playerPosition
 			//
 			return R
@@ -85,12 +95,13 @@ party
 				for(var/client/C in clientStorage)
 					var role = clientStorage[C]
 					if(member.partyId != role) continue
-					new /interface/rpg(C, member)
+					new /rpg(C, member)
 					break
 
 
-//-- Inventory -----------------------------------------------------------------
+//-- Inventory & Equipment------------------------------------------------------
 
+	//-- Inventory Management ------------------------
 party
 	proc
 		get(item/newItem)
@@ -105,60 +116,84 @@ party
 					break;
 			if(placed)
 				newItem.forceLoc(null)
-				refreshInterface("inventory", inventory)
+				refreshInterface("inventory")
 				return newItem
 		unget(item/newItem)
 			inventory.Remove(newItem)
 			inventory.len = INVENTORY_MAX
-			refreshInterface("inventory", inventory)
-		refreshInterface(key, value)
+			refreshInterface("inventory")
+		refreshInterface(key, character/updateChar)
 			for(var/character/partyMember/char in characters)
-				char.refreshInterface(key, value)
+				if(!char.interface) continue
+				if(updateChar)
+					if(char != mainCharacter && char != updateChar) continue
+				var /rpg/int = char.interface
+				if(istype(int))
+					int.menu.refresh(key, updateChar)
+		use(usable/_usable)
+			_usable.use(src)
 
+	//-- Character Equipment -------------------------
 character/partyMember
 	proc
-		adjustCoins(amount)
-			if(party)
-				party.coins += amount
-				party.refreshInterface("coins", party.coins)
 		get(item/newItem)
 			if(party)
 				return party.get(newItem)
 	equip(item/gear/newGear)
-		if(!istype(newGear)) return
-		// Un equip old gear
-		var oldGear = equipment[newGear.position]
-		if(oldGear) unequip(oldGear)
-		// Equip new gear
-		equipment[newGear.position] = newGear
-		newGear.equipped(src)
+		var success = ..()
+		if(!success) return
 		// Remove Item from Party Inventory
 		if(party)
 			if(newGear in party.inventory)
 				party.unget(newGear)
 		// Refresh party interface
-			party.refreshInterface("equipment", equipment)
-			party.refreshInterface("hp")
-			party.refreshInterface("mp")
+			party.refreshInterface("equipment", src)
+			party.refreshInterface("hp", src)
+			party.refreshInterface("mp", src)
 		//
-		return oldGear
+		return success
 	unequip(item/gear/oldGear)
-		if(!istype(oldGear)) return
-		// Unequip gear
-		equipment[oldGear.position] = null
-		oldGear.unequipped(src)
+		var success = ..()
+		if(!success) return
 		// Add gear to party inventory
 		if(party)
 			get(oldGear)
 		// Refresh party interface
-			party.refreshInterface("inventory", party.inventory)
-			party.refreshInterface("equipment", equipment)
-			party.refreshInterface("hp")
-			party.refreshInterface("mp")
+			party.refreshInterface("inventory")
+			party.refreshInterface("equipment", src)
+			party.refreshInterface("hp", src)
+			party.refreshInterface("mp", src)
 		//
-		return oldGear
-	use(usable/_usable)
-		_usable.use(src)
+		return success
+
+	//-- Hot Keys-------------------------------------
+	var
+		list/hotKeys[3]
+	proc
+		setHotKey(usable/_usable, hotKey)
+			// Check if character can use it
+			if(istype(_usable, /item/gear))
+				if(!canEquip(_usable))
+					return
+			// Get list index from command
+			var list/hotKeyIndex = list(SECONDARY, TERTIARY, QUATERNARY).Find(hotKey)
+			if(!hotKeyIndex) return
+			// Unequip any old /item in hot key
+			var /item/oldHotKey = hotKeys[hotKeyIndex]
+			if(istype(oldHotKey)) get(oldHotKey)
+			// Set hot key to /usable (also works for clearing via null)
+			hotKeys[hotKeyIndex] = _usable
+			// Remove /usable from inventory
+			party.unget(_usable)
+			// Display results in hot keys
+			party.refreshInterface("hotKeys", src)
+		getHotKey(command)
+			var/hkIndex
+			switch(command)
+				if(SECONDARY ) hkIndex = 1
+				if(TERTIARY  ) hkIndex = 2
+				if(QUATERNARY) hkIndex = 3
+			return hotKeys[hkIndex]
 
 
 //-- Game Over handling --------------------------------------------------------
@@ -182,7 +217,7 @@ party
 					animate(member.interface.client, color = colorList, 20)
 					clientStorage[member.interface.client] = member.partyId
 					//
-					var /interface/rpg/oldInterface = member.interface
+					var /rpg/oldInterface = member.interface
 					var /interface/holding/holding = new()
 					holding.forceLoc(oldInterface.loc)
 					holding.client = oldInterface.client
@@ -213,7 +248,7 @@ plot
 		. = ..()
 
 
-//-- Movement and Behavior -----------------------------------------------------
+//-- Movement ------------------------------------------------------------------
 
 party
 	proc/changeRegion(regionId, warpId)
@@ -233,18 +268,68 @@ party
 		)
 		var /tile/startTile = locate(startCoords.x, startCoords.y, R.z())
 		// Move each character in the party to the Start Tile
-		for(var/character/C in characters)
+		for(var/character/partyMember/C in characters)
 			C.forceLoc(startTile)
 			C.transition(startPlot)
 
-atom/movable/Cross()
-	return TRUE
+character/partyMember
+	proc
+		transition(plot/newPlot, turf/newTurf)
+			if(newTurf)
+				var/offsetX = (dir&( EAST|WEST ))? 0 : step_x
+				var/offsetY = (dir&(NORTH|SOUTH))? 0 : step_y
+				var/success = Move(newTurf, 0 , offsetX, offsetY)
+				if(!success)
+					forceLoc(newTurf)
+			if(interface)
+				interface.transition(newPlot)
+			newPlot.activate(src)
+		warp(warpId, regionId, gameId)
+			// Find Current Game
+			var /plot/currentPlot = plot(src)
+			if(!gameId && currentPlot)
+				gameId = currentPlot.gameId
+			var /game/G = system.getGame(gameId)
+			ASSERT(G)
+			// Find Target Region
+			if(!regionId && currentPlot) // Default target region to current region
+				regionId = currentPlot.regionId
+			var /region/targetRegion = G.getRegion(regionId)
+			ASSERT(targetRegion)
+			// Find Target Plot
+			var /plot/targetPlot = targetRegion.getWarp(warpId)
+			for(var/plot/P in targetRegion.plots.contents())
+				if(P.warpId)
+					diag(P.warpId, "found")
+			ASSERT(targetPlot)
+			// Reveal plot, if needbe
+			targetPlot.reveal()
+			// Find Target Tile
+			var /tile/center = locate(
+				round((targetRegion.mapOffset.x+targetPlot.x+1/2)*PLOT_SIZE),
+				round((targetRegion.mapOffset.y+targetPlot.y+1/2)*PLOT_SIZE),
+				targetRegion.z()
+			)
+			//
+			transition(targetPlot, center)
 character/partyMember
 	transitionable = TRUE // Can move between plots
 	var
 		partyId
 		party/party
 		partyDistance = 16 // The number of tiles away from the player that this character will generally stay
+
+	//-- Interface Control -------------------------//
+	var
+		rpg/interface
+	control()
+		. = ..()
+		if(.) return
+		if(interface)
+			interface.control(src)
+			return TRUE
+
+	//-- Default Behavior --------------------------//
 	behavior()
 		// Check for blocking
 		var block = ..()
@@ -265,6 +350,8 @@ character/partyMember
 		var success = stepTo(party.mainCharacter, partyDistance)
 		if(!success && aloc(src) != aloc(party.mainCharacter))
 			forceLoc(party.mainCharacter.loc)
+
+	//-- Decisions ---------------------------------//
 	proc
 		tryToAttack()
 		attackWithWeapon()
@@ -285,16 +372,21 @@ character/partyMember
 						rescue = FALSE
 			return rescue
 
-	//------------------------------------------------
+
+//-- Type Defs - Factor Out Eventually -----------------------------------------
+
+character/partyMember
 	regressiaHero
 		name = "Regressia"
 		partyId = CHARACTER_KING
+		equipFlags = EQUIP_ANY
 		icon = 'regressia_hero.dmi'
 		baseHp = 6
 		baseMp = 4
 	hero
 		name = "Hero"
 		partyId = CHARACTER_HERO
+		equipFlags = EQUIP_ANY
 		icon = 'hero.dmi'
 		portrait = "Hero"
 		baseHp = 6
@@ -302,6 +394,7 @@ character/partyMember
 	cleric
 		name = "Cleric"
 		partyId = CHARACTER_CLERIC
+		equipFlags = EQUIP_WAND|EQUIP_BOOK|EQUIP_ROBE
 		icon = 'cleric.dmi'
 		portrait = "Cleric"
 		partyDistance = 12
@@ -325,6 +418,7 @@ character/partyMember
 	soldier
 		name = "Soldier"
 		partyId = CHARACTER_SOLDIER
+		equipFlags = EQUIP_AXE|EQUIP_SHIELD|EQUIP_ARMOR
 		icon = 'soldier.dmi'
 		portrait = "Soldier"
 		partyDistance = 0
@@ -372,6 +466,7 @@ character/partyMember
 	goblin
 		name = "Goblin"
 		partyId = CHARACTER_GOBLIN
+		equipFlags = EQUIP_BOW
 		icon = 'goblin.dmi'
 		portrait = "Goblin"
 		partyDistance = 24
@@ -484,14 +579,6 @@ character/partyMember
 			return FALSE
 
 
-//-- Combatant Behaviors (needs refactor out) ----------------------------------
-
-/*behaviors
-	var
-		storage
-		combatant/target*/
-
-
 //-- Character Fainting & Revive Assist ----------------------------------------
 
 character/partyMember
@@ -564,7 +651,7 @@ system
 		. = ..()
 		var /obj/temp = new()
 		// Prepare faint overlay
-		var /image/faint = image('specials.dmi', null, "faint", FLY_LAYER)
+		var /image/faint = image('_wrapper.dmi', null, "faint", FLY_LAYER)
 		faint.pixel_y += TILE_SIZE
 		temp.overlays.Add(faint)
 		for(var/appearance in temp.overlays)
@@ -601,6 +688,7 @@ character/partyMember
 		meterIndex = max(1, min(TILE_SIZE, meterIndex))
 		meterHp = system._metersHp[meterIndex]
 		overlays.Add(meterHp)
+		if(interface) interface.menu.refresh("hp")
 	adjustMp(amount)
 		. = ..()
 		overlays.Remove(meterMp)
@@ -611,3 +699,4 @@ character/partyMember
 		meterIndex = max(1, min(TILE_SIZE, meterIndex))
 		meterMp = system._metersMp[meterIndex]
 		overlays.Add(meterMp)
+		if(interface) interface.menu.refresh("mp")

@@ -3,7 +3,7 @@
 ## Table of Contents
 * [Project Team - Who's Responsible for this?](#project-team)
 * [BYOND - Familiarity with environment](#byond)
-* [File Structure - Version Management and Code Cenventions](#file-structure)
+* [File Structure - Version Management and Code Conventions](#file-structure)
 * [Program Structure - What you're reading this doc for](#program-structure)
   * [The System](#the-system)
   * [Game Instances](#game-instances)
@@ -32,7 +32,7 @@ The project compiles to a multi-player video game server to be run by the BYOND 
   * The Hub          - BYOND's games index. Accessed through the web or pager.
   * BYOND Keys       - User accounts provided by BYOND for games & the Hub.
 
-To use this software, you would compile it via DM, launch it via DD, sign into your Key via the Hub or Pager, and then use the Hub's searce features or the pager to open the game, which would launch DS automatically. In general, you never open DS yourself, but it is opened when you try to join a game via the hub or the pager.
+To use this software, you would compile it via DM, launch it via DD, sign into your Key via the Hub or Pager, and then use the Hub's search features or the pager to open the game, which would launch DS automatically. In general, you never open DS yourself, but it is opened when you try to join a game via the hub or the pager.
 
 Note: The BYOND installer also associates the protocol byond:// with the pager, so directing your browser to a BYOND game, such as byond://f0lak.hazordhu, will launch the pager and display that game. From there you can click links to play hosted games or download the game to host yourself.
 
@@ -46,9 +46,9 @@ DM uses several file extensions to organize and identify project resources. The 
 
 
 # File Structure
-#### Version Management and Code Cenventions
+#### Version Management and Code Conventions
 
-The Project uses Git / Github for source control. Contributors should be familiar with Git; help is available if needbe.
+The Project uses Git / Github for source control. Contributors should be familiar with Git; help is available if need-be.
 
 ## Directory Structure
 The Directory structure is still evolving. For now:
@@ -85,14 +85,14 @@ File Structure goes as follows:
   * Any temporary "wrapper" code should be placed at the top of the file under its own main header, to be easily identified and removed / refactored.
 
 ## Code Conventions
-Other Best Practices
+The following are some other code conventions followed in this project. They're listed here to help you understand the project, not to limit how you write code. Write code first, it can be edited later.
   * Use camelCase for variable names.
   * In objects that will be further derived, variables which cannot be configured by sub types should be grouped together and marked.
   * Sometimes it's necessary to create a variable which is used by only one method in one place. In these cases, prefix the variable with a single underscore. Where possible, refactor these cases.
   * Never use single letter variable names in type definitions.
   * It's ok not to comment your code as you write it, but as soon as you go back later to fix or edit it, then you should start to:
-			* Break procs into logical segments marked by comments. Even just //
-			* Move related code into marked headers. Even a single odd proc
+    * Break procs into logical segments marked by comments. Even just //
+    * Move related code into marked headers. Even a single odd proc
 
 
 # Program Structure
@@ -120,7 +120,7 @@ Each game has an associated Party, which tracks and manages the characters that 
 
 ## Interfaces
 
-BYOND provides two objects for interaction between the player and the world: these are Mobs and Clients. The Client represents the DS instance the player uses to connect and play the game; Mob represents a "mobile" on the game map. As a rule, every client has a mob. Deleting the mob will eject a client from the game entirely. Generally, the mob is used represent the player's "character" within the game world. This presents problems when the game needs to represent game states without player control centered around a "character". For example, A title screen. For a more in-depth exporation of this, see: http://www.byond.com/forum/?post=49308
+BYOND provides two objects for interaction between the player and the world: these are Mobs and Clients. The Client represents the DS instance the player uses to connect and play the game; Mob represents a "mobile" on the game map. As a rule, every client has a mob. Deleting the mob will eject a client from the game entirely. Generally, the mob is used represent the player's "character" within the game world. This presents problems when the game needs to represent game states without player control centered around a "character". For example, A title screen. For a more in-depth exploration of this, see: http://www.byond.com/forum/?post=49308
 
 The Interface object type exists to solve these issues. Interface subtypes are defined to provide an "interface" between the player and the game world in specific game states. For example, there exists a titleScreen interface to solve above use case. Other interfaces include "clay" which is used for clients that have just connected to the world and need to be registered with the system, & "holding" which is for players between game states that the system doesn't know what do to with yet. Both of these interfaces provide no controls or output to the player so they can be safely isolated from the program while it works.
 

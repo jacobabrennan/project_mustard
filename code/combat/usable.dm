@@ -16,9 +16,8 @@ item
 	var
 		price = 1
 		instant = FALSE
-			// Items, like Coins, that are used as soon as picked up.
-		ingredientSignature
-			// What this item counts as when crafting, such as SIG_WOOD.
+			// Items, like Fruit, that are used as soon as picked up.
+		equipFlags = EQUIP_ANY
 		// Nonconfigurable:
 		timeStamp
 	New()
@@ -69,7 +68,6 @@ item
 			boostHp = 0
 			icon = 'armor.dmi'
 			icon_state = "buckler"
-			ingredientSignature = SIG_SHIELD
 		talaria
 			name = "Talaria"
 			position = WEAR_CHARM
@@ -100,8 +98,12 @@ item
 	shield
 		parent_type = /item/gear
 		position = WEAR_SHIELD
+		equipFlags = EQUIP_SHIELD
+		icon = 'armor.dmi'
+		icon_state = "shield"
 		var
-			threshold = 1 // Projectiles with potency <= value will be blocked
+			threshold = 1
+			// Projectiles with potency <= value will be blocked
 		proc
 			defend(projectile/proxy, combatant/attacker, damage)
 				. = TRUE
@@ -120,14 +122,17 @@ item
 			P.potency = potency
 			return P
 		sword
+			equipFlags = EQUIP_SWORD
 			icon_state = "sword"
 			projectileType = /projectile/sword
 			potency = 1
 		axe
+			equipFlags = EQUIP_AXE
 			icon_state = "axe"
 			projectileType = /projectile/axe
 			potency = 2
 		bow
+			equipFlags = EQUIP_BOW
 			icon_state = "crossbow"
 			projectileType = /projectile/bowArrow
 			potency = 1
@@ -148,6 +153,7 @@ item
 			proc/ready()
 				if(!currentArrow) return TRUE
 		wand // Weak Melee attack plus magic projectile
+			equipFlags = EQUIP_WAND
 			icon_state = "wand"
 			projectileType = /projectile/wand
 			potency = 1

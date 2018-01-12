@@ -67,7 +67,7 @@ interface/mapEditor
 				plotBorder.loc = locate(newArea.x, newArea.y, newArea.z)
 				// Display new icons in tile editor
 				for(var/component/slot/S in menu.basicPalette.tileEditor.slots)
-					if(!S.usable) S.icon = null
+					if(!S.storage) S.icon = null
 					else S.icon = newArea.icon
 
 			//if(istype(newArea)) menu.refreshTiles(newArea.plot)
