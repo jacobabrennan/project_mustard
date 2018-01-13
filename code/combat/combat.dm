@@ -160,7 +160,7 @@ combatant
 		die(combatant/attacker)
 			if(disposable)
 				spawn()
-					new /event/puff(src)
+					new /effect/puff(src)
 					del src
 		attack(combatant/target, amount, proxy)
 			return target.hurt(amount, src, proxy)

@@ -222,7 +222,7 @@ party
 					holding.forceLoc(oldInterface.loc)
 					holding.client = oldInterface.client
 					del oldInterface
-				new /event/puff(member)
+				new /effect/puff(member)
 				member.forceLoc(null)
 			// Notify Game object
 			var /game/G = system.getGame(gameId)

@@ -36,7 +36,8 @@ rpg
 			transition(currentPlot)
 	Logout()
 		// Hide Menu
-		menu.hide()
+		if(menu)
+			menu.hide()
 		del menu
 		. = ..()
 	proc/spectate()

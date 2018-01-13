@@ -93,6 +93,24 @@ item
 				var/building/dungeon/D = new()
 				D.build(user.x, user.y+1, plot(user))
 			*/
+	bookHealing1
+		parent_type = /item/book
+		icon_state = "bookHeal1"
+		use(character/user)
+			// Add some kind of flash on the hud
+			if(user.mp < mpCost) return
+			user.mp -= mpCost
+				//for(var/combatant/C in bounds(src,
+
+	//-- Item - Basic Archetypes ---------------------
+	book
+		parent_type = /item
+		equipFlags = EQUIP_BOOK
+		icon = 'items.dmi'
+		icon_state = "book"
+		var
+			mpCost = 1
+			range = 32
 
 	//-- Gear - Basic Archetypes ---------------------
 	shield
@@ -198,27 +216,27 @@ item
 			else
 				. = ..()
 		coin
-			icon = 'items.dmi'
+			icon = 'item_drops.dmi'
 			icon_state = "coin_gold"
 			use(character/user)
 				//user.adjustCharacterPoints(1)
 				. = ..()
 		berry
-			icon = 'items.dmi'
+			icon = 'item_drops.dmi'
 			icon_state = "cherry"
 			use(character/user)
 				var result = user.adjustHp(1)
 				if(result)
 					. = ..()
 		plum
-			icon = 'items.dmi'
+			icon = 'item_drops.dmi'
 			icon_state = "plum"
 			use(character/user)
 				var result = user.adjustHp(10)
 				if(result)
 					. = ..()
 		magicBottle
-			icon = 'items.dmi'
+			icon = 'item_drops.dmi'
 			icon_state = "bottle"
 			use(character/user)
 				var result = user.adjustMp(user.maxMp())

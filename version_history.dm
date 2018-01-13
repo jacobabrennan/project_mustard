@@ -10,10 +10,10 @@
 
 // ^ Blank Dividers for easy cut/paste. 80 & 50 characters long.
 system
-	var/versionMotto = "What Test?"
+	var/versionMotto = ""
 	proc/loadVersion()
 		system.versionType = "Internal"
-		system.versionNumber = "0.0.11"
+		system.versionNumber = "0.0.12"
 		system.versionHub = 0
 		spawn(1)
 			world << "<b>Version [versionType] [versionNumber]</b>: [versionMotto]"
@@ -25,19 +25,25 @@ system
 /*-- Feature List - Remember: It's the map and Bosses! COMBAT! -----------------
 
 Focus - Things which must be done this version
-
-Upcomming - Feature candidates for the next version
-	Game Settings Menu
-	Map Menu
 	Finish Clearing out Bugs List
-	Make Enemies smarter about "shooting" with melee only in melee range
-	Social Systems
-		Chat Within Games
-		Help Newbies
 	Revive meter that fills over fainted character
 		only fills if a character is reviving
 		resets if reviving stops
 		revives once full
+	Add Spell Books
+	Paper & Pencil work needed:
+		brainstorm social systems
+		work out math of mode 7
+
+
+Upcomming - Feature candidates for the next version
+	Status Panes
+		Game Settings
+		World / Dungeon Map
+	Make Enemies smarter about "shooting" with melee only in melee range
+	Social Systems
+		Chat Within Games
+		Help Newbies
 	Hit Animation
 	Player Profile data
 		Data about the player that persists among all games
@@ -96,12 +102,13 @@ Spectulative - Ideas for new features to make the game better.
 	Do you always grab things?
 	Revive member who fell down holl, etc
 
-
 Deferred - Low Priority Optional Features
 	Savefile versions
 
 
 //------------------------------------------------------------------------------
+
+Internal 0.0.12 : Jan 12th 2018 --
 
 Internal 0.0.11 : Jan 11th 2018 -- What Test?
 	Editing a character updates in real time anyone who can view that character.

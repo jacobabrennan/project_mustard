@@ -402,6 +402,7 @@ rpg/menu/party
 		switch(command)
 			if(BACK)
 				if(focus == modal)
+					showPlayers()
 					del modal
 					focus(characters)
 					return TRUE
@@ -432,6 +433,7 @@ rpg/menu/party
 					return TRUE
 			if(PRIMARY)
 				if(focus == modal)
+					showPlayers()
 					del modal
 					focus(characters)
 					return TRUE
@@ -476,6 +478,7 @@ rpg/menu/party
 				focus(spectators)
 			// Otherwise, Display explanation text
 			else
+				spectators.hide()
 				modal = addComponent(/component/label)
 				modal.imprint("There are no players online to add to your party.", 160, 64)
 				modal.positionScreen(64, 120)

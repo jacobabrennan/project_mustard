@@ -54,9 +54,17 @@ event
 			if(!target || (time < 0)) del src
 			target.forceLoc(get_step_towards(target, targetTile))
 			. = ..()
+
+
+//-- Effects -------------------------------------------------------------------
+
+effect
+	parent_type = /obj
+	mouse_opacity = 0
+	//layer = -1
+
 	animate
 		icon_state = ")(*&^%$#@!" // Gibberish, just so it doesn't accidentally end on the "" state.
-		layer = FLY_LAYER
 		New(atom/center, time, _icon_state, _icon)
 			. = ..()
 			centerLoc(center)
@@ -66,12 +74,13 @@ event
 			flick(_icon_state, src)
 			spawn(time)
 				del src
+		// Eventually, add an animate() movement to this,
+		// so they don't have to use the movement system for effects
 	puff
-		parent_type = /event/animate
+		parent_type = /effect/animate
 		icon = '24px.dmi'
 		icon_state = "puff"
 		pixel_x = -4
 		pixel_y = -4
 		New(atom/center)
 			. = ..(center, 4)
-
