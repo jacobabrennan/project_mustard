@@ -209,7 +209,7 @@ rpg/menu
 					var/component/slot/slot = slots[I+1]
 					slot.imprint(U)
 			if("inventory")
-				gear.inventory.refresh(interface.character.party.inventory)
+				gear.refreshInventory(interface.character.party.inventory)
 			if("equipment")
 				// Update Weapon Hot Key
 				if(updateChar == interface.character)

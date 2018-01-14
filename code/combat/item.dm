@@ -1,13 +1,13 @@
 
 
-//-- Usable - Objects that can be "used" by combatant --------------------------
+//-- Usable - Objects that can be "used" by characters -------------------------
 
 usable
 	parent_type = /obj
-	proc/use(combatant/user)
+	proc/use(character/user)
 
 
-//-- Items - can be placed on the map. Combatants can "get" --------------------
+//-- Items - can be placed on the map. Characters can "get" --------------------
 
 item
 	parent_type = /usable
@@ -23,7 +23,7 @@ item
 	New()
 		. = ..()
 		timeStamp = world.time
-	use(combatant/user)
+	use(character/user)
 		. = ..()
 		if(instant)
 			del src
@@ -76,11 +76,6 @@ item
 			boostMp = 2
 			icon = 'armor.dmi'
 			icon_state = "talaria"
-			/*
-			use(character/user)
-				var/building/house1/D = new()
-				D.build(user.x, user.y+1, plot(user))
-			*/
 		ring
 			name = "Ring"
 			position = WEAR_CHARM
@@ -88,19 +83,21 @@ item
 			boostMp = 4
 			icon = 'armor.dmi'
 			icon_state = "charm"
-			/*
-			use(character/user)
-				var/building/dungeon/D = new()
-				D.build(user.x, user.y+1, plot(user))
-			*/
+
 	bookHealing1
 		parent_type = /item/book
 		icon_state = "bookHeal1"
 		use(character/user)
 			// Add some kind of flash on the hud
 			if(user.mp < mpCost) return
-			user.mp -= mpCost
-				//for(var/combatant/C in bounds(src,
+			user.adjustMp(-mpCost)
+			var radius = range - (bound_width/2)
+			new /effect/aoeColor(user, radius, "#0f0")
+			for(var/combatant/C in bounds(user, radius))
+				if(!(C.faction & user.faction)) continue
+				C.adjustHp(1)
+				new /effect/sparkleHeal(C)
+
 
 	//-- Item - Basic Archetypes ---------------------
 	book
@@ -110,7 +107,7 @@ item
 		icon_state = "book"
 		var
 			mpCost = 1
-			range = 32
+			range = 48
 
 	//-- Gear - Basic Archetypes ---------------------
 	shield
@@ -134,7 +131,7 @@ item
 		var
 			potency = 1
 			projectileType = /projectile/sword
-		use(combatant/user)
+		use(character/user)
 			var/projectile/P = user.shoot(projectileType)
 			if(!P) return
 			P.potency = potency
@@ -159,7 +156,7 @@ item
 				arrowRange = 240
 				// Nonconfigurable:
 				projectile/bowArrow/currentArrow
-			use(combatant/user)
+			use(character/user)
 				del currentArrow
 				var /projectile/bowArrow/A = ..()
 				if(!A) return
@@ -181,7 +178,7 @@ item
 				spellPotency
 				spellSpeed = 6
 				spellRange = 240
-			use(combatant/user)
+			use(character/user)
 				. = ..()
 				if(user.mp < spellCost) return
 				user.adjustMp(-spellCost)
@@ -191,8 +188,6 @@ item
 				P.maxRange = spellRange || P.maxRange
 				P.project()
 				return P
-
-
 
 
 //-- Enemy Drops (eg: hearts) --------------------------------------------------
@@ -215,18 +210,13 @@ item
 					return TRUE
 			else
 				. = ..()
-		coin
-			icon = 'item_drops.dmi'
-			icon_state = "coin_gold"
-			use(character/user)
-				//user.adjustCharacterPoints(1)
-				. = ..()
 		berry
 			icon = 'item_drops.dmi'
 			icon_state = "cherry"
 			use(character/user)
 				var result = user.adjustHp(1)
 				if(result)
+					new /effect/sparkleHeal(user)
 					. = ..()
 		plum
 			icon = 'item_drops.dmi'
@@ -234,6 +224,7 @@ item
 			use(character/user)
 				var result = user.adjustHp(10)
 				if(result)
+					new /effect/sparkleHeal(user)
 					. = ..()
 		magicBottle
 			icon = 'item_drops.dmi'
@@ -241,10 +232,5 @@ item
 			use(character/user)
 				var result = user.adjustMp(user.maxMp())
 				if(result)
+					new /effect/sparkleAura(user)
 					. = ..()
-
-
-//-- Skill - Can be hot keyed --------------------------------------------------
-
-skill
-	parent_type = /usable

@@ -1,12 +1,17 @@
 
 
-//------------------------------------------------------------------------------
+//-- Events & Effects ----------------------------------------------------------
 
 event
 	parent_type = /actor
 
+effect
+	parent_type = /obj
+	mouse_opacity = 0
+	plane = PLANE_EFFECTS_START
 
-//------------------------------------------------------------------------------
+
+//-- Event Typedefss -----------------------------------------------------------
 
 event
 	push
@@ -56,13 +61,9 @@ event
 			. = ..()
 
 
-//-- Effects -------------------------------------------------------------------
+//-- Effect Typedefs -----------------------------------------------------------
 
 effect
-	parent_type = /obj
-	mouse_opacity = 0
-	//layer = -1
-
 	animate
 		icon_state = ")(*&^%$#@!" // Gibberish, just so it doesn't accidentally end on the "" state.
 		New(atom/center, time, _icon_state, _icon)
@@ -84,3 +85,35 @@ effect
 		pixel_y = -4
 		New(atom/center)
 			. = ..(center, 4)
+	sparkleHeal
+		parent_type = /effect/animate
+		bound_width = 1
+		bound_height = 1
+		pixel_x = -16
+		pixel_y = -16
+		New(atom/movable/center)
+			. = ..(center, 5, "heal", 'effects_large.dmi')
+	sparkleAura
+		parent_type = /effect/animate
+		bound_width = 1
+		bound_height = 1
+		pixel_x = -16
+		pixel_y = -16
+		New(atom/movable/center)
+			. = ..(center, 5, "aura", 'effects_large.dmi')
+	aoeColor
+		icon = 'effects_large.dmi'
+		icon_state = "aoe"
+		pixel_x = -8
+		pixel_y = -8
+		alpha = 51
+		appearance_flags = PIXEL_SCALE
+		New(atom/movable/center, radius, _color)
+			. = ..()
+			centerLoc(center)
+			color = _color
+			if(!radius) radius = 64
+			var scale = (radius*2)/32
+			animate(src, transform = matrix().Scale(scale), 3)
+			spawn(2)
+				animate(src, alpha = 0, 2)

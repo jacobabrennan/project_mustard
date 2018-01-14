@@ -10,7 +10,7 @@
 
 // ^ Blank Dividers for easy cut/paste. 80 & 50 characters long.
 system
-	var/versionMotto = ""
+	var/versionMotto = "Please Leave a Number"
 	proc/loadVersion()
 		system.versionType = "Internal"
 		system.versionNumber = "0.0.12"
@@ -25,26 +25,20 @@ system
 /*-- Feature List - Remember: It's the map and Bosses! COMBAT! -----------------
 
 Focus - Things which must be done this version
-	Finish Clearing out Bugs List
-	Revive meter that fills over fainted character
-		only fills if a character is reviving
-		resets if reviving stops
-		revives once full
-	Add Spell Books
+	Hit Animation
 	Paper & Pencil work needed:
 		brainstorm social systems
-		work out math of mode 7
+	Start work on Social Systems
+		Chat Within Games
+		Help Newbies
 
 
 Upcomming - Feature candidates for the next version
+	Shield - Graphic Overlay
 	Status Panes
 		Game Settings
 		World / Dungeon Map
 	Make Enemies smarter about "shooting" with melee only in melee range
-	Social Systems
-		Chat Within Games
-		Help Newbies
-	Hit Animation
 	Player Profile data
 		Data about the player that persists among all games
 		Preferences
@@ -65,6 +59,8 @@ Set In Stone - Features that have to be finished for 1.0
 		Convey basic story, but make them FEEL AWESOME!
 		SPECTACLE!
 	Goblin Town
+		NPCs needed
+		Dialogue Menues needed
 	Party Editing with multiple character options for subscribers
 
 Spectulative - Ideas for new features to make the game better.
@@ -108,7 +104,10 @@ Deferred - Low Priority Optional Features
 
 //------------------------------------------------------------------------------
 
-Internal 0.0.12 : Jan 12th 2018 --
+Internal 0.0.12 : Jan 12th 2018 -- Please Leave a Number
+	Add Books with AoE healing spell
+	Added basic Effects type
+	Reviving: Party Members must now fill a memter before character is revived.
 
 Internal 0.0.11 : Jan 11th 2018 -- What Test?
 	Editing a character updates in real time anyone who can view that character.

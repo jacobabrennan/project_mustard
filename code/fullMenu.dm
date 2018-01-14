@@ -31,17 +31,25 @@ rpg/menu/gear
 		int.menu.paneSelect.position = 2
 		// Setup Character
 		if(int.character.party.mainCharacter == int.character)
-			imprint(int.character, int.character.party)
+			refreshCharacter(int.character, int.character.party)
 		else
-			imprint(int.character)
+			refreshCharacter(int.character)
 
-	//-- Character Imprinting ------------------------
-	proc/imprint(character/newChar, party/_party)
-		character = newChar
-		var /rpg/int = client.interface
-		//
-		charSelect.imprint(character, _party)
-		int.menu.refresh("equipment", character)
+	//-- Refresh Display with new Data ---------------
+	proc
+		refreshCharacter(character/newChar, party/_party)
+			character = newChar
+			var /rpg/int = client.interface
+			//
+			charSelect.imprint(character, _party)
+			int.menu.refresh("equipment", character)
+		refreshInventory(list/_inventory)
+			inventory.refresh(_inventory)
+			if(!itemInfo) return
+			var /item/viewingItem = itemInfo.slot.storage
+			if(!(viewingItem in _inventory))
+				focus()
+				itemInfo.hide() // Handles deleting
 
 	//-- Controls-------------------------------------
 	control(_character)
@@ -115,10 +123,11 @@ rpg/menu/gear
 		// If we're at the top, highlight the pane selector
 		var /rpg/int = client.interface
 		if(direction == NORTH && focus != charSelect)
-			focus(int.menu.paneSelect)
-			focus = null
-			int.menu.focus(int.menu.paneSelect)
-			return TRUE
+			if(int.isMain())
+				focus(int.menu.paneSelect)
+				focus = null
+				int.menu.focus(int.menu.paneSelect)
+				return TRUE
 		// If it didn't move, change focus to different box
 		else if(B == inventory)
 			if(direction == WEST)
@@ -238,7 +247,7 @@ rpg/menu/gear
 					if(partyIndex > party.characters.len)
 						partyIndex = 1
 					var /rpg/int = client.interface
-					int.menu.gear.imprint(party.characters[partyIndex])
+					int.menu.gear.refreshCharacter(party.characters[partyIndex])
 					return TRUE
 				if(WEST)
 					if(!party)
@@ -248,7 +257,7 @@ rpg/menu/gear
 					if(partyIndex <= 0)
 						partyIndex = party.characters.len
 					var /rpg/int = client.interface
-					int.menu.gear.imprint(party.characters[partyIndex])
+					int.menu.gear.refreshCharacter(party.characters[partyIndex])
 					return TRUE
 
 	//-- Item Info - Item inspecting subcomponent-----
@@ -262,7 +271,11 @@ rpg/menu/gear
 			component/label/itemName
 			component/select/select
 			list/stats
+			//
+			component/box/storageFocus
 		setup(usable/usable)
+			var /rpg/int = client.interface
+			storageFocus = int.menu.gear.focus
 			layer++
 			. = ..()
 			chrome(rect(3*TILE_SIZE,4*TILE_SIZE,10*TILE_SIZE,7*TILE_SIZE))
@@ -278,7 +291,6 @@ rpg/menu/gear
 			var /list/optionNames = list()
 			optionNames["Back"] = "Back"
 			if(istype(usable, /item/gear))
-				var/rpg/int = client.interface
 				if(usable in int.menu.gear.character.equipment)
 					optionNames["Unequip"] = "Unequip"
 				else
@@ -289,7 +301,7 @@ rpg/menu/gear
 			for(var/component/C in stats)
 				del C
 			stats = new()
-			var/item/gear/G = usable
+			var /item/gear/G = usable
 			if(istype(G))
 				if(G.boostHp)
 					var /component/stat/hpStat = addComponent(/component/stat)
@@ -299,13 +311,13 @@ rpg/menu/gear
 					var /component/stat/mpStat = addComponent(/component/stat)
 					mpStat.imprint("mp", G.boostMp)
 					stats.Add(mpStat)
-			var/item/weapon/W = usable
+			var /item/weapon/W = usable
 			if(istype(W))
 				if(W.potency)
 					var /component/stat/atkStat = addComponent(/component/stat)
 					atkStat.imprint("atk", W.potency)
 					stats.Add(atkStat)
-			var/item/shield/S = usable
+			var /item/shield/S = usable
 			if(istype(S))
 				if(S.threshold)
 					var /component/stat/defStat = addComponent(/component/stat)
@@ -316,14 +328,14 @@ rpg/menu/gear
 				statComponent.positionScreen(10*TILE_SIZE,  (9-index)*TILE_SIZE+4)
 		hide()
 			var /rpg/int = client.interface
-			int.menu.gear.focus()
+			int.menu.gear.focus(storageFocus)
 			. = ..()
 			del src
 		control()
 			return TRUE
 		commandDown(command)
 			. = TRUE
-			var/rpg/int = client.interface
+			var /rpg/int = client.interface
 			switch(command)
 				if(BACK)
 					int.menu.gear.focus()

@@ -1,6 +1,6 @@
 
 
-//------------------------------------------------------------------------------
+//-- Party ---------------------------------------------------------------------
 
 party
 	var
@@ -43,6 +43,7 @@ party
 				mainCharacter.get(new /item/gear/plate())
 			soldier.equip(      new /item/weapon/axe(  ))
 			goblin.equip(       new /item/weapon/bow(  ))
+			get(new /item/bookHealing1)
 		addPartyMember(character/partyMember/newMember)
 			if(newMember.partyId == CHARACTER_KING || newMember.partyId == CHARACTER_HERO)
 				mainCharacter = newMember
@@ -208,6 +209,9 @@ party
 				var/plot/P = plot(member)
 				if(P)
 					P.gameOverLock()
+				// Remove controllers from characters (if any)
+				for(var/C in member.controllers)
+					del C
 				// Remove characters and place players into holding
 				if(member.interface && member.interface.client)
 					// Fade client to grayscale
@@ -273,6 +277,7 @@ party
 			C.transition(startPlot)
 
 character/partyMember
+	transitionable = TRUE // Can move between plots
 	proc
 		transition(plot/newPlot, turf/newTurf)
 			if(newTurf)
@@ -312,8 +317,11 @@ character/partyMember
 			)
 			//
 			transition(targetPlot, center)
+
+
+//-- Control & Behavior --------------------------------------------------------
+
 character/partyMember
-	transitionable = TRUE // Can move between plots
 	var
 		partyId
 		party/party
@@ -410,7 +418,9 @@ character/partyMember
 					if(partyMember.hp < partyMember.maxHp())
 						healed = TRUE
 						partyMember.adjustHp(1)
+						new /effect/sparkleHeal(partyMember)
 			if(healed)
+				new /effect/aoeColor(src, 40, "#0f0")
 				adjustMp(-1)
 				return
 			else
@@ -616,6 +626,8 @@ character/partyMember
 		adjustHp(1)
 		adjustMp(0)
 		overlays.Remove(system._faintOverlay)
+		for(var/overlay in system._metersRevive)
+			overlays.Remove(overlay)
 		// Show HUD
 		if(interface && interface.client)
 			interface.client.menu.focus(interface.menu)
@@ -623,6 +635,8 @@ character/partyMember
 sequence/fainted
 	var
 		faintTime = 40 // The time before the character can be revived
+		reviveCount = 0
+		mutable_appearance/reviveMeter // Not mutable
 	init(character/partyMember/char)
 		char.icon_state = "down"
 		flick("faint", char)
@@ -630,38 +644,43 @@ sequence/fainted
 		. = ..()
 	control(character/partyMember/char)
 		if(faintTime-- < 0)
-			if(faintTime == -1)
-				char.overlays.Remove(system._faintOverlay)
+			char.overlays.Remove(reviveMeter)
+			var reviving
 			for(var/character/partyMember/mem in char.party.characters)
 				if(!mem.dead && bounds_dist(char, mem) <= 1)
-					char.revive()
-					. = TRUE
-					del src
+					if(++reviveCount > 80)
+						char.revive()
+						. = TRUE
+						del src
+					reviving = TRUE
+					break
+			if(!reviving)
+				reviveCount = 0
+			else
+				var meter = round(reviveCount/10)+1
+				if(meter >= 1 && meter <= 8)
+					reviveMeter = system._metersRevive[meter]
+					char.overlays.Add(reviveMeter)
 		return TRUE
 
 
-//-- Health & Magic Bars -------------------------------------------------------
+//-- Health & Magic Bars - Also Faiting and Revive Bars ------------------------
 
 system
 	var
 		list/_metersHp = new(TILE_SIZE)
 		list/_metersMp = new(TILE_SIZE)
+		list/_metersRevive = new(8)
 		mutable_appearance/_faintOverlay
 	New()
 		. = ..()
-		var /obj/temp = new()
-		// Prepare faint overlay
-		var /image/faint = image('_wrapper.dmi', null, "faint", FLY_LAYER)
-		faint.pixel_y += TILE_SIZE
-		temp.overlays.Add(faint)
-		for(var/appearance in temp.overlays)
-			_faintOverlay = appearance
-		del temp
+		var /obj/temp
 		// Prepare HP meter overlays
 		for(var/I = 1 to TILE_SIZE)
 			temp = new()
 			var /image/protoAppearance = image('meters.dmi', null, "hp_[I]", FLY_LAYER)
 			protoAppearance.pixel_y = TILE_SIZE+1
+			protoAppearance.plane = PLANE_METERS
 			temp.overlays.Add(protoAppearance)
 			for(var/appearance in temp.overlays)
 				_metersHp[I] = appearance
@@ -671,9 +690,29 @@ system
 			temp = new()
 			var /image/protoAppearance = image('meters.dmi', null, "mp_[I]", FLY_LAYER)
 			protoAppearance.pixel_y = TILE_SIZE+3
+			protoAppearance.plane = PLANE_METERS
 			temp.overlays.Add(protoAppearance)
 			for(var/appearance in temp.overlays)
 				_metersMp[I] = appearance
+			del temp
+		// Prepare faint overlay
+		temp = new()
+		var /image/faint = image('_wrapper.dmi', null, "faint", FLY_LAYER)
+		faint.pixel_y += TILE_SIZE
+		faint.plane = PLANE_METERS
+		temp.overlays.Add(faint)
+		for(var/appearance in temp.overlays)
+			_faintOverlay = appearance
+		del temp
+		// Prepare Revive meter overlay
+		for(var/I = 1 to _metersRevive.len)
+			temp = new()
+			var /image/protoAppearance = image('meters.dmi', null, "revive_[I]", FLY_LAYER)
+			protoAppearance.pixel_y = TILE_SIZE+2
+			protoAppearance.plane = PLANE_METERS
+			temp.overlays.Add(protoAppearance)
+			for(var/appearance in temp.overlays)
+				_metersRevive[I] = appearance
 			del temp
 
 character/partyMember

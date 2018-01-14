@@ -36,7 +36,7 @@
 #include "code\title_screen.dm"
 #include "code\combat\combat.dm"
 #include "code\combat\enemy.dm"
-#include "code\combat\usable.dm"
+#include "code\combat\item.dm"
 #include "code\map\editor.dm"
 #include "code\map\furniture.dm"
 #include "code\map\plot.dm"

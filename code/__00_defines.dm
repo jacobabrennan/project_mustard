@@ -76,6 +76,7 @@
 //-- Display & Menu System -----------------------------------------------------
 
 //-- Drawing Planes ------------------------------
+#define PLANE_METERS 10
 #define PLANE_EFFECTS_START 100
 #define PLANE_EFFECTS_DEPTH 20
 #define PLANE_MENU 150

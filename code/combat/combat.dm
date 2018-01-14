@@ -1,35 +1,5 @@
 
 
-//-- Combatant - Movement and Behavior -----------------------------------------
-
-combatant
-	parent_type = /actor
-	var
-		disposable = TRUE
-			// If the combatant disappears after death
-	New()
-		. = ..()
-		hp = maxHp()
-		mp = maxMp()
-
-	//-- Movement ------------------------------------
-	density = FALSE
-		// Mobs can move other each other to attack, and tile entry is determined by Movement flags
-	movement = MOVEMENT_FLOOR
-	step_size = 1
-		// Must be set in order to turn on pixel movement, even if using step() manually
-	Move(newLoc, newdir, newStepX, newStepY)
-		var deltaX = (x*TILE_SIZE)+step_x
-		var deltaY = (y*TILE_SIZE)+step_y
-		. = ..()
-		if(!.) return
-		deltaX = (x*TILE_SIZE)+step_x - deltaX
-		deltaY = (y*TILE_SIZE)+step_y - deltaY
-		if(!deltaX || !deltaY) return
-		if(abs(deltaX) >= abs(deltaY))
-			dir  &= ~(NORTH|SOUTH)
-		else dir &= ~(EAST |WEST )
-
 	/*-- Submersion ----------------------------------
 	appearance_flags = KEEP_TOGETHER
 	var
@@ -63,6 +33,37 @@ combatant
 		)*/
 		icon = 'specials.dmi'
 		icon_state = "submersion"*/
+
+
+//-- Combatant - Movement and Behavior -----------------------------------------
+
+combatant
+	parent_type = /actor
+	var
+		disposable = TRUE
+			// If the combatant disappears after death
+	New()
+		. = ..()
+		hp = maxHp()
+		mp = maxMp()
+
+	//-- Movement ------------------------------------
+	density = FALSE
+		// Mobs can move other each other to attack, and tile entry is determined by Movement flags
+	movement = MOVEMENT_FLOOR
+	step_size = 1
+		// Must be set in order to turn on pixel movement, even if using step() manually
+	Move(newLoc, newdir, newStepX, newStepY)
+		var deltaX = (x*TILE_SIZE)+step_x
+		var deltaY = (y*TILE_SIZE)+step_y
+		. = ..()
+		if(!.) return
+		deltaX = (x*TILE_SIZE)+step_x - deltaX
+		deltaY = (y*TILE_SIZE)+step_y - deltaY
+		if(!deltaX || !deltaY) return
+		if(abs(deltaX) >= abs(deltaY))
+			dir  &= ~(NORTH|SOUTH)
+		else dir &= ~(EAST |WEST )
 
 	//-- Behavior Hierarchy --------------------------
 	var
