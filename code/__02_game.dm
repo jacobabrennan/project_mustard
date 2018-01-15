@@ -55,7 +55,6 @@ game
 			party.createNew()
 			quest = new()
 		start()
-			diag("Game Starting")
 			var /client/player
 			for(var/client/C)
 				if(C.ckey == ckey(ownerId))

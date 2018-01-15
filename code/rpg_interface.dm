@@ -13,8 +13,8 @@ rpg
 		terrain/currentTerrain
 
 	//-- Connection & Spectating ---------------------
-	New(client/newClient, character/oldCharacter)
-		if(oldCharacter) character = oldCharacter
+	New(client/newClient, character/newCharacter, _gameId)
+		character = newCharacter
 		. = ..()
 	Login()
 		. = ..()
@@ -165,7 +165,7 @@ rpg/menu
 		var /rpg/int = client.interface
 		refresh("hp", int.character)
 		refresh("mp", int.character)
-		refresh("slots", int.character)
+		refresh("hotKeys", int.character)
 		. = ..()
 
 	//-- Control -------------------------------------
@@ -173,9 +173,11 @@ rpg/menu
 		var/block = ..()
 		if(block) return block
 		if(command == BACK)
-			lift()
-			focus(gear)
-			gear.translateIn(NORTH)
+			openMenu()
+	proc/openMenu()
+		lift()
+		focus(gear)
+		gear.translateIn(NORTH)
 
 	//-- Menu Movement Animations --------------------
 	proc
@@ -201,7 +203,7 @@ rpg/menu
 	proc/refresh(which, character/partyMember/updateChar)
 		var/rpg/interface = client.interface
 		switch(which)
-			if("slots")
+			if("hotKeys")
 				// Does not include weapon slot. Covered in "equipment"
 				if(updateChar && interface.character != updateChar) return
 				for(var/I = 1 to 3)

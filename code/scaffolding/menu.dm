@@ -130,12 +130,15 @@ component
 	label
 		var/fontFile = 'rsc/fonts/prstartk.ttf'
 		var/string
-		proc/imprint(_string, width, height, align)
+		proc/imprint(_string, width, height, align, textColor)
 			string = "[_string]"
 			var alignment = ""
 			if(align)
 				alignment = " text-align: [align];"
-			maptext = {"<span style="font-family:'Press Start K'; font-size: 6pt;[alignment]">[string]</span>"}
+			var colorString = ""
+			if(textColor)
+				colorString = " color:[textColor];"
+			maptext = {"<span style="font-family:'Press Start K'; font-size: 6pt;[alignment][colorString]">[string]</span>"}
 			if(isnull(width)) width = 8*length(string)
 			maptext_width = width
 			if(height)

@@ -22,7 +22,7 @@ quest
 //-- Checking & Setting --------------------------------------------------------
 
 	var
-		list/data
+		list/data = new()
 	proc
 		get(key)
 			return data[key]

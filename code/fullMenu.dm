@@ -68,12 +68,16 @@ rpg/menu/gear
 					select(client, int.character, command)
 					int.menu.refresh("hp"   )
 					int.menu.refresh("mp"   )
-					int.menu.refresh("slots")
+					int.menu.refresh("hotKeys")
 					return TRUE
 		// Otherwise check for blocks
 		var/block = ..()
 		if(block) return block
 		. = TRUE
+		// If in item info, just return
+		if(itemInfo && focus == itemInfo)
+			return
+		//
 		switch(command)
 			// Move out of character screen
 			if(NORTH)
@@ -99,9 +103,7 @@ rpg/menu/gear
 		if(hotKey == PRIMARY)
 			if(!selection) return
 			if(activeBox == inventory || activeBox == equipment)
-				itemInfo = addComponent(/rpg/menu/gear/itemInfo)
-				itemInfo.setup(selection)
-				focus(itemInfo)
+				showItem(selection)
 			return
 		// If selection is null, clear hot key
 		if(!selection)
@@ -146,6 +148,13 @@ rpg/menu/gear
 		B = focus
 		if(istype(B))
 			B.positionCursor()
+
+	proc/showItem(item/selection)
+		itemInfo = addComponent(/rpg/menu/gear/itemInfo)
+		itemInfo.setup(selection)
+		focus(itemInfo)
+		spawn()
+			focus(itemInfo)
 
 	//-- Character Select - Subcomponent -------------
 	charSelect
@@ -293,7 +302,7 @@ rpg/menu/gear
 			if(istype(usable, /item/gear))
 				if(usable in int.menu.gear.character.equipment)
 					optionNames["Unequip"] = "Unequip"
-				else
+				else if(int.menu.gear.character.canEquip(usable))
 					optionNames["Equip"] = "Equip"
 			select.setup(3*TILE_SIZE, 6*TILE_SIZE, optionNames)
 			focus(select)
@@ -503,7 +512,8 @@ rpg/menu/party
 				oldInt.spectate()
 			// Handle Addition of players
 			else if(selectChar)
-				new /rpg(selectator.client, selectChar)
+				var /party/P = selectChar.party
+				P.addPlayer(selectator.client, selectChar)
 			// Handle Empty Box Slots (less than 3 characters)
 			else
 				return TRUE

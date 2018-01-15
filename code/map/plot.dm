@@ -165,7 +165,7 @@ plot
 		var/combatant/cavalryType  = cavalryLevel?  terrainModel.cavalry[  cavalryLevel] : null
 		var/combatant/officerType  = officerLevel?  terrainModel.officer[  officerLevel] : null
 		// Attempt to place enemies
-		var/tries = 15
+		var tries = 15
 		for(var/I = 1 to 4)
 			if(!infantryType) break
 			var/combatant/E = new infantryType()
@@ -202,6 +202,9 @@ plot
 				success = E.Move(eLoc)
 				if(success) break
 			if(!success) del E
+	proc/isHostile()
+		var /enemy/E = locate() in area
+		if(E) return TRUE
 	proc/takeTurn()
 		// If deactivate, stop cycle
 		if(!active) return

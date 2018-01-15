@@ -8,18 +8,6 @@ client/verb/reboot()
 client/verb/forceReboot()
 	system.restartWithoutSave()
 
-client
-	var/C
-	New()
-		. = ..()
-		C = pick("red","green","blue","darkred","darkblue","darkgreen","darkgrey")
-		world << {"<i style="color:grey"> - [key] has joined.</i>"}
-	Del()
-		world << {"<i style="color:grey"> - [key] has left.</i>"}
-		. = ..()
-client/verb/say(what as text)
-	world << {"<b style="color:[C]">[key]</b>: [what]"}
-
 client/New()
 	. = ..()
 	spawn(10)

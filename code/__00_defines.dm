@@ -141,6 +141,7 @@
 
 //-- Party & Equipment ---------------------------------------------------------
 #define COMPANIONS_MAX 3
+#define HOTKEY_REMOVE -1
 
 //-- Character IDs -------------------------------
 #define CHARACTER_KING 0

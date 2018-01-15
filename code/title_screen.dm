@@ -30,20 +30,19 @@ titleScreen
 		if(block) return
 titleScreen/menu
 	parent_type = /component
+	icon = 'alpha_title.png'
+	screen_loc = "1,1"
 	var
 		component/select/options
 	setup()
-		chrome(rect(TILE_SIZE, TILE_SIZE, 14*TILE_SIZE, 14*TILE_SIZE))
+		//chrome(rect(TILE_SIZE, TILE_SIZE, 14*TILE_SIZE, 14*TILE_SIZE))
 		var /component/label/L = addComponent(/component/label)
-		L.imprint("Project&nbsp;Mustard")
-		L.positionScreen(40, 224)
-		L = addComponent(/component/label)
-		L.imprint("Title&nbsp;Screen")
-		L.positionScreen(40, 200)
+		L.imprint("Version:&nbsp;[system.versionNumber]", textColor="#00f")
+		L.positionScreen(0, 0)
 		options = addComponent(/component/select)
-		options.setup(84, 150, list(
+		options.setup(68, 64, list(
 			"New&nbsp;Game" = "new",
-			"Continue" = "continue",
+			//"Continue" = "continue",
 			"Spectate" = "spectate",
 			"Edit&nbsp;Map" = "map"
 		))

@@ -6,6 +6,9 @@ usable
 	parent_type = /obj
 	proc/use(character/user)
 
+spell
+	parent_type = /usable
+
 
 //-- Items - can be placed on the map. Characters can "get" --------------------
 
@@ -45,84 +48,6 @@ item
 		proc
 			equipped(character/equipper)
 			unequipped(character/unequipper)
-
-	//-- Instance definitions - factor out -----------
-		plate
-			name = "Plate"
-			position = WEAR_BODY
-			boostHp = 4
-			price = 120
-			icon = 'armor.dmi'
-			icon_state = "armor"
-		cloth
-			name = "Cloth"
-			position = WEAR_BODY
-			price = 30
-			boostHp = 2
-			icon = 'armor.dmi'
-			icon_state = "cloth"
-		buckler
-			name = "Buckler"
-			position = WEAR_SHIELD
-			price = 5
-			boostHp = 0
-			icon = 'armor.dmi'
-			icon_state = "buckler"
-		talaria
-			name = "Talaria"
-			position = WEAR_CHARM
-			price = 60
-			boostHp = 2
-			boostMp = 2
-			icon = 'armor.dmi'
-			icon_state = "talaria"
-		ring
-			name = "Ring"
-			position = WEAR_CHARM
-			price = 255
-			boostMp = 4
-			icon = 'armor.dmi'
-			icon_state = "charm"
-
-	bookHealing1
-		parent_type = /item/book
-		icon_state = "bookHeal1"
-		use(character/user)
-			// Add some kind of flash on the hud
-			if(user.mp < mpCost) return
-			user.adjustMp(-mpCost)
-			var radius = range - (bound_width/2)
-			new /effect/aoeColor(user, radius, "#0f0")
-			for(var/combatant/C in bounds(user, radius))
-				if(!(C.faction & user.faction)) continue
-				C.adjustHp(1)
-				new /effect/sparkleHeal(C)
-
-
-	//-- Item - Basic Archetypes ---------------------
-	book
-		parent_type = /item
-		equipFlags = EQUIP_BOOK
-		icon = 'items.dmi'
-		icon_state = "book"
-		var
-			mpCost = 1
-			range = 48
-
-	//-- Gear - Basic Archetypes ---------------------
-	shield
-		parent_type = /item/gear
-		position = WEAR_SHIELD
-		equipFlags = EQUIP_SHIELD
-		icon = 'armor.dmi'
-		icon_state = "shield"
-		var
-			threshold = 1
-			// Projectiles with potency <= value will be blocked
-		proc
-			defend(projectile/proxy, combatant/attacker, damage)
-				. = TRUE
-				if(damage > threshold) return FALSE
 	weapon
 		parent_type = /item/gear
 		position = WEAR_WEAPON
@@ -136,58 +61,100 @@ item
 			if(!P) return
 			P.potency = potency
 			return P
-		sword
-			equipFlags = EQUIP_SWORD
-			icon_state = "sword"
-			projectileType = /projectile/sword
-			potency = 1
-		axe
-			equipFlags = EQUIP_AXE
-			icon_state = "axe"
-			projectileType = /projectile/axe
-			potency = 2
-		bow
-			equipFlags = EQUIP_BOW
-			icon_state = "crossbow"
-			projectileType = /projectile/bowArrow
-			potency = 1
-			var
-				arrowSpeed = 6
-				arrowRange = 240
-				// Nonconfigurable:
-				projectile/bowArrow/currentArrow
-			use(character/user)
-				del currentArrow
-				var /projectile/bowArrow/A = ..()
-				if(!A) return
-				A.baseSpeed = arrowSpeed
-				A.maxRange = arrowRange
-				A.project()
-				currentArrow = A
-				return A
-			proc/ready()
-				if(!currentArrow) return TRUE
-		wand // Weak Melee attack plus magic projectile
-			equipFlags = EQUIP_WAND
-			icon_state = "wand"
-			projectileType = /projectile/wand
-			potency = 1
-			var
-				spellCost = 1
-				spellProjectileType = /projectile/fire1
-				spellPotency
-				spellSpeed = 6
-				spellRange = 240
-			use(character/user)
-				. = ..()
-				if(user.mp < spellCost) return
-				user.adjustMp(-spellCost)
-				var /projectile/P = user.shoot(spellProjectileType)
-				if(!P) return
-				P.baseSpeed = spellSpeed || P.baseSpeed
-				P.maxRange = spellRange || P.maxRange
-				P.project()
-				return P
+
+	//-- Basic Archetypes ----------------------------
+	book
+		parent_type = /item/gear
+		position = WEAR_SHIELD
+		equipFlags = EQUIP_BOOK
+		icon = 'items.dmi'
+		icon_state = "book"
+		var
+			list/spells
+		equipped(character/partyMember/equipChar)
+			. = ..()
+			var /list/hotKeys = list(SECONDARY, TERTIARY, QUATERNARY)
+			for(var/I = 1 to spells.len)
+				var typepath = spells[I]
+				var /spell/S = new typepath()
+				equipChar.setHotKey(S, hotKeys[I])
+		unequipped(character/partyMember/equipChar)
+			for(var/typepath in spells)
+				var /spell/S = locate(typepath) in equipChar.hotKeys
+				if(!S) continue
+				var index = equipChar.hotKeys.Find(S)
+				var /list/hotKeys = list(SECONDARY, TERTIARY, QUATERNARY)
+				equipChar.setHotKey(HOTKEY_REMOVE, hotKeys[index])
+				del S
+	shield
+		parent_type = /item/gear
+		position = WEAR_SHIELD
+		equipFlags = EQUIP_SHIELD
+		icon = 'armor.dmi'
+		icon_state = "shield"
+		var
+			threshold = 1
+			// Projectiles with potency <= value will be blocked
+		proc
+			defend(projectile/proxy, combatant/attacker, damage)
+				. = TRUE
+				if(damage > threshold) return FALSE
+	sword
+		parent_type = /item/weapon
+		equipFlags = EQUIP_SWORD
+		icon_state = "sword"
+		projectileType = /projectile/sword
+		potency = 1
+	axe
+		parent_type = /item/weapon
+		equipFlags = EQUIP_AXE
+		icon_state = "axe"
+		projectileType = /projectile/axe
+		potency = 1
+	bow
+		parent_type = /item/weapon
+		equipFlags = EQUIP_BOW
+		icon_state = "crossbow"
+		projectileType = /projectile/bowArrow
+		potency = 1
+		var
+			arrowSpeed = 6
+			arrowRange = 240
+			// Nonconfigurable:
+			projectile/bowArrow/currentArrow
+		use(character/user)
+			del currentArrow
+			var /projectile/bowArrow/A = ..()
+			if(!A) return
+			A.baseSpeed = arrowSpeed
+			A.maxRange = arrowRange
+			A.project()
+			currentArrow = A
+			return A
+		proc/ready()
+			if(!currentArrow) return TRUE
+	wand // Weak Melee attack plus magic projectile
+		parent_type = /item/weapon
+		equipFlags = EQUIP_WAND
+		icon_state = "wand"
+		projectileType = /projectile/wand
+		potency = 1
+		var
+			spellCost = 1
+			spellProjectileType = /projectile/fire1
+			spellPotency
+			spellSpeed = 6
+			spellRange = 240
+		use(character/user)
+			. = ..()
+			if(user.mp < spellCost) return
+			user.adjustMp(-spellCost)
+			var /projectile/P = user.shoot(spellProjectileType)
+			if(!P) return
+			P.baseSpeed = spellSpeed || P.baseSpeed
+			P.maxRange = spellRange || P.maxRange
+			P.project()
+			return P
 
 
 //-- Enemy Drops (eg: hearts) --------------------------------------------------

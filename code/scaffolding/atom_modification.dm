@@ -37,6 +37,8 @@ proc/terrain(atom/contained)
 	if(istype(T)) return T
 proc/game(atom/contained)
 	var gameId
+	// Case: No argument
+	if(!contained) return
 	// Case: gameId supplied
 	if(istext(contained))
 		gameId = contained

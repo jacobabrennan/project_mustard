@@ -10,10 +10,10 @@
 
 // ^ Blank Dividers for easy cut/paste. 80 & 50 characters long.
 system
-	var/versionMotto = "Please Leave a Number"
+	var/versionMotto = "Captain's Log..."
 	proc/loadVersion()
 		system.versionType = "Internal"
-		system.versionNumber = "0.0.12"
+		system.versionNumber = "0.0.13"
 		system.versionHub = 0
 		spawn(1)
 			world << "<b>Version [versionType] [versionNumber]</b>: [versionMotto]"
@@ -24,20 +24,27 @@ system
 
 /*-- Feature List - Remember: It's the map and Bosses! COMBAT! -----------------
 
-Focus - Things which must be done this version
-	Hit Animation
-	Paper & Pencil work needed:
-		brainstorm social systems
-	Start work on Social Systems
-		Chat Within Games
-		Help Newbies
+Alpha1 Test - Test Basic Movement & Combat Systems
+	Large Map to Wander around
+	Lots of enemies
+		At least one boss level enemy
+	At least one upgrade item for each class
 
+Focus - Things which must be done this version
+	Contact Susan
 
 Upcomming - Feature candidates for the next version
+	Hit Animation
+	Problem: This game is based around "bullet hell" levels of enemy activity.
+		At the scale currently planned (and allowed by networking constraints)
+		what can be done to provide that level of challenge?
+		As it stands, even rudimentary AI clears out tough enemies in no time,
+		and pretty much all I can do is give them more hp.
 	Shield - Graphic Overlay
 	Status Panes
 		Game Settings
 		World / Dungeon Map
+			Map shows where party members are
 	Make Enemies smarter about "shooting" with melee only in melee range
 	Player Profile data
 		Data about the player that persists among all games
@@ -48,6 +55,7 @@ Upcomming - Feature candidates for the next version
 	Begin Final Mapping
 
 Set In Stone - Features that have to be finished for 1.0
+	Audio Systems - Both Music & Sound Effects
 	Title Screen
 		With Animation
 		Join Game in progress
@@ -64,6 +72,8 @@ Set In Stone - Features that have to be finished for 1.0
 	Party Editing with multiple character options for subscribers
 
 Spectulative - Ideas for new features to make the game better.
+	No treasure chests, but statues that come to life?
+	Hidden Gnomes
 	Pause Game when player 1 goes to status
 	The Khandroma (airship) - Red Caps
 		File Bug report. This is necessary and won't get fixed otherwise.
@@ -78,6 +88,7 @@ Spectulative - Ideas for new features to make the game better.
 		attack with wand when enemies are close and we can't escape or heal
 	Plot Backgrounds that show distant scenary,
 		like you're walking on a mountain ridge looking out at the sunset
+	Make the screen shake for big impacts
 	Submersion
 	Languages - Portuguese!
 	Wind
@@ -103,6 +114,12 @@ Deferred - Low Priority Optional Features
 
 
 //------------------------------------------------------------------------------
+
+Internal 0.0.13 : Jan 13th 2018 -- Captain's Log...
+	Basic Chests, Have a quest id and an item type
+	Books can now add more than one spell.
+	Cleric's AI responds to which healing spell is in their equipped book.
+	Added Basic chat System with channels/tabs for game and system.
 
 Internal 0.0.12 : Jan 12th 2018 -- Please Leave a Number
 	Add Books with AoE healing spell

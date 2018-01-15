@@ -114,7 +114,7 @@ system
 				registerPlayer(C)
 		restartWithoutSave()
 			diag("<b>---- System Restarting ----</b>")
-			world << "-------------------------------------------------------------------------------------------------"
+			world << "<hr>"
 			world.Reboot()
 		restart()
 			//environment.deactivate()

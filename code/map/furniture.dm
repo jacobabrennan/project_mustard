@@ -54,6 +54,72 @@ furniture/deleter
 		. = ..()
 		spawn(1)
 			del src
+
+furniture/chest
+	icon = 'desert.dmi'
+	icon_state = "chest"
+	interaction = INTERACTION_TOUCH
+	var
+		treasureId
+		treasureType
+		//
+		open = FALSE
+	toJSON()
+		var /list/objectData = ..()
+		objectData["treasureId"] = treasureId
+		objectData["treasureType"] = treasureType
+		return objectData
+	fromJSON(list/objectData)
+		. = ..()
+		treasureId = objectData["treasureId"]
+		treasureType = objectData["treasureType"]
+	_configureMapEditor()
+		var temp = input("Set Treasure Id", "Treasure Chest", treasureId) as text
+		if(!temp) return
+		treasureId = temp
+		temp = text2path(input("Set Treasure Typepath", "Treasure Chest", "[treasureType]") as text)
+		if(!(ispath(temp))) return
+		treasureType = temp
+		alert("Treasure Set", "Treasure Chest")
+	activate()
+		var /plot/P = plot(src)
+		var /game/G = game(P)
+		var questState = G.quest.get("treasureId")
+		var /terrain/T = terrains[P.terrain]
+		icon = T.icon
+		if(questState)
+			icon_state = "chest_open"
+			open = TRUE
+		else
+			icon_state = "chest"
+			open = FALSE
+	interact(character/partyMember/touchChar, interactFlags)
+		// Return if already open the plot is hostile
+		if(open)
+			return
+		var /plot/P = plot(src)
+		if(P.isHostile())
+			return
+		// Make sure it's a player interacting
+		if(!istype(touchChar) || !(touchChar.faction&FACTION_PLAYER) || !touchChar.interface)
+			return
+		// Set quest and close chest
+		var /game/G = game(P)
+		G.quest.put(treasureId, TRUE)
+		icon_state = "chest_open"
+		open = TRUE
+		// Instantiate the item and add to party inventory
+		var /item/newItem = new treasureType()
+		touchChar.get(newItem)
+		// Show the item to all players in the plot
+		for(var/character/partyMember/member in aloc(src))
+			var rpg/int = member.interface
+			if(!int) continue
+			int.menu.openMenu()
+			int.menu.gear.showItem(newItem)
+
+
+
 furniture/tree
 	icon = 'tree1.dmi'
 	icon_state = "tree1"

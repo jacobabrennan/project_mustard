@@ -35,6 +35,7 @@ interface/mapEditor
 		// Start Game Instance to manage the Map
 		var /game/G = system.newGame(ID_SYSTEM, "edit")
 		gameId = G.gameId
+		G.quest = new()
 		// Find starting place and display to client
 		forceLoc(locate(round(world.maxx/2),round(world.maxy/2),1))
 
@@ -249,6 +250,7 @@ interface/mapEditor/menu/basicPalette
 			null,
 			new /interface/mapEditor/menu/paletteOption{ typePath=/memory/entrance}(),
 			new /interface/mapEditor/menu/paletteOption{ typePath=/furniture/tree}(),
+			new /interface/mapEditor/menu/paletteOption{ typePath=/furniture/chest}(),
 			new /interface/mapEditor/menu/basicPalette/configure(),
 		))
 
