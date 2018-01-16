@@ -130,6 +130,7 @@ system
 		//
 		loadUtilities()
 			setupTerrains()
+			setupMap()
 
 	//-- Player Handling -------------------//
 	proc

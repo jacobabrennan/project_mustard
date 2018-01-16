@@ -2,7 +2,7 @@
 
 //-- Wrapper - To be factored out or removed -----------------------------------
 
-#define REGION_TEST "test"
+#define REGION_OVERWORLD "overworld"
 #define SAVE_TEST "savvy"
 
 #define COMPOUND_INDEX(X,Y,WIDTH) (((Y)-1)*(WIDTH)+(X))
@@ -165,8 +165,8 @@
 #define EQUIP_SHIELD 16
 #define EQUIP_BOOK 32
 #define EQUIP_ARMOR 64
-#define EQUIP_ROBE 128
-#define EQUIP_0000000100000000 256
+#define EQUIP_LIGHTARMOR 128
+#define EQUIP_ROBE 256
 #define EQUIP_0000001000000000 512
 #define EQUIP_0000010000000000 1024
 #define EQUIP_0000100000000000 2048

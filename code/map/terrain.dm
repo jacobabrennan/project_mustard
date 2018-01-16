@@ -36,7 +36,7 @@ terrain
 				if("."," ","+","'") tileType = /tile/land
 				else
 					tileType = /tile/water/ocean
-					world << "Problem: [tileChar]"
+					diag("Problem: [tileChar]")
 			return tileType
 		type2Char(tileType)
 			var/tileChar
@@ -49,7 +49,7 @@ terrain
 				if(/tile/land) tileChar = "."
 				else
 					tileChar = "~"
-					world << "Problem: [tileType]"
+					diag("Problem: [tileType]")
 			return tileChar
 		setupTileInteraction(tile/interact/theTile)
 		triggerTileInteraction(tile/interact/theTile, atom/interactor, interactionFlags)

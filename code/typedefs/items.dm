@@ -3,6 +3,28 @@
 //-- Item Type Definitions - Weapons, Gear, Books ------------------------------
 
 item
+	sword1
+	sword2
+	axe1
+	axe2
+	wand1
+	wand2
+	bow1
+	bow2
+	shield1
+	shield2
+	arrow1
+	arrow2
+	lightArmor1
+	lightArmor2
+	armor1
+	armor2
+	robe1
+	robe2
+	flail1
+
+
+item
 	plate
 		parent_type = /item/gear
 		name = "Plate"
@@ -50,14 +72,10 @@ item
 		icon_state = "bookHeal1"
 		spells = list(/spell/heal1)
 
+
+//-- Spells from Books ---------------------------------------------------------
+
 spell
-	icon = 'spells.dmi'
-	var
-		mpCost = 1
-	//
-	heal
-		var
-			range = 48
 	heal1
 		parent_type = /spell/heal
 		icon_state = "heal1"

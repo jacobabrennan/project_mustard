@@ -10,10 +10,10 @@
 
 // ^ Blank Dividers for easy cut/paste. 80 & 50 characters long.
 system
-	var/versionMotto = "Captain's Log..."
+	var/versionMotto = "His power level is incredible!"
 	proc/loadVersion()
 		system.versionType = "Internal"
-		system.versionNumber = "0.0.13"
+		system.versionNumber = "0.0.14"
 		system.versionHub = 0
 		spawn(1)
 			world << "<b>Version [versionType] [versionNumber]</b>: [versionMotto]"
@@ -31,7 +31,8 @@ Alpha1 Test - Test Basic Movement & Combat Systems
 	At least one upgrade item for each class
 
 Focus - Things which must be done this version
-	Contact Susan
+	Change Channel Tab when entering game
+	Enemy Parties
 
 Upcomming - Feature candidates for the next version
 	Hit Animation
@@ -46,13 +47,12 @@ Upcomming - Feature candidates for the next version
 		World / Dungeon Map
 			Map shows where party members are
 	Make Enemies smarter about "shooting" with melee only in melee range
-	Player Profile data
-		Data about the player that persists among all games
-		Preferences
-		Accomplishments
 	More Final Enemies
 	More Final Items
 	Begin Final Mapping
+	Goblin Town
+		NPCs needed
+		Dialogue Menues needed
 
 Set In Stone - Features that have to be finished for 1.0
 	Audio Systems - Both Music & Sound Effects
@@ -66,12 +66,19 @@ Set In Stone - Features that have to be finished for 1.0
 		Regressia Hero against Lorcan (legend, not true)
 		Convey basic story, but make them FEEL AWESOME!
 		SPECTACLE!
-	Goblin Town
-		NPCs needed
-		Dialogue Menues needed
 	Party Editing with multiple character options for subscribers
+	Player Profile data
+		Data about the player that persists among all games
+		Preferences
+		Accomplishments
 
 Spectulative - Ideas for new features to make the game better.
+	Charms that can adjust just about anything:
+		alter basic stats (max hp/mp, regain hp/mp, base speed)
+		alter derived stats (weapon attack, shield threshold, spell range)
+		alter allowed equip flags
+		allow equiping two handed weapons with one hand
+		add spells to hot keys
 	No treasure chests, but statues that come to life?
 	Hidden Gnomes
 	Pause Game when player 1 goes to status
@@ -115,6 +122,10 @@ Deferred - Low Priority Optional Features
 
 //------------------------------------------------------------------------------
 
+Internal 0.0.14 : Jan 14th 2018 -- His power level is incredible!
+	Added Two Handed Weapons
+	Refactored Region Saving and Loading to share memory across game instances.
+
 Internal 0.0.13 : Jan 13th 2018 -- Captain's Log...
 	Basic Chests, Have a quest id and an item type
 	Books can now add more than one spell.
@@ -124,7 +135,7 @@ Internal 0.0.13 : Jan 13th 2018 -- Captain's Log...
 Internal 0.0.12 : Jan 12th 2018 -- Please Leave a Number
 	Add Books with AoE healing spell
 	Added basic Effects type
-	Reviving: Party Members must now fill a memter before character is revived.
+	Reviving: Party Members must now fill a meter before character is revived.
 
 Internal 0.0.11 : Jan 11th 2018 -- What Test?
 	Editing a character updates in real time anyone who can view that character.

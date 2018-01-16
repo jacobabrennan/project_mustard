@@ -80,6 +80,9 @@ character
 			. = TRUE
 			if(!istype(newGear)) return FALSE
 			if(!(equipFlags & newGear.equipFlags)) return FALSE
+			if(newGear.position == WEAR_SHIELD)
+				var /item/weapon/W = equipment[WEAR_WEAPON]
+				if(W && W.twoHanded) return FALSE
 
 	//-- Combat Redefinitions ----------------------//
 	shoot(projType)

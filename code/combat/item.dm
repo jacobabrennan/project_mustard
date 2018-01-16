@@ -8,6 +8,12 @@ usable
 
 spell
 	parent_type = /usable
+	icon = 'spells.dmi'
+	var
+		mpCost = 1
+	heal
+		var
+			range = 48
 
 
 //-- Items - can be placed on the map. Characters can "get" --------------------
@@ -54,6 +60,7 @@ item
 		icon = 'weapons.dmi'
 		icon_state = "sword"
 		var
+			twoHanded = FALSE
 			potency = 1
 			projectileType = /projectile/sword
 		use(character/user)
@@ -61,31 +68,14 @@ item
 			if(!P) return
 			P.potency = potency
 			return P
-
-	//-- Basic Archetypes ----------------------------
-	book
-		parent_type = /item/gear
-		position = WEAR_SHIELD
-		equipFlags = EQUIP_BOOK
-		icon = 'items.dmi'
-		icon_state = "book"
-		var
-			list/spells
 		equipped(character/partyMember/equipChar)
 			. = ..()
-			var /list/hotKeys = list(SECONDARY, TERTIARY, QUATERNARY)
-			for(var/I = 1 to spells.len)
-				var typepath = spells[I]
-				var /spell/S = new typepath()
-				equipChar.setHotKey(S, hotKeys[I])
-		unequipped(character/partyMember/equipChar)
-			for(var/typepath in spells)
-				var /spell/S = locate(typepath) in equipChar.hotKeys
-				if(!S) continue
-				var index = equipChar.hotKeys.Find(S)
-				var /list/hotKeys = list(SECONDARY, TERTIARY, QUATERNARY)
-				equipChar.setHotKey(HOTKEY_REMOVE, hotKeys[index])
-				del S
+			if(twoHanded)
+				var /item/gear/secondHand = equipChar.equipment[WEAR_SHIELD]
+				if(secondHand)
+					equipChar.unequip(secondHand)
+
+	//-- Basic Archetypes ----------------------------
 	shield
 		parent_type = /item/gear
 		position = WEAR_SHIELD
@@ -108,6 +98,7 @@ item
 	axe
 		parent_type = /item/weapon
 		equipFlags = EQUIP_AXE
+		twoHanded = TRUE
 		icon_state = "axe"
 		projectileType = /projectile/axe
 		potency = 1
@@ -133,6 +124,7 @@ item
 			return A
 		proc/ready()
 			if(!currentArrow) return TRUE
+	arrow
 	wand // Weak Melee attack plus magic projectile
 		parent_type = /item/weapon
 		equipFlags = EQUIP_WAND
@@ -155,6 +147,29 @@ item
 			P.maxRange = spellRange || P.maxRange
 			P.project()
 			return P
+	book
+		parent_type = /item/gear
+		position = WEAR_SHIELD
+		equipFlags = EQUIP_BOOK
+		icon = 'items.dmi'
+		icon_state = "book"
+		var
+			list/spells
+		equipped(character/partyMember/equipChar)
+			. = ..()
+			var /list/hotKeys = list(SECONDARY, TERTIARY, QUATERNARY)
+			for(var/I = 1 to spells.len)
+				var typepath = spells[I]
+				var /spell/S = new typepath()
+				equipChar.setHotKey(S, hotKeys[I])
+		unequipped(character/partyMember/equipChar)
+			for(var/typepath in spells)
+				var /spell/S = locate(typepath) in equipChar.hotKeys
+				if(!S) continue
+				var index = equipChar.hotKeys.Find(S)
+				var /list/hotKeys = list(SECONDARY, TERTIARY, QUATERNARY)
+				equipChar.setHotKey(HOTKEY_REMOVE, hotKeys[index])
+				del S
 
 
 //-- Enemy Drops (eg: hearts) --------------------------------------------------

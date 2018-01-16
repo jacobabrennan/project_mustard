@@ -12,8 +12,8 @@ region
 		height
 		grid/plots
 		list/activePlots = list()
-		gridText
 		coord/entrance // Mostly for use in dungeons
+		defaultTerrain
 	//
 	New(_regionId)
 		. = ..()
@@ -25,27 +25,28 @@ region
 //-- Saving & Loading ----------------------------------------------------------
 
 	toJSON()
-		var/list/regionData = ..()
-		regionData["id"] = id
-		regionData["mapOffset"] = mapOffset?.toJSON()
-		regionData["width"] = width
-		regionData["height"] = height
-		regionData["gridText"] = gridText
-		regionData["plots"] = plots.toJSON()
-		if(entrance) regionData["entrance"] = entrance.toJSON()
-		return regionData
+		var/list/objectData = ..()
+		objectData["id"] = id
+		objectData["mapOffset"] = mapOffset?.toJSON()
+		objectData["width"] = width
+		objectData["height"] = height
+		objectData["gridText"] = system.map.gridData[id]
+		objectData["plots"] = plots.toJSON()
+		objectData["defaultTerrain"] = defaultTerrain || "forest"
+		if(entrance) objectData["entrance"] = entrance.toJSON()
+		return objectData
 	fromJSON(list/objectData)
 		id = objectData["id"]
 		mapOffset = json2Object(objectData["mapOffset"])
 		width = objectData["width"]
 		height = objectData["height"]
+		defaultTerrain = objectData["defaultTerrain"]
 		world.maxx = max(world.maxx, PLOT_SIZE*width)
 		world.maxy = max(world.maxy, PLOT_SIZE*height)
-		gridText = objectData["gridText"]
 		if(objectData["entrance"]) entrance = json2Object(objectData["entrance"])
 		plots = json2Object(objectData["plots"])
 		setLocation(mapOffset.x, mapOffset.y, mapOffset.z)
-		setSize(width, height)
+		setSize()
 
 
 //-- Configuring Location & Size -----------------------------------------------
@@ -61,7 +62,39 @@ region
 	//-- Set Size & Location -------------------------
 	proc/setLocation(_x, _y, _z)
 		mapOffset = new(_x, _y, _z)
-	proc/setSize(setWidth, setHeight, defaultTerrain)
+	proc/setSize(setWidth, setHeight, _defaultTerrain)
+		if(_defaultTerrain)	defaultTerrain = _defaultTerrain
+		if((setWidth && setWidth != width) || (setHeight && setHeight != height))
+			return resize(setWidth, setHeight, defaultTerrain)
+		//
+		del _regionMarker
+		_regionMarker = new(null, src)
+		// Set to new metrics
+		var/fullWidth  = PLOT_SIZE*width
+		var/fullHeight = PLOT_SIZE*height
+		// Resize world if needbe
+		world.maxx = max(world.maxx, (mapOffset.x*PLOT_SIZE)+fullWidth)
+		world.maxy = max(world.maxy, (mapOffset.y*PLOT_SIZE)+fullHeight)
+		world.maxz = max(world.maxz, z())
+		// Configure plot
+		for(var/posX = 0 to width-1)
+			for(var/posY = 0 to height-1)
+				var /plot/P = getPlot(posX, posY)
+				P.x = posX
+				P.y = posY
+				P.gameId = gameId
+				if(P.warpId)
+					setWarp(P.warpId, P)
+		// For map editor sake, add region marker to unrevealed areas
+		for(var/posY = 0 to fullHeight-1)
+			for(var/posX = 0 to fullWidth-1)
+				var /turf/T = locate(
+					(mapOffset.x*PLOT_SIZE)+posX+1,
+					(mapOffset.y*PLOT_SIZE)+posY+1,
+					z()
+				)
+				_regionMarker.contents.Add(T)
+	proc/resize(setWidth, setHeight, defaultTerrain)
 		del _regionMarker
 		_regionMarker = new(null, src)
 		// Unreveal any old plots
@@ -69,7 +102,7 @@ region
 			P.unreveal()
 		// Save old Data
 		var /grid/oldPlots = plots
-		var oldGridText = gridText
+		var oldGridText = system.map.gridData[id]
 		// Set to new metrics
 		warpPlots = new()
 		width  = setWidth  || DEFAULT_PLOTS
@@ -97,7 +130,7 @@ region
 					plots.put(posX, posY, P)
 					P.x = posX
 					P.y = posY
-					P.terrain = _defaultTerrain
+					//P.terrain = _defaultTerrain
 				// Properly Configure Plot
 				P.gameId = gameId
 				if(P.warpId)
@@ -107,22 +140,22 @@ region
 			if(P in plots.contents()) continue
 			del P
 		// Generate Grid Text
-		gridText = ""
+		var newGridText = ""
 		if(length(oldGridText))	//Try to populate from old data
 			var oldFullWidth  = PLOT_SIZE*oldPlots.width
 			var oldFullHeight = PLOT_SIZE*oldPlots.height
 			for(var/posY = 0 to fullHeight-1)
 				for(var/posX = 0 to fullWidth-1)
 					if(posX >= oldFullWidth || posY >= oldFullHeight)
-						gridText += "#"
+						newGridText += "#"
 					else
 						var/compoundIndex = (posY*oldFullWidth) + posX
 						var/tileChar = copytext(oldGridText, compoundIndex+1, compoundIndex+2)
-						gridText += tileChar
+						newGridText += tileChar
 		else // Otherwise, create new data
 			for(var/posY = 0 to fullHeight-1)
 				for(var/posX = 0 to fullWidth-1)
-					gridText += "#"
+					newGridText += "#"
 		// For map editor sake, add region marker to unrevealed areas
 		for(var/posY = 0 to fullHeight-1)
 			for(var/posX = 0 to fullWidth-1)
@@ -132,6 +165,8 @@ region
 					z()
 				)
 				_regionMarker.contents.Add(T)
+		//
+		system.map.gridData[id] = newGridText
 
 
 //-- Warp Points ---------------------------------------------------------------
@@ -158,7 +193,7 @@ region
 		// Change grid coordinate into string index (Accounting for DM's indexes starting at 1)
 		var/compoundIndex = (y-1)*(width*PLOT_SIZE) + x
 		// Get character at string index
-		var/tileChar = copytext(gridText, compoundIndex, compoundIndex+1)
+		var/tileChar = copytext(system.map.gridData[id], compoundIndex, compoundIndex+1)
 		// Convert character into tile type and return
 		var/tileType = char2Type(tileChar)
 		return tileType
@@ -172,7 +207,7 @@ region
 		// Get tile character from tileType
 		var/tileChar = type2Char(tileType)
 		// Edit the new gridText value into place
-		gridText = copytext(gridText, 1, compoundIndex)+tileChar+copytext(gridText, compoundIndex+1)
+		system.map.gridData[id] = copytext(system.map.gridData[id], 1, compoundIndex)+tileChar+copytext(system.map.gridData[id], compoundIndex+1)
 		//
 		var borderX
 		var borderY
@@ -190,7 +225,7 @@ region
 			borderY = y+1
 		if(borderX && borderY)
 			compoundIndex = (borderY-1)*(width*PLOT_SIZE) + borderX
-			gridText = copytext(gridText, 1, compoundIndex)+tileChar+copytext(gridText, compoundIndex+1)
+			system.map.gridData[id] = copytext(system.map.gridData[id], 1, compoundIndex)+tileChar+copytext(system.map.gridData[id], compoundIndex+1)
 			var/plot/borderPlot = getPlotAt(borderX, borderY)
 			if(borderPlot)
 				revealTileAt(borderX, borderY)
@@ -301,7 +336,7 @@ region
 				//
 				else
 					tileType = /tile/water/ocean
-					world << "Problem: [tileChar]"
+					diag("Problem: [tileChar]")
 			return tileType
 		type2Char(tileType)
 			var/tileChar
@@ -330,5 +365,5 @@ region
 				//
 				else
 					tileChar = "~"
-					world << "problem: [tileType]"
+					diag("problem: [tileType]")
 			return tileChar

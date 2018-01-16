@@ -85,7 +85,7 @@ furniture/chest
 		var /plot/P = plot(src)
 		var /game/G = game(P)
 		var questState = G.quest.get("treasureId")
-		var /terrain/T = terrains[P.terrain]
+		var /terrain/T = terrain(P)
 		icon = T.icon
 		if(questState)
 			icon_state = "chest_open"

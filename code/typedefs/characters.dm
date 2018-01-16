@@ -8,7 +8,7 @@ character/partyMember
 		partyId = CHARACTER_KING
 		equipFlags = EQUIP_ANY
 		icon = 'regressia_hero.dmi'
-		baseHp = 6
+		baseHp = 3
 		baseMp = 4
 	hero
 		name = "Hero"
@@ -16,8 +16,8 @@ character/partyMember
 		equipFlags = EQUIP_ANY
 		icon = 'hero.dmi'
 		portrait = "Hero"
-		baseHp = 6
-		baseMp = 4
+		baseHp = 3
+		baseMp = 3
 	cleric
 		name = "Cleric"
 		partyId = CHARACTER_CLERIC
@@ -25,7 +25,7 @@ character/partyMember
 		icon = 'cleric.dmi'
 		portrait = "Cleric"
 		partyDistance = 12
-		baseHp = 4
+		baseHp = 3
 		baseMp = 3
 		baseAuraRegain = 9
 		behavior()
@@ -59,7 +59,7 @@ character/partyMember
 		icon = 'soldier.dmi'
 		portrait = "Soldier"
 		partyDistance = 0
-		baseHp = 10
+		baseHp = 3
 		var
 			combatant/target
 		behavior()
@@ -109,7 +109,7 @@ character/partyMember
 		partyDistance = 24
 		//baseSpeed = 4
 		roughWalk = 16
-		baseHp = 6
+		baseHp = 3
 		var
 			combatant/target
 		behavior()

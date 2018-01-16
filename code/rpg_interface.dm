@@ -92,7 +92,7 @@ rpg
 	proc/transition(plot/newPlot)
 		ASSERT(istype(newPlot))
 		//var /terrain/oldTerrain = currentTerrain
-		currentTerrain = terrains[newPlot.terrain]
+		currentTerrain = terrain(newPlot)
 		// Display Transition Dialogue
 		//if(oldTerrain && currentTerrain.name && oldTerrain.name != currentTerrain.name)
 		//	client.menu.transition(currentTerrain.name)

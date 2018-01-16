@@ -32,8 +32,15 @@ proc/plot(atom/contained)
 	var/plot/plotArea/PA = aloc(contained)
 	if(istype(PA)) return PA.plot
 proc/terrain(atom/contained)
-	var/plot/P = plot(contained)
-	var/terrain/T = terrains[P.terrain]
+	var/plot/P = contained
+	if(!istype(P))
+		P = plot(contained)
+	var terrainId = P.terrain
+	if(!terrainId)
+		var /game/G = system.getGame(P.gameId)
+		var /region/R = G.getRegion(P.regionId)
+		terrainId = R.defaultTerrain
+	var/terrain/T = terrains[terrainId]
 	if(istype(T)) return T
 proc/game(atom/contained)
 	var gameId

@@ -201,7 +201,7 @@ interface/mapEditor/menu
 			if(ispath(typePath, /tile))
 				R.changeTileAt(location.x, location.y, typePath)
 				if(typePath == /tile/interact)
-					var /terrain/T = terrains[P.terrain]
+					var /terrain/T = terrain(P)
 					T.setupTileInteraction(locate(location.x, location.y, R.z()))
 			// If we're making furniture:
 			else if(ispath(typePath, /furniture))
@@ -316,7 +316,7 @@ interface/mapEditor/menu/basicPalette
 					alert("There is already a region at this location.", "Create Region")
 					return
 				// Prompt user for region ID and default terrain
-				var regionName = input("Set ID of new region", "Create Region", REGION_TEST) as text|null
+				var regionName = input("Set ID of new region", "Create Region", REGION_OVERWORLD) as text|null
 				regionName = ckey(regionName)
 				if(!regionName) return
 				var defaultTerrain = input("Set Default Terrain","Create Region") in terrains
@@ -328,6 +328,7 @@ interface/mapEditor/menu/basicPalette
 				var /region/R = new(regionName)
 				G.registerRegion(R)
 				// Configure and display region
+				system.map.gridData[regionName] = ""
 				R.setLocation(
 					round((editor.x-1)/PLOT_SIZE),
 					round((editor.y-1)/PLOT_SIZE),
@@ -409,12 +410,17 @@ interface/mapEditor/menu/basicPalette
 				var regionId = input("Select region to load", "Load Region") as null|anything in regionSaves
 				if(!regionId) return
 				// Load the region from file data
-				var filePath = "[FILE_PATH_REGIONS]/[regionId].json"
+				system.map.loadRegion(regionId)
+				var /list/objectData = system.map.regionTemplates[regionId]
+				var /region/R = new(regionId)
+				G.registerRegion(R)
+				R.fromJSON(objectData)
+				/*var filePath = "[FILE_PATH_REGIONS]/[regionId].json"
 				ASSERT(fexists(filePath))
 				var /list/objectData = json_decode(file2text(filePath))
 				var /region/R = new(regionId)
 				G.registerRegion(R)
-				R.fromJSON(objectData)
+				R.fromJSON(objectData)*/
 				// Move editor to region
 				var /plot/P = plot(editor) // Moving to null isn't working, for unknown reasons
 				editor.Move(null) // so brute force it is

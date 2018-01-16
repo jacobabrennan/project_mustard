@@ -42,6 +42,7 @@
 #include "code\map\furniture.dm"
 #include "code\map\plot.dm"
 #include "code\map\region.dm"
+#include "code\map\regionLoader.dm"
 #include "code\map\terrain.dm"
 #include "code\map\tile.dm"
 #include "code\scaffolding\actor.dm"

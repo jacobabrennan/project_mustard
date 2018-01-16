@@ -16,8 +16,6 @@ tile
 		movement = MOVEMENT_NONE
 		rough = 1
 		deep = FALSE
-	proc/buildAllow(interface/player, town/terrainModel/tileModel)
-		return TRUE
 	Enter(atom/movable/entrant)
 		if(!(entrant.movement & movement))
 			return FALSE
@@ -34,8 +32,6 @@ tile
 		deep = TRUE
 		density = TRUE
 		ocean
-			buildAllow(interface/player, town/terrainModel/tileModel)
-				return FALSE
 	land
 		icon_state = "floor"
 		movement = MOVEMENT_FLOOR

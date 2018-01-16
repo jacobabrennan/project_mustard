@@ -24,11 +24,12 @@ plot
 	toJSON()
 		var/list/objectData = ..()
 		objectData["regionId"] = regionId
-		objectData["x"] = x
-		objectData["y"] = y
-		objectData["warpId"] = warpId
-		objectData["terrain"] = terrain
-		objectData["enemyLevel"] = enemyLevel
+		if(warpId)
+			objectData["warpId"] = warpId
+		if(terrain)
+			objectData["terrain"] = terrain
+		if(enemyLevel != 1)
+			objectData["enemyLevel"] = enemyLevel
 		var/list/furnitureArray = list()
 		for(var/furniture/F in area)
 			furnitureArray[++furnitureArray.len] = F.toJSON()
@@ -37,12 +38,14 @@ plot
 		return objectData
 	fromJSON(list/objectData)
 		regionId = objectData["regionId"]
-		x = objectData["x"]
-		y = objectData["y"]
-		warpId = objectData["warpId"]
-		terrain = objectData["terrain"]
+		if(objectData["warpId"])
+			warpId = objectData["warpId"]
+		if(objectData["terrain"])
+			terrain = objectData["terrain"]
 		furnitureStorage = objectData["furniture"]
-		enemyLevel = objectData["enemyLevel"]
+		var eLevel = objectData["enemyLevel"]
+		if(eLevel != null && eLevel != 1)
+			enemyLevel = eLevel
 
 	//-- Revealing & Activation ----------------------
 	proc/reveal()
@@ -57,7 +60,7 @@ plot
 		/*var compoundIndex = (y-1)*DERP + x
 		var plasmaGenerator/closedNode/plotModel = town.plotPlan[compoundIndex]
 		terrain = plotModel.terrain*/
-		var/terrain/terrainTerrain = terrains[terrain]
+		var/terrain/terrainTerrain = terrain(src)
 		var terrainIcon = initial(terrainTerrain:icon)
 		area.icon = terrainIcon
 		// Add Tiles
@@ -120,7 +123,7 @@ plot
 			else dirs &= ~SOUTHEAST
 		populate(dirs)
 		// Activate interactable tiles
-		var/terrain/ownTerrain = terrains[terrain]
+		var/terrain/ownTerrain = terrain(src)
 		for(var/tile/interact/I in area)
 			ownTerrain.setupTileInteraction(I)
 		// Activate furniture
@@ -157,7 +160,7 @@ plot
 			if( EAST) maxX -= 5
 			if( WEST) minX += 5
 		// Get enemy models
-		var/terrain/terrainModel = terrains[terrain]
+		var/terrain/terrainModel = terrain(src)
 		var/infantryLevel = min(level, terrainModel.infantry.len)
 		var/cavalryLevel  = min(level, terrainModel.cavalry.len )
 		var/officerLevel  = min(level, terrainModel.officer.len )
@@ -222,7 +225,6 @@ plot
 plot/plotArea
 	parent_type = /area
 	var
-		terrain = "grass"
 		plot/plot
 		plot/plotArea/deactivateTimer/timer
 		raining

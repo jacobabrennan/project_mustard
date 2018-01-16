@@ -60,10 +60,10 @@ game
 				if(C.ckey == ckey(ownerId))
 					player = C
 			party.addPlayer(player, CHARACTER_HERO)
-			party.changeRegion(REGION_TEST)
+			party.changeRegion(REGION_OVERWORLD)
 		respawn()
 			party.respawn()
-			party.changeRegion(REGION_TEST)
+			party.changeRegion(REGION_OVERWORLD)
 		gameOver()
 			for(var/regionKey in regions)
 				var /region/R = regions[regionKey]
@@ -107,10 +107,9 @@ game
 		unregisterRegion(region/newRegion)
 			regions.Remove(newRegion.id)
 		loadRegion(regionId)
-			// Load Region Data from file
-			var/filePath = "[FILE_PATH_REGIONS]/[regionId].json"
-			ASSERT(fexists(filePath))
-			var/list/regionData = json_decode(file2text(filePath))
+			// Retrieve Region Data system
+			var/list/regionData = system.map.regionTemplates[regionId]
+			ASSERT(regionData)
 			// Create & register region
 			var/region/newRegion = new(regionId)
 				// Can't use json2Object() because registerRegion() must be called before fromJSON()
