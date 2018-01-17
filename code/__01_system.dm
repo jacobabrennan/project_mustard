@@ -22,13 +22,27 @@ system
 		//
 		list/games = new()
 		list/mapSlots = new()
-	//
+
 	New()
 		. = ..()
 		system = src
-		loadVersion()
 		spawn()
 			startProject()
+
+	proc
+		startProject()
+			diag("<b>----- System Starting -----</b>")
+			loadVersion()
+			loadHub()
+			setupTerrains()
+			setupMap()
+			_ready = TRUE
+			diag("<b>----- System Ready -----</b>")
+			for(var/client/C in _waitingClients)
+				registerPlayer(C)
+
+
+	//-- Development Utilities -------------//
 	proc
 		diagnostic(list/messages, file, line)
 			var argText = ""
@@ -40,14 +54,13 @@ system
 				argText += "[key]"
 			world << {"<span style="color:grey">[file]:[line]::</span> <b>[argText]</b>"}
 
-	//
+	//-- Game Management -------------------//
 	proc
 		loadHub()
 			world.version = versionHub
 			world.name = gameName
 			world.hub = gameHub
 			world.hub_password = passwordHub
-	//
 		registerGame(game/newGame) // Called whenever a game is created to store it allocate map space
 			// Store for later retrieval
 			games[newGame.gameId] = newGame
@@ -103,34 +116,13 @@ system
 			//environment.save()
 			diag(" -- Finished Saving")
 			environment.unpause()*/
-		//
-		startProject()
-			diag("<b>----- System Starting -----</b>")
-			loadHub()
-			loadUtilities()
-			_ready = TRUE
-			diag("<b>----- System Ready -----</b>")
-			for(var/client/C in _waitingClients)
-				registerPlayer(C)
 		restartWithoutSave()
 			diag("<b>---- System Restarting ----</b>")
 			world << "<hr>"
 			world.Reboot()
-		restart()
-			//environment.deactivate()
-			//saveGame()
-			restartWithoutSave()
-		stop()
-			//environment.deactivate()
-			//saveGame()
-			stopWithoutSave()
 		stopWithoutSave()
 			diag("<b>----- System Stopping -----</b>")
 			del world
-		//
-		loadUtilities()
-			setupTerrains()
-			setupMap()
 
 	//-- Player Handling -------------------//
 	proc
@@ -144,3 +136,44 @@ system
 				// Already done. Clay is never created if there's already another interface waiting
 			// Send player to title screen
 			new /titleScreen(client)
+
+	//-- Map Data Cache --------------------//
+	var
+		system/map/map
+	proc
+		setupMap()
+			map = new()
+			map.loadRegions()
+	map
+		parent_type = /datum
+		var
+			list/gridData = new()
+			list/regionTemplates = new()
+		proc
+			loadRegion(regionId)
+				// Load Region Data from file
+				var/filePath = "[FILE_PATH_REGIONS]/[regionId].json"
+				ASSERT(fexists(filePath))
+				var/list/regionData = json_decode(file2text(filePath))
+				// Setup stringGrid
+				var gridText = regionData["gridText"]
+				//var tileWidth  = regionData["width" ] * PLOT_SIZE
+				//var tileHeight = regionData["height"] * PLOT_SIZE
+				var /stringGrid/largeString = json2Object(gridText)//new(tileWidth, tileHeight, gridText)
+				// Store Data
+				regionTemplates[regionId] = regionData
+				gridData[regionId] = largeString
+				regionData["gridText"] = null
+			loadRegions()
+				var /list/regionIds = list(
+					REGION_OVERWORLD
+				)
+				for(var/regionId in regionIds)
+					loadRegion(regionId)
+		proc
+			getChar(regionId, posX, posY)
+				var /stringGrid/largeString = gridData[regionId]
+				return largeString.get(posX, posY)
+			putChar(regionId, posX, posY, char)
+				var /stringGrid/largeString = gridData[regionId]
+				return largeString.put(posX, posY, char)

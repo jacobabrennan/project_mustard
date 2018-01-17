@@ -3,11 +3,8 @@
 //-- Development Utilities -----------------------------------------------------
 
 #define TAG #warn Unfinished
-client/verb/reboot()
-	system.restart()
 client/verb/forceReboot()
 	system.restartWithoutSave()
-
 client/New()
 	. = ..()
 	spawn(10)

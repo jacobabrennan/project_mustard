@@ -10,10 +10,10 @@
 
 // ^ Blank Dividers for easy cut/paste. 80 & 50 characters long.
 system
-	var/versionMotto = "It's over 230 thousand"
+	var/versionMotto = "Do you have to let it Linger?"
 	proc/loadVersion()
 		system.versionType = "Internal"
-		system.versionNumber = "0.0.15"
+		system.versionNumber = "0.0.16"
 		system.versionHub = 0
 		spawn(1)
 			world << "<b>Version [versionType] [versionNumber]</b>: [versionMotto]"
@@ -122,9 +122,12 @@ Deferred - Low Priority Optional Features
 
 //------------------------------------------------------------------------------
 
+Internal 0.0.16 : Jan 16th 2018 -- Do you have to let it Linger?
+
 Internal 0.0.15 : Jan 15th 2018 -- It's over 230 thousand
 	Added stringGrid to speed up map functions accessing regions' tile grids.
-	Added Equipment Overlays to characters (currently only planned for shields).
+	Added Equipment Overlays to characters (currently planned for only shields).
+	Added (internal) story outline document.
 
 Internal 0.0.14 : Jan 14th 2018 -- His power level is incredible!
 	Added Two Handed Weapons
