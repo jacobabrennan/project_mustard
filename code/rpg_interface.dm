@@ -6,7 +6,7 @@ rpg
 	parent_type = /interface
 	var
 		rpg/menu/menu
-		character/partyMember/character
+		character/character
 		event/transition/transitionEvent
 		commandsDown = 0
 		// Logs commands pressed between calls to control()
@@ -200,7 +200,7 @@ rpg/menu
 		/*del transition
 		transition = addComponent(/menu/transition)
 		transition.setup(terrainText)*/
-	proc/refresh(which, character/partyMember/updateChar)
+	proc/refresh(which, character/updateChar)
 		var/rpg/interface = client.interface
 		switch(which)
 			if("hotKeys")

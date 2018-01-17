@@ -35,7 +35,7 @@ game
 				var /rpg/int = who
 				what = "\icon[int.character] [what]"
 			spectators << output(what, "outputChannelGame")
-			for(var/character/partyMember/member in party.characters)
+			for(var/character/member in party.characters)
 				var /rpg/int = member.interface
 				if(!istype(int)) continue
 				int.client << output(what, "outputChannelGame")
@@ -44,7 +44,7 @@ game
 			var sanitizedName = html_encode(who.key)
 			what = {"<i>[sanitizedName] [what]</i>"}
 			spectators << output(what, "outputChannelGame")
-			for(var/character/partyMember/member in party.characters)
+			for(var/character/member in party.characters)
 				var /rpg/int = member.interface
 				if(!istype(int)) continue
 				int.client << output(what, "outputChannelGame")

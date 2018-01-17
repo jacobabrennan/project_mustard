@@ -31,11 +31,11 @@ Alpha1 Test - Test Basic Movement & Combat Systems
 	At least one upgrade item for each class
 
 Focus - Things which must be done this version
-	Enemy Parties
+	Refactor party member AI into weapons (so they do what their weapon wants).
 	Change Channel Tab when entering game
 
 Upcomming - Feature candidates for the next version
-	Refactor party member AI into weapons (so they do what their weapon wants).
+	Make Enemies smarter about "shooting" with melee only in melee range
 	Hit Animation
 	Problem: This game is based around "bullet hell" levels of enemy activity.
 		At the scale currently planned (and allowed by networking constraints)
@@ -46,7 +46,6 @@ Upcomming - Feature candidates for the next version
 		Game Settings
 		World / Dungeon Map
 			Map shows where party members are
-	Make Enemies smarter about "shooting" with melee only in melee range
 	More Final Enemies
 	More Final Items
 	Begin Final Mapping
@@ -88,7 +87,7 @@ Spectulative - Ideas for new features to make the game better.
 		Aerial Bombardment
 		Sky Hooks
 	Refactor Character & Party
-		Remove /character/partyMember
+		Remove /character
 		(this seems to be the only big difference between character & combatant)
 		Allow for parties not as the main game party, for enemy parties!
 	Cleric behavior includes attacking
@@ -123,6 +122,8 @@ Deferred - Low Priority Optional Features
 //------------------------------------------------------------------------------
 
 Internal 0.0.16 : Jan 16th 2018 -- Do you have to let it Linger?
+	Factored partyMember back into Character
+	Secondary Parties - Any faction, many parties at once, fights enemies too.
 
 Internal 0.0.15 : Jan 15th 2018 -- It's over 230 thousand
 	Added stringGrid to speed up map functions accessing regions' tile grids.

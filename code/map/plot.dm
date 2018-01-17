@@ -237,7 +237,7 @@ plot/plotArea
 		return FALSE
 	Entered(atom/entrant)
 		. = ..()
-		var character/partyMember/entryChar = entrant
+		var character/entryChar = entrant
 		if(istype(entryChar))
 			if(timer) del timer
 			var transDir

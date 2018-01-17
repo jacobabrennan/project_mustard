@@ -93,7 +93,7 @@ furniture/chest
 		else
 			icon_state = "chest"
 			open = FALSE
-	interact(character/partyMember/touchChar, interactFlags)
+	interact(character/touchChar, interactFlags)
 		// Return if already open the plot is hostile
 		if(open)
 			return
@@ -112,7 +112,7 @@ furniture/chest
 		var /item/newItem = new treasureType()
 		touchChar.get(newItem)
 		// Show the item to all players in the plot
-		for(var/character/partyMember/member in aloc(src))
+		for(var/character/member in aloc(src))
 			var rpg/int = member.interface
 			if(!int) continue
 			int.menu.openMenu()

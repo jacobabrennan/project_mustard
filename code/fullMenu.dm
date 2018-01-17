@@ -93,7 +93,7 @@ rpg/menu/gear
 				translateOut(SOUTH)
 				return TRUE
 
-	proc/select(client/client, character/partyMember/character, hotKey)
+	proc/select(client/client, character/character, hotKey)
 		// Selects a usable from a box (inventory, equipment, skills)
 		// Get usable from box
 		var /component/box/activeBox = focus
@@ -446,7 +446,7 @@ rpg/menu/party
 					return TRUE
 			if(EAST)
 				if(focus == characters)
-					var /character/partyMember/selectChar = characters.select()
+					var /character/selectChar = characters.select()
 					if(!istype(selectChar))
 						diag(selectChar)
 						return TRUE
@@ -459,14 +459,14 @@ rpg/menu/party
 					focus(characters)
 					return TRUE
 				else if(focus == characters)
-					var /character/partyMember/selectChar = characters.select()
+					var /character/selectChar = characters.select()
 					if(!istype(selectChar))
 						diag(selectChar)
 						return TRUE
 					showSpectators(selectChar)
 					return TRUE
 				else if(focus == spectators)
-					var /character/partyMember/selectChar = characters.select()
+					var /character/selectChar = characters.select()
 					var /game/spectator/selectator = spectators.select()
 					select(selectChar, selectator)
 					return TRUE
@@ -475,15 +475,15 @@ rpg/menu/party
 			var list/playerList = new()
 			for(var/sIndex = 1 to characters.slots.len)
 				var /component/slot/S = characters.slots[sIndex]
-				var /character/partyMember/member = S.storage
+				var /character/member = S.storage
 				var shortKey = "   "
 				if(!member.interface)
-					shortKey = copytext(shortKey, 1, sIndex+1)
-				else
 					shortKey = copytext(member.interface.key, 1, 21)
+				else
+					shortKey = copytext(shortKey, 1, sIndex+1)
 				playerList[shortKey] = null
 			spectators.refresh(playerList)
-		showSpectators(character/partyMember/selectChar)
+		showSpectators(character/selectChar)
 			// Prepare List of Spectators, including remove option
 			var list/playerOptions = list()
 			var /game/G = game(client.interface)
@@ -505,7 +505,7 @@ rpg/menu/party
 				modal.positionScreen(64, 120)
 				modal.show()
 				focus(modal)
-		select(character/partyMember/selectChar, game/spectator/selectator)
+		select(character/selectChar, game/spectator/selectator)
 			// Handle Removal of players to spectation
 			if(!selectator && selectChar.interface)
 				var /rpg/oldInt = selectChar.interface

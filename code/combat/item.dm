@@ -36,7 +36,7 @@ item
 		. = ..()
 		if(instant)
 			del src
-	Cross(character/partyMember/getChar)
+	Cross(character/getChar)
 		if(world.time - timeStamp < TIME_ITEM_COLLECT) return ..()
 		if(!loc) return FALSE
 		if(istype(getChar))
@@ -68,7 +68,7 @@ item
 			if(!P) return
 			P.potency = potency
 			return P
-		equipped(character/partyMember/equipChar)
+		equipped(character/equipChar)
 			. = ..()
 			if(twoHanded)
 				var /item/gear/secondHand = equipChar.equipment[WEAR_SHIELD]
@@ -173,14 +173,14 @@ item
 		icon_state = "book"
 		var
 			list/spells
-		equipped(character/partyMember/equipChar)
+		equipped(character/equipChar)
 			. = ..()
 			var /list/hotKeys = list(SECONDARY, TERTIARY, QUATERNARY)
 			for(var/I = 1 to spells.len)
 				var typepath = spells[I]
 				var /spell/S = new typepath()
 				equipChar.setHotKey(S, hotKeys[I])
-		unequipped(character/partyMember/equipChar)
+		unequipped(character/equipChar)
 			for(var/typepath in spells)
 				var /spell/S = locate(typepath) in equipChar.hotKeys
 				if(!S) continue

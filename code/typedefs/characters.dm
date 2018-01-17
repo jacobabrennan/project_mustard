@@ -1,8 +1,39 @@
+character/redCap
+	parent_type = /character/goblin
+	faction = FACTION_REDCAP
+	baseHp = 9
+character/redCap/leader
+	parent_type = /character/soldier
+	icon = 'goblin.dmi'
+	faction = FACTION_REDCAP
+	baseHp = 9
+	targetRange = 90 // How far we're willing to go to target something
+	breakRange = 120 // How far we'll go until we break off
+	New()
+		. = ..()
+		spawn(1)
+			equip(new /item/axe())
+			var /game/G = game(src)
+			party = new(G.gameId)
+			party.addPartyMember(src)
+			for(var/I = 1 to 2)
+				var /character/redCap/R = new()
+				R.equip(new /item/bow())
+				party.addPartyMember(R)
+				R.loc = pick(block(locate(x-3, y-3, z), locate(x+3, y+3, z)))
+client/DblClick(tile/T)
+	. = ..()
+	if(istype(T))
+		spawn(10)
+			var /character/redCap/leader/L = new()
+			L.loc = T
+
+
 
 
 //-- Character Type Definitions ------------------------------------------------
 
-character/partyMember
+character
 	regressiaHero
 		name = "Regressia"
 		partyId = CHARACTER_KING
@@ -42,9 +73,9 @@ character/partyMember
 			// Check if everyone has max hp
 			var heal
 			var radius = healSpell.range - (bound_width/2)
-			for(var/character/partyMember in party.characters)
-				if(bounds_dist(src, partyMember) < radius)
-					if(partyMember.hp < partyMember.maxHp())
+			for(var/character/member in party.characters)
+				if(bounds_dist(src, member) < radius)
+					if(member.hp < member.maxHp())
 						heal = TRUE
 						break
 			if(heal)
@@ -62,6 +93,8 @@ character/partyMember
 		baseHp = 3
 		var
 			combatant/target
+			targetRange = 49 // How far we're willing to go to target something
+			breakRange = 80 // How far we'll go until we break off
 		behavior()
 			// Check if rescue is needed
 			if(party.mainCharacter.dead && shouldIRescue())	return ..()
@@ -73,9 +106,9 @@ character/partyMember
 			var /item/axe/axe = equipment[WEAR_WEAPON]
 			if(!istype(axe)) return
 			// Check which threat is the closest
-			var closeDist = 49
+			var closeDist = targetRange
 			var closeEnemy
-			for(var/combatant/E in range(4, src))
+			for(var/combatant/E in bounds(src, closeDist))
 				if(!hostile(E)) continue
 				var testDist = bounds_dist(src, E)
 				//if(testDist >= TILE_SIZE && bounds_dist(party.mainCharacter, E) > 80) continue
@@ -91,10 +124,10 @@ character/partyMember
 			// If we have health, find and attack a target
 			if(hp > 0) // Change from zero to make her shy when wounded
 				// If current target is too far away, forget about it
-				if(target && bounds_dist(party.mainCharacter, target) > 80)
+				if(target && bounds_dist(party.mainCharacter, target) > breakRange)
 					target = null
 				// If we don't have a target, target the closest combatant
-				if(!target && bounds_dist(party.mainCharacter, closeEnemy) <= 80)
+				if(!target && bounds_dist(party.mainCharacter, closeEnemy) <= breakRange)
 					target = closeEnemy
 				// If we have a target, advance towards it
 				if(target)
