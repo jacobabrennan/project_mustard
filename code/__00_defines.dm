@@ -5,10 +5,6 @@
 #define REGION_OVERWORLD "overworld"
 #define SAVE_TEST "savvy"
 
-#define COMPOUND_INDEX(X,Y,WIDTH) (((Y)-1)*(WIDTH)+(X))
-#define DECOMPOSE_Y(INDEX,WIDTH) (1+round(((INDEX)-1)/(WIDTH)))
-#define DECOMPOSE_X(INDEX,WIDTH) (1+((INDEX)-1)%(WIDTH))
-
 
 //-- Global Defines ------------------------------------------------------------
 

@@ -10,10 +10,10 @@
 
 // ^ Blank Dividers for easy cut/paste. 80 & 50 characters long.
 system
-	var/versionMotto = "His power level is incredible!"
+	var/versionMotto = "It's over 230 thousand"
 	proc/loadVersion()
 		system.versionType = "Internal"
-		system.versionNumber = "0.0.14"
+		system.versionNumber = "0.0.15"
 		system.versionHub = 0
 		spawn(1)
 			world << "<b>Version [versionType] [versionNumber]</b>: [versionMotto]"
@@ -31,17 +31,17 @@ Alpha1 Test - Test Basic Movement & Combat Systems
 	At least one upgrade item for each class
 
 Focus - Things which must be done this version
-	Change Channel Tab when entering game
 	Enemy Parties
+	Change Channel Tab when entering game
 
 Upcomming - Feature candidates for the next version
+	Refactor party member AI into weapons (so they do what their weapon wants).
 	Hit Animation
 	Problem: This game is based around "bullet hell" levels of enemy activity.
 		At the scale currently planned (and allowed by networking constraints)
 		what can be done to provide that level of challenge?
 		As it stands, even rudimentary AI clears out tough enemies in no time,
 		and pretty much all I can do is give them more hp.
-	Shield - Graphic Overlay
 	Status Panes
 		Game Settings
 		World / Dungeon Map
@@ -121,6 +121,10 @@ Deferred - Low Priority Optional Features
 
 
 //------------------------------------------------------------------------------
+
+Internal 0.0.15 : Jan 15th 2018 -- It's over 230 thousand
+	Added stringGrid to speed up map functions accessing regions' tile grids.
+	Added Equipment Overlays to characters (currently only planned for shields).
 
 Internal 0.0.14 : Jan 14th 2018 -- His power level is incredible!
 	Added Two Handed Weapons

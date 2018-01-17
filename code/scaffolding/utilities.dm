@@ -14,14 +14,76 @@ client/New()
 		world.SetMedal("Logged into the fucking game hell yeah", src)
 
 
+//-- Graphic Utilities ---------------------------------------------------------
+
+proc/getAppearance(displayable)
+	var /obj/base = new()
+	base.overlays.Add(displayable)
+	for(var/newAppearance in base.overlays)
+		return newAppearance
+
+
+//-- String Utilities ----------------------------------------------------------
+
+
+stringGrid
+	var
+		list/segments
+		width
+		height
+		segmentLength = 1000
+	New(_width, _height, newString)
+		. = ..()
+		width = _width || 0
+		height = _height || 0
+		var totalLength = width*height
+		if(newString)
+			segments = new()
+			var I = 0
+			while(I*segmentLength < length(newString))
+				var newSegment = copytext(newString, I*segmentLength+1, (++I)*segmentLength+1)
+				segments.Add(newSegment)
+		else
+			segments = new(ceil(totalLength/segmentLength))
+	toJSON()
+		var/list/objectData = ..()
+		objectData["width"]  = width
+		objectData["height"] = height
+		objectData["segments"] = segments
+		return objectData
+	fromJSON(list/objectData)
+		. = ..()
+		width  = objectData["width"]
+		height = objectData["height"]
+		segments = objectData["segments"]
+	proc
+		get(posX, posY)
+			if(posX >= width || posY >= height || posX < 0 || posY < 0) CRASH("Grid index out of bounds")
+			var compoundIndex = posX + posY*width
+			var segmentIndex = round(compoundIndex/segmentLength)
+			var segment = segments[segmentIndex+1] // Correct for DM's 1 index lists
+			var charIndex = (compoundIndex - (segmentIndex * segmentLength)) +1 // Correct for DM's 1 index lists
+			return copytext(segment, charIndex, charIndex+1)
+		put(posX, posY, value)
+			if(posX >= width || posY >= height || posX < 0 || posY < 0) CRASH("Grid index out of bounds")
+			var compoundIndex = posX + posY*width
+			var segmentIndex = round(compoundIndex/segmentLength)
+			var segment = segments[segmentIndex+1] // Correct for DM's 1 index lists
+			var charIndex = (compoundIndex - (segmentIndex * segmentLength)) +1 // Correct for DM's 1 index lists
+			segments[segmentIndex+1] = "[copytext(segment, 1, charIndex)][value][copytext(segment, charIndex+1)]"
+
+
 //-- Math Utilities ------------------------------------------------------------
 
 proc
 	exp(power)
 		return e**power
-proc/atan2(x, y)
-    if(!x && !y) return 0
-    return y >= 0 ? arccos(x / sqrt(x * x + y * y)) : -arccos(x / sqrt(x * x + y * y))
+	atan2(X, Y)
+		if(!X && !Y) return 0
+		return Y >= 0 ? arccos(X / sqrt(X * X + Y * Y)) : -arccos(X / sqrt(X * X + Y * Y))
+	ceil(N)
+		return -round(-N)
+
 
 
 coord
@@ -232,11 +294,11 @@ grid
 		contents()
 			return array._list
 		get(posX, posY)
-			if(posX >= width || posY >= height) CRASH("Grid index out of bounds")
+			if(posX >= width || posY >= height || posX < 0 || posY < 0) CRASH("Grid index out of bounds")
 			var compoundIndex = posX + posY*width
-			return array[compoundIndex] // Correct for DM's index 1 lists
+			return array[compoundIndex]
 		put(posX, posY, value)
-			if(posX >= width || posY >= height) CRASH("Grid index out of bounds")
+			if(posX >= width || posY >= height || posX < 0 || posY < 0) CRASH("Grid index out of bounds")
 			var compoundIndex = posX + posY*width
 			array[compoundIndex] = value
 		resize(newWidth, newHeight)

@@ -30,7 +30,8 @@ region
 		objectData["mapOffset"] = mapOffset?.toJSON()
 		objectData["width"] = width
 		objectData["height"] = height
-		objectData["gridText"] = system.map.gridData[id]
+		var /stringGrid/S = system.map.gridData[id]
+		objectData["gridText"] = S.toJSON()
 		objectData["plots"] = plots.toJSON()
 		objectData["defaultTerrain"] = defaultTerrain || "forest"
 		if(entrance) objectData["entrance"] = entrance.toJSON()
@@ -83,6 +84,7 @@ region
 				P.x = posX
 				P.y = posY
 				P.gameId = gameId
+				P.regionId = id
 				if(P.warpId)
 					setWarp(P.warpId, P)
 		// For map editor sake, add region marker to unrevealed areas
@@ -102,7 +104,7 @@ region
 			P.unreveal()
 		// Save old Data
 		var /grid/oldPlots = plots
-		var oldGridText = system.map.gridData[id]
+		var /stringGrid/oldGridText = system.map.gridData[id]
 		// Set to new metrics
 		warpPlots = new()
 		width  = setWidth  || DEFAULT_PLOTS
@@ -141,7 +143,7 @@ region
 			del P
 		// Generate Grid Text
 		var newGridText = ""
-		if(length(oldGridText))	//Try to populate from old data
+		if(oldGridText)	//Try to populate from old data
 			var oldFullWidth  = PLOT_SIZE*oldPlots.width
 			var oldFullHeight = PLOT_SIZE*oldPlots.height
 			for(var/posY = 0 to fullHeight-1)
@@ -149,9 +151,7 @@ region
 					if(posX >= oldFullWidth || posY >= oldFullHeight)
 						newGridText += "#"
 					else
-						var/compoundIndex = (posY*oldFullWidth) + posX
-						var/tileChar = copytext(oldGridText, compoundIndex+1, compoundIndex+2)
-						newGridText += tileChar
+						newGridText += oldGridText.get(posX, posY)
 		else // Otherwise, create new data
 			for(var/posY = 0 to fullHeight-1)
 				for(var/posX = 0 to fullWidth-1)
@@ -166,7 +166,7 @@ region
 				)
 				_regionMarker.contents.Add(T)
 		//
-		system.map.gridData[id] = newGridText
+		system.map.gridData[id] = new /stringGrid(fullWidth, fullHeight, newGridText)
 
 
 //-- Warp Points ---------------------------------------------------------------
@@ -188,26 +188,24 @@ region
 	proc/tileTypeAt(x, y)
 		// Change atomic coordinate into grid coordinate
 			// Account for region offset
-		x -= mapOffset.x*PLOT_SIZE
-		y -= mapOffset.y*PLOT_SIZE
-		// Change grid coordinate into string index (Accounting for DM's indexes starting at 1)
-		var/compoundIndex = (y-1)*(width*PLOT_SIZE) + x
+		x = x - (mapOffset.x*PLOT_SIZE +1)
+		y = y - (mapOffset.y*PLOT_SIZE +1)
 		// Get character at string index
-		var/tileChar = copytext(system.map.gridData[id], compoundIndex, compoundIndex+1)
+		var /stringGrid/S = system.map.gridData[id]
+		var tileChar = S.get(x, y)
 		// Convert character into tile type and return
-		var/tileType = char2Type(tileChar)
+		var tileType = char2Type(tileChar)
 		return tileType
 	proc/changeTileAt(x, y, tileType) // Change tile type stored at atomic coordinates
 		// Get grid coordinates from atomic coordinates
 			// Account for region offset
-		var gridX = x - mapOffset.x*PLOT_SIZE
-		var gridY = y - mapOffset.y*PLOT_SIZE
-		// Change grid coordinate into string index (Accounting for DM's indexes starting at 1)
-		var/compoundIndex = (gridY-1)*(width*PLOT_SIZE) + gridX
+		var gridX = x - (mapOffset.x*PLOT_SIZE +1)
+		var gridY = y - (mapOffset.y*PLOT_SIZE +1)
 		// Get tile character from tileType
-		var/tileChar = type2Char(tileType)
+		var tileChar = type2Char(tileType)
 		// Edit the new gridText value into place
-		system.map.gridData[id] = copytext(system.map.gridData[id], 1, compoundIndex)+tileChar+copytext(system.map.gridData[id], compoundIndex+1)
+		var /stringGrid/S = system.map.gridData[id]
+		S.put(gridX, gridY, tileChar)
 		//
 		var borderX
 		var borderY
@@ -224,8 +222,7 @@ region
 			borderX = x
 			borderY = y+1
 		if(borderX && borderY)
-			compoundIndex = (borderY-1)*(width*PLOT_SIZE) + borderX
-			system.map.gridData[id] = copytext(system.map.gridData[id], 1, compoundIndex)+tileChar+copytext(system.map.gridData[id], compoundIndex+1)
+			//S.put(borderX+1, borderY+1, tileChar)
 			var/plot/borderPlot = getPlotAt(borderX, borderY)
 			if(borderPlot)
 				revealTileAt(borderX, borderY)
@@ -253,7 +250,7 @@ region
 	proc/createTileAt(x, y, tileType) // Creates a tile at atomic coordinates, does not change the underlying map
 		var/oldTurf = locate(x, y, z())
 		if(!oldTurf)
-			world << "Problem([locate(x,y,z())]): [x],[y],[z()]"
+			diag("Problem([locate(x,y,z())]): [x],[y],[z()]")
 		var/tile/posTile = new tileType(oldTurf)
 		var/plot/containingPlot = getPlotAt(x, y)
 		ASSERT(containingPlot)

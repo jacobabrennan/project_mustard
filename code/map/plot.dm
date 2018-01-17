@@ -23,7 +23,6 @@ plot
 	//-- Saving & Loading ----------------------------
 	toJSON()
 		var/list/objectData = ..()
-		objectData["regionId"] = regionId
 		if(warpId)
 			objectData["warpId"] = warpId
 		if(terrain)
@@ -37,7 +36,6 @@ plot
 			objectData["furniture"] = furnitureArray
 		return objectData
 	fromJSON(list/objectData)
-		regionId = objectData["regionId"]
 		if(objectData["warpId"])
 			warpId = objectData["warpId"]
 		if(objectData["terrain"])

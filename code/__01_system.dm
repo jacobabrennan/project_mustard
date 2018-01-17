@@ -85,7 +85,7 @@ system
 			return newGame
 		loadGame(saveId)
 			game = new()
-			world << game.load(saveId)
+			diag(game.load(saveId))
 		/*saveGame()
 			environment.pause()
 			diag("Saving World")

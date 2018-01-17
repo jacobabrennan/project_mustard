@@ -81,14 +81,32 @@ item
 		position = WEAR_SHIELD
 		equipFlags = EQUIP_SHIELD
 		icon = 'armor.dmi'
-		icon_state = "shield"
+		icon_state = "blue"
 		var
 			threshold = 1
 			// Projectiles with potency <= value will be blocked
+			overlay
+			underlay
+			fileOverlay = 'shield_blue_overlay.dmi'
+			fileUnderlay = 'shield_blue_underlay.dmi'
 		proc
 			defend(projectile/proxy, combatant/attacker, damage)
 				. = TRUE
 				if(damage > threshold) return FALSE
+		equipped(character/equipChar)
+			. = ..()
+			var /image/overImage = image(fileOverlay)
+			var /image/underImage = image(fileUnderlay)
+			overImage.pixel_x = -2
+			underImage.pixel_x = -2
+			overlay  = getAppearance(overImage)
+			underlay = getAppearance(underImage)
+			equipChar.overlays.Add(overlay)
+			equipChar.underlays.Add(underlay)
+		unequipped(character/equipChar)
+			. = ..()
+			equipChar.overlays.Remove(overlay)
+			equipChar.underlays.Remove(underlay)
 	sword
 		parent_type = /item/weapon
 		equipFlags = EQUIP_SWORD

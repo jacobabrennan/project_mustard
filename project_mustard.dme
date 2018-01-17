@@ -11,6 +11,7 @@
 #define FILE_DIR "rsc/img"
 #define FILE_DIR "rsc/img/characters"
 #define FILE_DIR "rsc/img/enemies"
+#define FILE_DIR "rsc/img/equipment_overlays"
 // END_FILE_DIR
 
 // BEGIN_PREFERENCES

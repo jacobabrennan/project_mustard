@@ -328,7 +328,7 @@ interface/mapEditor/menu/basicPalette
 				var /region/R = new(regionName)
 				G.registerRegion(R)
 				// Configure and display region
-				system.map.gridData[regionName] = ""
+				system.map.gridData[regionName] = new /stringGrid()
 				R.setLocation(
 					round((editor.x-1)/PLOT_SIZE),
 					round((editor.y-1)/PLOT_SIZE),
