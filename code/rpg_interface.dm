@@ -34,6 +34,7 @@ rpg
 		var /plot/currentPlot = plot(character)
 		if(currentPlot)
 			transition(currentPlot)
+		winset(client, null, "chatChannels.tabs=channelSystem,channelGame; chatChannels.current-tab=channelGame;")
 	Logout()
 		// Hide Menu
 		if(menu)

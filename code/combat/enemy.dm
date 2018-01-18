@@ -5,10 +5,8 @@
 enemy
 	parent_type = /combatant
 	faction = FACTION_ENEMY
-	icon = 'test.dmi'
-	icon_state = "clams"
 	//gridded = TRUE
-	baseHp = 4
+	baseHp = 1
 	var
 		touchDamage = 1
 			// Damage done when touching combatants that don't share a faction

@@ -9,7 +9,6 @@ party
 	New(_gameId)
 		. = ..()
 		gameId = _gameId
-	//------------------------------------------------
 	var
 		list/inventory[INVENTORY_MAX]
 		character/mainCharacter
@@ -35,19 +34,19 @@ party
 	proc
 		createNew()
 			addPartyMember(new /character/hero())
-			addPartyMember(new /character/cleric())
+			var /character/cleric/cleric   = addPartyMember(new /character/cleric())
 			var /character/soldier/soldier = addPartyMember(new /character/soldier())
 			var /character/goblin/goblin   = addPartyMember(new /character/goblin())
-			mainCharacter.equip(new /item/sword())
+			mainCharacter.equip(new /item/sword1())
 			mainCharacter.equip(new /item/shield())
+			cleric.equip( new /item/bookHealing1())
+			soldier.equip(new /item/axe1())
+			goblin.equip( new /item/bow1())
+			goblin.equip( new /item/quiver1())
 			for(var/I = 1 to 24)
-				mainCharacter.get(new /item/plate(   ))
-			soldier.equip(      new /item/axe())
-			goblin.equip(       new /item/bow())
-			get(new /item/bookHealing1)
+				mainCharacter.get(new /item/plate())
 		addPartyMember(character/newMember)
 			if(!mainCharacter)
-			//if(newMember.partyId == CHARACTER_KING || newMember.partyId == CHARACTER_HERO)
 				mainCharacter = newMember
 				faction = mainCharacter.faction
 			characters.Add(newMember)

@@ -56,7 +56,6 @@ window "channelSystem"
 		size = 510x393
 		anchor1 = none
 		anchor2 = none
-		background-color = none
 		saved-params = "pos;size;is-minimized;is-maximized"
 		title = "Server Chat"
 		titlebar = false
@@ -96,13 +95,12 @@ window "main"
 		saved-params = "pos;size;is-minimized;is-maximized"
 		statusbar = false
 		macro = "macro"
-	elem "tab1"
+	elem "chatChannels"
 		type = TAB
 		pos = 480,0
 		size = 305x480
 		anchor1 = 61,0
 		anchor2 = 100,100
-		background-color = none
 		saved-params = ""
 		tabs = "channelSystem, channelGame"
 	elem "map1"

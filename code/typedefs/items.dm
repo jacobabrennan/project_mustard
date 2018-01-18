@@ -4,17 +4,35 @@
 
 item
 	sword1
+		parent_type = /item/sword
+		icon_state = "sword1"
+		potency = 2
 	sword2
+		parent_type = /item/sword
+		icon_state = "sword2"
+		potency = 4
 	axe1
+		parent_type = /item/axe
+		icon_state = "axe1"
+		potency = 1
 	axe2
+		parent_type = /item/axe
+		icon_state = "axe2"
+		potency = 2
 	wand1
 	wand2
 	bow1
+		parent_type = /item/bow
+		icon_state = "bow1"
 	bow2
+		parent_type = /item/bow
+		icon_state = "bow2"
 	shield1
 	shield2
-	arrow1
-	arrow2
+	quiver1
+		parent_type = /item/quiver
+	quiver2
+		parent_type = /item/quiver
 	lightArmor1
 	lightArmor2
 	armor1
@@ -79,13 +97,3 @@ spell
 	heal1
 		parent_type = /spell/heal
 		icon_state = "heal1"
-		use(character/user)
-			// Add some kind of flash on the hud
-			if(user.mp < mpCost) return
-			user.adjustMp(-mpCost)
-			var radius = range - (user.bound_width/2)
-			new /effect/aoeColor(user, radius, "#0f0")
-			for(var/combatant/C in bounds(user, radius))
-				if(!(C.faction & user.faction)) continue
-				C.adjustHp(1)
-				new /effect/sparkleHeal(C)

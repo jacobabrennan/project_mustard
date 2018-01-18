@@ -15,14 +15,6 @@ character
 		//
 		list/equipment[4]
 
-	//-- Movement ----------------------------------//
-	proc
-		go(deltaX, deltaY)
-			var/tile/interact/I = locate() in locs
-			if(I && I.interaction & INTERACTION_WALK)
-				I.interact(src, INTERACTION_WALK)
-			return translate(deltaX, deltaY)
-
 	//-- Health and Magic --------------------------//
 	var
 		baseAuraRegain = 0
@@ -118,7 +110,7 @@ character
 		return S.defend(proxy, attacker, damage)
 
 
-//-- Character - Factored out of partyMember -----------------------------------
+//-- Saving & Loading ----------------------------------------------------------
 
 character
 	toJSON()
@@ -209,6 +201,11 @@ character
 
 character
 	proc
+		go(deltaX, deltaY)
+			var/tile/interact/I = locate() in locs
+			if(I && I.interaction & INTERACTION_WALK)
+				I.interact(src, INTERACTION_WALK)
+			return translate(deltaX, deltaY)
 		transition(plot/newPlot, turf/newTurf)
 			if(newTurf)
 				var/offsetX = (dir&( EAST|WEST ))? 0 : step_x
@@ -280,10 +277,10 @@ character
 			var success = stepTo(party.mainCharacter, -1)
 			if(!success)
 				movement = MOVEMENT_ALL
-				//density = FALSE
 				success = stepTo(party.mainCharacter, -1)
 			movement = initial(movement)
-			//density  = initial(density )
+		// Attempt to attack
+		if(tryToAttack()) return TRUE
 		// Move toward player
 		var success = stepTo(party.mainCharacter, partyDistance)
 		if(!success && aloc(src) != aloc(party.mainCharacter))
@@ -292,6 +289,9 @@ character
 	//-- Decisions ---------------------------------//
 	proc
 		tryToAttack()
+			var /item/weapon/weapon = equipment[WEAR_WEAPON]
+			if(weapon)
+				return weapon.weaponBehavior(src)
 		attackWithWeapon()
 			var /usable/weapon = equipment[WEAR_WEAPON]
 			if(weapon)
@@ -387,7 +387,7 @@ sequence/fainted
 
 
 //-- Health & Magic Bars - Also Faiting and Revive Bars ------------------------
-
+#warn Refactor this to use const or global vars, not sure how that works.
 system
 	var
 		list/_metersHp = new(TILE_SIZE)
@@ -401,7 +401,7 @@ system
 		for(var/I = 1 to TILE_SIZE)
 			temp = new()
 			var /image/protoAppearance = image('meters.dmi', null, "hp_[I]", FLY_LAYER)
-			protoAppearance.pixel_y = TILE_SIZE+1
+			protoAppearance.pixel_y = TILE_SIZE+2
 			protoAppearance.plane = PLANE_METERS
 			temp.overlays.Add(protoAppearance)
 			for(var/appearance in temp.overlays)
@@ -411,7 +411,7 @@ system
 		for(var/I = 1 to TILE_SIZE)
 			temp = new()
 			var /image/protoAppearance = image('meters.dmi', null, "mp_[I]", FLY_LAYER)
-			protoAppearance.pixel_y = TILE_SIZE+3
+			protoAppearance.pixel_y = TILE_SIZE+4
 			protoAppearance.plane = PLANE_METERS
 			temp.overlays.Add(protoAppearance)
 			for(var/appearance in temp.overlays)
@@ -430,13 +430,12 @@ system
 		for(var/I = 1 to _metersRevive.len)
 			temp = new()
 			var /image/protoAppearance = image('meters.dmi', null, "revive_[I]", FLY_LAYER)
-			protoAppearance.pixel_y = TILE_SIZE+2
+			protoAppearance.pixel_y = TILE_SIZE+3
 			protoAppearance.plane = PLANE_METERS
 			temp.overlays.Add(protoAppearance)
 			for(var/appearance in temp.overlays)
 				_metersRevive[I] = appearance
 			del temp
-
 
 character
 	var

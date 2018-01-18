@@ -148,8 +148,8 @@
 
 //-- Gear Positions ------------------------------
 #define WEAR_WEAPON 1
-#define WEAR_BODY 2
-#define WEAR_SHIELD 3
+#define WEAR_SHIELD 2
+#define WEAR_BODY 3
 #define WEAR_CHARM 4
 
 //-- Gear Equip Flags ----------------------------

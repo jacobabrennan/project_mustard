@@ -23,6 +23,7 @@ titleScreen
 		menu.setup()
 		menu.show()
 		client.menu.focus(menu)
+		winset(client, null, "chatChannels.tabs=channelSystem;")
 	Logout()
 		del menu
 	commandDown(command)

@@ -1,14 +1,20 @@
+
+
+//-- Test Enemy Characters - For enemy parties, place elsewhere ----------------
+
 character/redCap
 	parent_type = /character/goblin
 	faction = FACTION_REDCAP
 	baseHp = 9
+	New()
+		. = ..()
+		equip(new /item/bow1())
+		equip(new /item/quiver1())
 character/redCap/leader
 	parent_type = /character/soldier
 	icon = 'goblin.dmi'
 	faction = FACTION_REDCAP
 	baseHp = 9
-	targetRange = 90 // How far we're willing to go to target something
-	breakRange = 120 // How far we'll go until we break off
 	New()
 		. = ..()
 		spawn(1)
@@ -18,7 +24,6 @@ character/redCap/leader
 			party.addPartyMember(src)
 			for(var/I = 1 to 2)
 				var /character/redCap/R = new()
-				R.equip(new /item/bow())
 				party.addPartyMember(R)
 				R.loc = pick(block(locate(x-3, y-3, z), locate(x+3, y+3, z)))
 client/DblClick(tile/T)
@@ -27,8 +32,6 @@ client/DblClick(tile/T)
 		spawn(10)
 			var /character/redCap/leader/L = new()
 			L.loc = T
-
-
 
 
 //-- Character Type Definitions ------------------------------------------------
@@ -74,6 +77,7 @@ character
 			var heal
 			var radius = healSpell.range - (bound_width/2)
 			for(var/character/member in party.characters)
+				if(member.dead) continue
 				if(bounds_dist(src, member) < radius)
 					if(member.hp < member.maxHp())
 						heal = TRUE
@@ -91,159 +95,12 @@ character
 		portrait = "Soldier"
 		partyDistance = 0
 		baseHp = 3
-		var
-			combatant/target
-			targetRange = 49 // How far we're willing to go to target something
-			breakRange = 80 // How far we'll go until we break off
-		behavior()
-			// Check if rescue is needed
-			if(party.mainCharacter.dead && shouldIRescue())	return ..()
-			if(tryToAttack()) return TRUE
-			// If we didn't advance on a target, seek out the player
-			. = ..()
-		tryToAttack()
-			// Check if we have a axe equipped
-			var /item/axe/axe = equipment[WEAR_WEAPON]
-			if(!istype(axe)) return
-			// Check which threat is the closest
-			var closeDist = targetRange
-			var closeEnemy
-			for(var/combatant/E in bounds(src, closeDist))
-				if(!hostile(E)) continue
-				var testDist = bounds_dist(src, E)
-				//if(testDist >= TILE_SIZE && bounds_dist(party.mainCharacter, E) > 80) continue
-				if(testDist >= closeDist) continue
-				closeEnemy = E
-				closeDist = testDist
-			// Attack enemies that are within hitting range
-			if(closeDist < TILE_SIZE-4) // Account for diagonal axes
-				target = closeEnemy
-				dir = get_dir(src, target)
-				attackWithWeapon()
-				return TRUE
-			// If we have health, find and attack a target
-			if(hp > 0) // Change from zero to make her shy when wounded
-				// If current target is too far away, forget about it
-				if(target && bounds_dist(party.mainCharacter, target) > breakRange)
-					target = null
-				// If we don't have a target, target the closest combatant
-				if(!target && bounds_dist(party.mainCharacter, closeEnemy) <= breakRange)
-					target = closeEnemy
-				// If we have a target, advance towards it
-				if(target)
-					stepTo(target)
-					return TRUE
 	goblin
 		name = "Goblin"
 		partyId = CHARACTER_GOBLIN
 		equipFlags = EQUIP_BOW
-		icon = 'goblin.dmi'
+		icon = 'hero_goblin.dmi'
 		portrait = "Goblin"
 		partyDistance = 24
-		//baseSpeed = 4
 		roughWalk = 16
 		baseHp = 3
-		var
-			combatant/target
-		behavior()
-			if(shouldIRescue()) return ..()
-			if(tryToAttack()) return TRUE
-			. = ..()
-		tryToAttack()
-			// Check if we have a bow equipped
-			var /item/bow/bow = equipment[WEAR_WEAPON]
-			if(!istype(bow)) return
-			if(!bow.ready()) return
-			// If there's a target, check if it's still aligned to attack
-			var alignMax = 32
-			var /plot/plotArea/A = aloc(src)
-			var /list/deltasX = new()
-			var /list/deltasY = new()
-			var toFar
-			if(bounds_dist(src, party.mainCharacter) > 112) toFar = TRUE
-			if(target)
-				var deltaX = ((target.x-A.x)*TILE_SIZE + target.bound_width /2 + target.step_x) - ((x-A.x)*TILE_SIZE + bound_width /2 + step_x)
-				var deltaY = ((target.y-A.y)*TILE_SIZE + target.bound_height/2 + target.step_y) - ((y-A.y)*TILE_SIZE + bound_height/2 + step_y)
-				if(target.dead || min(abs(deltaX), abs(deltaY)) > alignMax || toFar)
-					target = null
-			// Check for targets of opportunity. Shoot the one that can be hit the fastest with an arrow
-			var fastestDir
-			var /combatant/fastestHit
-			var /combatant/fastestTime = 1000
-			for(var/combatant/E in A)
-				if(!hostile(E)) continue
-				var deltaX = ((E.x-A.x)*TILE_SIZE + E.bound_width /2 + E.step_x) - ((x-A.x)*TILE_SIZE + bound_width /2 + step_x)
-				var deltaY = ((E.y-A.y)*TILE_SIZE + E.bound_height/2 + E.step_y) - ((y-A.y)*TILE_SIZE + bound_height/2 + step_y)
-				deltasX[E] = deltaX
-				deltasY[E] = deltaY
-				if(min(abs(deltaX), abs(deltaY)) > bow.arrowRange) continue
-				var directX
-				var directY
-				var closingX
-				var closingY
-				//if((abs(deltaY) < TILE_SIZE/2) && !(E.dir&(NORTH|SOUTH))) directX = TRUE
-				//if((abs(deltaX) < TILE_SIZE/2) && !(E.dir&(EAST | WEST))) directY = TRUE // Doesn't target stationary targets
-				if(abs(deltaY) < TILE_SIZE/2) directX = TRUE
-				if(abs(deltaX) < TILE_SIZE/2) directY = TRUE
-				if     (deltaX > 0 && (E.dir&WEST )) closingX = TRUE
-				else if(deltaX < 0 && (E.dir&EAST )) closingX = TRUE
-				if     (deltaY > 0 && (E.dir&SOUTH)) closingY = TRUE
-				else if(deltaY < 0 && (E.dir&NORTH)) closingY = TRUE
-				if(!(closingX || closingY || directX || directY)) continue // Enemy is not crossing over cardinal direction
-				var testTime = fastestTime+1
-				var testDir
-				if(closingX || directY) // Attack Vertically
-					if(abs(deltaY) > bow.arrowRange) continue
-					var deltaT = abs(deltaX / E.speed())
-					var arrowT = abs(deltaY / bow.arrowSpeed)
-					if(directY || abs(deltaT - arrowT) <= 4)
-						testTime = deltaT
-						testDir = (deltaY > 0)? NORTH : SOUTH
-				if(closingY || directX) // Attack Horizontally
-					if(abs(deltaX) > bow.arrowRange) continue
-					var deltaT = abs(deltaY / E.speed())
-					var arrowT = abs(deltaX / bow.arrowSpeed)
-					if((deltaT < testTime) && (directX || abs(deltaT - arrowT) <= 5))
-						testTime = deltaT
-						testDir = (deltaX > 0)? EAST  : WEST
-				if(testTime < fastestTime)
-					fastestTime = testTime
-					fastestHit = E
-					fastestDir = testDir
-			if(fastestHit)
-				dir = fastestDir
-				attackWithWeapon()
-				target = null
-				return TRUE
-			// If we can't shoot anything (and there's no target), try to target the combatant that requires the least movement to align with
-			if(!target && !toFar)
-				var closestAlignTarget
-				var closestAlignDist = alignMax
-				for(var/combatant/E in A)
-					if(!hostile(E)) continue
-					var deltaX = abs(deltasX[E])
-					var deltaY = abs(deltasY[E])
-					var minDelta = min(deltaX, deltaY)
-					if(minDelta < closestAlignDist)
-						closestAlignTarget = E
-						closestAlignDist = minDelta
-				if(closestAlignTarget)
-					target = closestAlignTarget
-			// If we have a target, move towards it and shoot it
-			if(target)
-				if(bounds_dist(src, target) < TILE_SIZE*2)
-					target = null
-					return FALSE
-				else
-					//if(step_to(owner, target, 2, owner.speed())) return TRUE // see stepTo()
-					var axisHorizontal = (abs(deltasX[target]) <= abs(deltasY[target]))? TRUE : FALSE
-					var success
-					if(axisHorizontal)
-						if(deltasX[target] > 0) success = go(speed(), 0)
-						else success = go(-speed(), 0)
-					else
-						if(deltasY[target] > 0) success = go(0, speed())
-						else success = go(0, -speed())
-					return success
-			//  Otherwise, walk toward the player
-			return FALSE

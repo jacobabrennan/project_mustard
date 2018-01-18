@@ -28,11 +28,10 @@ Alpha1 Test - Test Basic Movement & Combat Systems
 	Large Map to Wander around
 	Lots of enemies
 		At least one boss level enemy
-	At least one upgrade item for each class
 
 Focus - Things which must be done this version
-	Refactor party member AI into weapons (so they do what their weapon wants).
-	Change Channel Tab when entering game
+	Create Chat Portraits (16px square) for each character.
+	At least one upgrade item for each class
 
 Upcomming - Feature candidates for the next version
 	Make Enemies smarter about "shooting" with melee only in melee range
@@ -122,8 +121,10 @@ Deferred - Low Priority Optional Features
 //------------------------------------------------------------------------------
 
 Internal 0.0.16 : Jan 16th 2018 -- Do you have to let it Linger?
-	Factored partyMember back into Character
 	Secondary Parties - Any faction, many parties at once, fights enemies too.
+	Factored partyMember back into Character
+	Character attack AI is now handled by the equipped weapon.
+	Added Quivers. Range, Speed, and Potency determined by bow. Type by Quiver.
 
 Internal 0.0.15 : Jan 15th 2018 -- It's over 230 thousand
 	Added stringGrid to speed up map functions accessing regions' tile grids.

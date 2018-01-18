@@ -7,11 +7,14 @@
 
 // BEGIN_FILE_DIR
 #define FILE_DIR .
+#define FILE_DIR "__secure"
+#define FILE_DIR "__secure/characters"
 #define FILE_DIR "rsc"
 #define FILE_DIR "rsc/img"
-#define FILE_DIR "rsc/img/characters"
 #define FILE_DIR "rsc/img/enemies"
 #define FILE_DIR "rsc/img/equipment_overlays"
+#define FILE_DIR "rsc/img/items"
+#define FILE_DIR "rsc/img/regions"
 // END_FILE_DIR
 
 // BEGIN_PREFERENCES

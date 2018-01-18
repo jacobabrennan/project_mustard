@@ -18,6 +18,8 @@ game
 		//environment.load()
 		//spawn(1)
 		//	environment.activate()
+
+	//-- Saving & Loading ----------------------------
 	proc
 		save()
 			var filePath = "[FILE_PATH_GAMES]/[ownerId]/[saveId].json"
@@ -45,7 +47,7 @@ game
 		quest = json2Object(objectData["quest"])
 
 
-	//--------------------------
+	//-- Party Management ----------------------------
 	var
 		party/party
 		quest/quest
@@ -71,21 +73,7 @@ game
 					P.gameOverCleanUp()
 			respawn()
 
-
-	//-- Player Management -----
-	var
-		list/spectators = new()
-	proc
-		addSpectator(client/client)
-			spectators.Add(new /game/spectator(client, gameId))
-			///client.eye = party.mainCharacter.interface
-			//
-			/*spawn(1)
-				var role = pick(CHARACTER_SOLDIER, CHARACTER_GOBLIN, CHARACTER_CLERIC)
-				party.addPlayer(client, role)*/
-
-
-	//-- Map Management --------
+	//-- Map Management ------------------------------
 	var
 		zOffset
 		list/regions = new()
@@ -120,6 +108,17 @@ game
 
 //-- Spectator - Interface for users waiting to play ---------------------------
 
+game
+	var
+		list/spectators = new()
+	proc
+		addSpectator(client/client)
+			spectators.Add(new /game/spectator(client, gameId))
+			///client.eye = party.mainCharacter.interface
+			//
+			/*spawn(1)
+				var role = pick(CHARACTER_SOLDIER, CHARACTER_GOBLIN, CHARACTER_CLERIC)
+				party.addPlayer(client, role)*/
 game/spectator
 	parent_type = /interface
 	var
@@ -128,6 +127,9 @@ game/spectator
 		. = ..()
 		gameId = _gameId
 		viewPlayer()
+	Login()
+		. = ..()
+		winset(client, null, "chatChannels.tabs=channelSystem,channelGame; chatChannels.current-tab=channelGame;")
 	proc
 		viewPlayer()
 			var /game/G = system.getGame(gameId)
