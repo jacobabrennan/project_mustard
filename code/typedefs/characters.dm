@@ -3,17 +3,20 @@
 //-- Test Enemy Characters - For enemy parties, place elsewhere ----------------
 
 character/redCap
-	parent_type = /character/goblin
+	parent_type = /character
+	icon = 'goblin.dmi'
 	faction = FACTION_REDCAP
+	equipFlags = EQUIP_ANY
 	baseHp = 9
 	New()
 		. = ..()
 		equip(new /item/bow1())
 		equip(new /item/quiver1())
 character/redCap/leader
-	parent_type = /character/soldier
+	parent_type = /character
 	icon = 'goblin.dmi'
 	faction = FACTION_REDCAP
+	equipFlags = EQUIP_ANY
 	baseHp = 9
 	New()
 		. = ..()

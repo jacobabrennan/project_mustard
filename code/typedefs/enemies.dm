@@ -12,10 +12,12 @@ enemy
 		childType = /enemy/eyeMass/groupMember
 		respawnTime = 32
 		rotationRate = 0
+		baseHp = 8
 		groupMember
 			parent_type = /enemy/ball/groupMember
 			icon = 'enemies.dmi'
 			icon_state = "eye_1"
+			baseHp = 5
 	bowser
 		parent_type = /enemy/snaking
 		icon = 'enemies.dmi'

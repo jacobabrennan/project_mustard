@@ -10,10 +10,10 @@
 
 // ^ Blank Dividers for easy cut/paste. 80 & 50 characters long.
 system
-	var/versionMotto = "Do you have to let it Linger?"
+	var/versionMotto = "A picture's worth a thousand lines"
 	proc/loadVersion()
 		system.versionType = "Internal"
-		system.versionNumber = "0.0.16"
+		system.versionNumber = "0.0.17"
 		system.versionHub = 0
 		spawn(1)
 			world << "<b>Version [versionType] [versionNumber]</b>: [versionMotto]"
@@ -30,17 +30,13 @@ Alpha1 Test - Test Basic Movement & Combat Systems
 		At least one boss level enemy
 
 Focus - Things which must be done this version
+	Dialogue Menues needed
 	Create Chat Portraits (16px square) for each character.
 	At least one upgrade item for each class
 
 Upcomming - Feature candidates for the next version
-	Make Enemies smarter about "shooting" with melee only in melee range
+	Audio Systems - Both Music & Sound Effects
 	Hit Animation
-	Problem: This game is based around "bullet hell" levels of enemy activity.
-		At the scale currently planned (and allowed by networking constraints)
-		what can be done to provide that level of challenge?
-		As it stands, even rudimentary AI clears out tough enemies in no time,
-		and pretty much all I can do is give them more hp.
 	Status Panes
 		Game Settings
 		World / Dungeon Map
@@ -50,10 +46,8 @@ Upcomming - Feature candidates for the next version
 	Begin Final Mapping
 	Goblin Town
 		NPCs needed
-		Dialogue Menues needed
 
 Set In Stone - Features that have to be finished for 1.0
-	Audio Systems - Both Music & Sound Effects
 	Title Screen
 		With Animation
 		Join Game in progress
@@ -69,6 +63,12 @@ Set In Stone - Features that have to be finished for 1.0
 		Data about the player that persists among all games
 		Preferences
 		Accomplishments
+	Red Caps
+		Enemy goblin party, flies around on an airship / balloon
+		File Bug report. This is necessary and won't get fixed otherwise.
+		RACING!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+		Aerial Bombardment
+		Sky Hooks
 
 Spectulative - Ideas for new features to make the game better.
 	Charms that can adjust just about anything:
@@ -80,11 +80,6 @@ Spectulative - Ideas for new features to make the game better.
 	No treasure chests, but statues that come to life?
 	Hidden Gnomes
 	Pause Game when player 1 goes to status
-	The Khandroma (airship) - Red Caps
-		File Bug report. This is necessary and won't get fixed otherwise.
-		RACING!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-		Aerial Bombardment
-		Sky Hooks
 	Refactor Character & Party
 		Remove /character
 		(this seems to be the only big difference between character & combatant)
@@ -119,6 +114,9 @@ Deferred - Low Priority Optional Features
 
 
 //------------------------------------------------------------------------------
+
+Internal 0.0.17 : Jan 17th 2018 -- A picture's worth a thousand lines
+	Finished Character Graphics and Portraits (for 4 main characters)
 
 Internal 0.0.16 : Jan 16th 2018 -- Do you have to let it Linger?
 	Secondary Parties - Any faction, many parties at once, fights enemies too.

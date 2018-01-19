@@ -9,6 +9,7 @@
 #define FILE_DIR .
 #define FILE_DIR "__secure"
 #define FILE_DIR "__secure/characters"
+#define FILE_DIR "__secure/portraits"
 #define FILE_DIR "rsc"
 #define FILE_DIR "rsc/img"
 #define FILE_DIR "rsc/img/enemies"
