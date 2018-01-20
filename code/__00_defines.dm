@@ -69,6 +69,11 @@
 	// Must remain 360 because it's used directly by trigonometric functions
 
 
+//-- Audio System --------------------------------------------------------------
+
+#define CHANNEL_MUSIC 1
+
+
 //-- Display & Menu System -----------------------------------------------------
 
 //-- Drawing Planes ------------------------------

@@ -33,7 +33,8 @@ game
 			what = {"<b style="color:#630">[sanitizedName]</b>: [what]"}
 			if(istype(who, /rpg))
 				var /rpg/int = who
-				what = "\icon[int.character] [what]"
+				var iconText = {"<img class="icon" src="\ref['chat_portraits.dmi']" iconstate="[int.character.name]">"}
+				what = "[iconText] [what]"
 			spectators << output(what, "outputChannelGame")
 			for(var/character/member in party.characters)
 				var /rpg/int = member.interface

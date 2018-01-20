@@ -10,10 +10,10 @@
 
 // ^ Blank Dividers for easy cut/paste. 80 & 50 characters long.
 system
-	var/versionMotto = "A picture's worth a thousand lines"
+	var/versionMotto = "Clean Cup x2; Move Down x2"
 	proc/loadVersion()
 		system.versionType = "Internal"
-		system.versionNumber = "0.0.17"
+		system.versionNumber = "0.0.18"
 		system.versionHub = 0
 		spawn(1)
 			world << "<b>Version [versionType] [versionNumber]</b>: [versionMotto]"
@@ -24,18 +24,16 @@ system
 
 /*-- Feature List - Remember: It's the map and Bosses! COMBAT! -----------------
 
-Alpha1 Test - Test Basic Movement & Combat Systems
-	Large Map to Wander around
-	Lots of enemies
-		At least one boss level enemy
-
 Focus - Things which must be done this version
-	Dialogue Menues needed
-	Create Chat Portraits (16px square) for each character.
 	At least one upgrade item for each class
 
 Upcomming - Feature candidates for the next version
+	Scripted Events
+		Must be able to show the same thing to all players & spectators,
+		even as PlayerOne advances dialogues, etc.
 	Audio Systems - Both Music & Sound Effects
+		Audio preferences, such as mute all, effects volume, & music volume.
+		Support for playing sound effects.
 	Hit Animation
 	Status Panes
 		Game Settings
@@ -114,6 +112,14 @@ Deferred - Low Priority Optional Features
 
 
 //------------------------------------------------------------------------------
+
+Internal 0.0.18 : Jan 18th 2018 -- Clean Cup x2; Move Down x2
+	Added Chat Portraits (16px square) for each character.
+	Added Dialogue menu components.
+		Displays an arbitrary amount of text in sequential statements.
+		Use #n in text to indicate a new line.
+		Use #p to indicate a break between statements (display the cursor).
+	Added Basic Audio system with support for playing songs.
 
 Internal 0.0.17 : Jan 17th 2018 -- A picture's worth a thousand lines
 	Finished Character Graphics and Portraits (for 4 main characters)

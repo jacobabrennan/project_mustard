@@ -395,7 +395,7 @@ rpg/menu/party
 		characters = addComponent(/component/box)
 		characters.setup(32, 102, 1, COMPANIONS_MAX)
 		spectators = addComponent(/component/select)
-		spectators.setup(56, 138, null, 8)
+		spectators.setup(56, 136, null, 8)
 		chrome(rect(16,16,224,173))
 	show()
 		. = ..()
@@ -477,7 +477,7 @@ rpg/menu/party
 				var /component/slot/S = characters.slots[sIndex]
 				var /character/member = S.storage
 				var shortKey = "   "
-				if(!member.interface)
+				if(member.interface)
 					shortKey = copytext(member.interface.key, 1, 21)
 				else
 					shortKey = copytext(shortKey, 1, sIndex+1)

@@ -138,11 +138,13 @@ component
 			var colorString = ""
 			if(textColor)
 				colorString = " color:[textColor];"
-			maptext = {"<span style="font-family:'Press Start K'; font-size: 6pt;[alignment][colorString]">[string]</span>"}
+			maptext = {"<span style="font-family:'Press Start K'; font-size: 6pt;vertical-align:top;[alignment][colorString]">[string]</span>"}
 			if(isnull(width)) width = 8*length(string)
 			maptext_width = width
 			if(height)
 				maptext_height = height
+			else
+				maptext_height = 8
 		commandDown(command)
 			. = ..()
 			if(.) return
@@ -418,6 +420,123 @@ component
 			var Yfull = (TILE_SIZE+buffer)*round((position-1)/width)
 			Yfull = (posY+(TILE_SIZE+buffer)*(height-1)) -Yfull
 			cursor.positionScreen(Xfull-2, Yfull-2)
+
+	//-- Dialogue ------------------------------------
+		// Displays multiple statements in one window.
+		// Use "#n" to designate a new line.
+		// Use "#p" to designate a new statement.
+	dialogue
+		var
+			component/sprite/portrait
+			component/label/label
+			component/sprite/cursor
+			width = 22
+			height = 4
+			list/statements = new()
+			position
+			revealing
+			skip
+		setup(character, string)
+			// Prep supplied string into list of statements.
+			var /list/wordList = splittext(string, " ")
+			var currentStatement = ""
+			var currentLine = ""
+			var lineCount = 0
+			// Add Words consecutively to Lines
+			while(wordList.len)
+				var currentWord = wordList[1]
+				wordList.Cut(1,2)
+				var lineLength = length(currentLine)
+			// Handle Control Characters
+				// Handle new statement commands (#p)
+				if(currentWord == "#p")
+					if(lineCount != 0) currentStatement += "\n"
+					currentStatement += currentLine
+					if(length(currentStatement))
+						statements.Add(currentStatement)
+						currentLine = ""
+						currentStatement = ""
+						lineCount = 0
+					continue
+				// Handle new line commands (#n)
+				if(currentWord == "#n")
+					if(lineCount != 0) currentStatement += "\n"
+					currentStatement += currentLine
+					lineCount++
+					currentLine = ""
+					continue
+			// If the line is full add it to the statement
+				if(lineLength+length(currentWord) > width)
+					if(lineCount != 0) currentStatement += "\n"
+					currentStatement += currentLine
+					lineCount++
+					currentLine = ""
+			// If the statement has enough lines, add it to the statement list
+					if(lineCount >= 4)
+						statements.Add(currentStatement)
+						currentStatement = ""
+						lineCount = 0
+			// Add the word to the current line
+				if(length(currentLine)) currentLine += " "
+				currentLine += currentWord
+			// Add any remaining line or statement
+			if(length(currentLine))
+				if(length(currentStatement)) currentStatement += "\n"
+				currentStatement += currentLine
+			if(length(currentStatement))
+				statements.Add(currentStatement)
+			//
+			cursor = addComponent(/component/sprite)
+			cursor.imprint('menu16.dmi', "dialogue_cursor")
+			cursor.positionScreen(200,182)
+			chrome(rect(56,200,12*TILE_SIZE, 3*TILE_SIZE))
+			portrait = addComponent(/component/sprite)
+			portrait.imprint('portraits.dmi', character)
+			portrait.positionScreen(0, 192)
+			label = addComponent(/component/label)
+			label.positionScreen(56, 200)
+			label.show()
+			revealLine(1)
+		proc/revealLine(newLine)
+			spawn()
+				cursor.hide()
+				revealing = TRUE
+				position = newLine
+				var fullString = statements[position]
+				for(var/revealPos = 1 to length(fullString))
+					if(skip)
+						skip = FALSE
+						label.imprint(fullString, (width+2)*8, height*8)
+						break
+					var revealString = copytext(fullString, 1, revealPos+1)
+					label.imprint(revealString, (width+2)*8, height*8)
+					sleep(1/10)
+				revealing = FALSE
+				if(position < statements.len)
+					cursor.show()
+
+		commandDown(command)
+			. = ..()
+			if(.) return
+			. = TRUE
+			switch(command)
+				if(PRIMARY, BACK)
+					if(revealing)
+						skip = TRUE
+					else
+						if(position < statements.len)
+							revealLine(position+1)
+						else
+							del src
+
+
+rpg/Login()
+	. = ..()
+	spawn()
+		var /component/dialogue/D = client.menu.addComponent(/component/dialogue)
+		D.setup("Hero", "Bug: sword attacks not aligned properly when moving in some directions. Bug: sword attacks not #p New stuff! aligned properly when moving in some directions. Bug: sword attacks not aligned properly when moving in some directions.")
+		D.show()
+		client.menu.focus(D)
 
 
 //-- Transition ----------------------------------------------------------------
