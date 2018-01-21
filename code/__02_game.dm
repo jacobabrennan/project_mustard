@@ -52,17 +52,6 @@ game
 		party/party
 		quest/quest
 	proc
-		createNew()
-			party = new(gameId)
-			party.createNew()
-			quest = new()
-		start()
-			var /client/player
-			for(var/client/C)
-				if(C.ckey == ckey(ownerId))
-					player = C
-			party.addPlayer(player, CHARACTER_HERO)
-			party.changeRegion(REGION_OVERWORLD)
 		respawn()
 			party.respawn()
 			party.changeRegion(REGION_OVERWORLD)

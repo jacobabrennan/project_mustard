@@ -10,16 +10,15 @@
 
 // ^ Blank Dividers for easy cut/paste. 80 & 50 characters long.
 system
-	var/versionMotto = "Clean Cup x2; Move Down x2"
+	var/versionMotto = "Needs more waterfalls"
 	proc/loadVersion()
 		system.versionType = "Internal"
-		system.versionNumber = "0.0.18"
+		system.versionNumber = "0.0.19"
 		system.versionHub = 0
 		spawn(1)
 			world << "<b>Version [versionType] [versionNumber]</b>: [versionMotto]"
 
 
-//345678901234567890123456789012345678901234567890123456789012345678901234567890
 //------------------------------------------------------------------------------
 
 /*-- Feature List - Remember: It's the map and Bosses! COMBAT! -----------------
@@ -28,22 +27,23 @@ Focus - Things which must be done this version
 	At least one upgrade item for each class
 
 Upcomming - Feature candidates for the next version
+	Audio preferences, such as mute all, effects volume, & music volume.
+	Player Profile data
+		Data about the player that persists among all games
+		Preferences
+		Accomplishments
 	Scripted Events
 		Must be able to show the same thing to all players & spectators,
 		even as PlayerOne advances dialogues, etc.
-	Audio Systems - Both Music & Sound Effects
-		Audio preferences, such as mute all, effects volume, & music volume.
-		Support for playing sound effects.
 	Hit Animation
-	Status Panes
-		Game Settings
-		World / Dungeon Map
-			Map shows where party members are
 	More Final Enemies
 	More Final Items
 	Begin Final Mapping
-	Goblin Town
-		NPCs needed
+	Event Furniture:
+		Make a furniture type that when activated checks the quest system, and
+		loads a configured script. Examples could include being ambushed by the
+		Red Caps the first time you visit a plot.
+		Maybe there's a central script manager that loads scripted events by ID?
 
 Set In Stone - Features that have to be finished for 1.0
 	Title Screen
@@ -57,18 +57,20 @@ Set In Stone - Features that have to be finished for 1.0
 		Convey basic story, but make them FEEL AWESOME!
 		SPECTACLE!
 	Party Editing with multiple character options for subscribers
-	Player Profile data
-		Data about the player that persists among all games
-		Preferences
-		Accomplishments
 	Red Caps
 		Enemy goblin party, flies around on an airship / balloon
-		File Bug report. This is necessary and won't get fixed otherwise.
-		RACING!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 		Aerial Bombardment
 		Sky Hooks
+	Status Panes
+		Game Settings
+		World / Dungeon Map
+			Map shows where party members are
+			Also Shows Quest status. Similar to the Four Orbs in FF1.
+	Goblin Town
+		NPCs needed
 
 Spectulative - Ideas for new features to make the game better.
+	AI aggression setting.
 	Charms that can adjust just about anything:
 		alter basic stats (max hp/mp, regain hp/mp, base speed)
 		alter derived stats (weapon attack, shield threshold, spell range)
@@ -76,25 +78,17 @@ Spectulative - Ideas for new features to make the game better.
 		allow equiping two handed weapons with one hand
 		add spells to hot keys
 	No treasure chests, but statues that come to life?
-	Hidden Gnomes
 	Pause Game when player 1 goes to status
-	Refactor Character & Party
-		Remove /character
-		(this seems to be the only big difference between character & combatant)
-		Allow for parties not as the main game party, for enemy parties!
-	Cleric behavior includes attacking
-		attack with wand when enemies are close and we can't escape or heal
 	Plot Backgrounds that show distant scenary,
 		like you're walking on a mountain ridge looking out at the sunset
 	Make the screen shake for big impacts
-	Submersion
 	Languages - Portuguese!
 	Wind
 	Will-o-wisps
 	"Modes" learned through memories that effect the overworld
 	Weapons: Flail, Spear/Lance, Instruments, Fist/Grappler?
 	//
-	Things in lighting plane only appear opaque when lit
+	Things in lighting plane only appear opaque when lit - when using BLEND_ADD
 	differences of: kind, flavor, scale
 	Enemy roles:
 		fodder
@@ -109,9 +103,18 @@ Spectulative - Ideas for new features to make the game better.
 
 Deferred - Low Priority Optional Features
 	Savefile versions
+	Hidden Gnomes
+	Submersion
+	Airship Racing!
 
 
 //------------------------------------------------------------------------------
+
+Internal 0.0.19 : Jan 19th 2018 -- Needs more waterfalls
+	Added Basic Support for Sound Effects
+	World Map:
+		Made basic layout (large scale overworld plan).
+		Started work on final overworld map file.
 
 Internal 0.0.18 : Jan 18th 2018 -- Clean Cup x2; Move Down x2
 	Added Chat Portraits (16px square) for each character.

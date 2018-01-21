@@ -2,10 +2,6 @@
 
 //------------------------------------------------------------------------------
 
-terrain/desert
-	id = "desert"
-	name = "Desert"
-	//icon = 'desert.dmi'
 terrain/ruins
 	id = "ruins"
 	icon = 'graveyard.dmi'

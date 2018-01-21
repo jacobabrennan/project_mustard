@@ -9,11 +9,10 @@
 #define FILE_DIR .
 #define FILE_DIR "__secure"
 #define FILE_DIR "__secure/characters"
-#define FILE_DIR "__secure/portraits"
 #define FILE_DIR "rsc"
 #define FILE_DIR "rsc/audio"
+#define FILE_DIR "rsc/audio/effects"
 #define FILE_DIR "rsc/audio/music"
-#define FILE_DIR "rsc/audio/sound"
 #define FILE_DIR "rsc/img"
 #define FILE_DIR "rsc/img/enemies"
 #define FILE_DIR "rsc/img/equipment_overlays"
@@ -43,6 +42,7 @@
 #include "code\fullMenu.dm"
 #include "code\quest.dm"
 #include "code\rpg_interface.dm"
+#include "code\script.dm"
 #include "code\title_screen.dm"
 #include "code\combat\combat.dm"
 #include "code\combat\enemy.dm"
@@ -64,5 +64,6 @@
 #include "code\typedefs\projectiles.dm"
 #include "code\typedefs\terrain_forest.dm"
 #include "code\typedefs\terrain_snow.dm"
+#include "code\typedefs\terrain_taiga.dm"
 // END_INCLUDE
 

@@ -2,12 +2,12 @@
 titleScreen
 	Login()
 		. = ..()
-		client.audio.playSong("goblin")
+		playSong("goblin")
 
 rpg
 	Login()
 		. = ..()
-		client.audio.playSong()
+		playSong("cavern")
 
 
 //-- Audio Library -------------------------------------------------------------
@@ -19,8 +19,13 @@ system
 			"cavern" = 'cavern.xm',
 			"goblin" = 'goblins.xm'
 		)
-	proc/getSong(songId)
-		return audioLibrarySongs[songId]
+		list/audioLibrarySounds = list(
+			"menu" = 'menu_move_3.wav'
+		)
+	proc/getSound(audioId)
+		return audioLibrarySounds[audioId]
+	proc/getSong(audioId)
+		return audioLibrarySongs[audioId]
 
 
 //-- Audio Setup ---------------------------------------------------------------
@@ -40,20 +45,35 @@ client/audio
 		. = ..()
 		client = _client
 
+interface
+	proc
+		playSound(audioId)
+			if(client) client.audio.playSound(audioId)
+		playSong(audioId)
+			if(client) client.audio.playSong(audioId)
+
 
 //-- Audio ---------------------------------------------------------------------
 
 client/audio
 	var
 		currentSong
-	proc/playSong(songId)
-		if(!songId)
-			client << sound(null, channel=CHANNEL_MUSIC)
-			return
-		var /sound/S = sound(
-			system.getSong(songId),
-			repeat=1,
-			wait=FALSE,
-			channel=CHANNEL_MUSIC
-		) //,volume)
-		client << S
+	proc
+		playSound(audioId)
+			// Get the sound from the system & play it.
+			var audioFile = system.getSound(audioId)
+			if(!audioFile) return
+			client << sound(audioFile)
+		playSong(audioId)
+			// Handle "play nothing" commands
+			if(!audioId)
+				client << sound(null, channel=CHANNEL_MUSIC)
+				return
+			// Get the song from the system. Repeat it on CHANNEL_MUSIC
+			var /sound/S = sound(
+				system.getSong(audioId),
+				repeat=TRUE,
+				wait=FALSE,
+				channel=CHANNEL_MUSIC
+			) //,volume)
+			client << S

@@ -57,8 +57,7 @@ titleScreen/menu
 			switch(options.select())
 				if("new")
 					var /game/newGame = system.newGame(client.ckey, SAVE_TEST)
-					newGame.createNew()
-					newGame.start()
+					new /script/newGame(newGame.gameId, client)
 					return
 				if("continue")
 					// Get list of saves
@@ -74,7 +73,6 @@ titleScreen/menu
 					if(saveName)
 						var /game/newGame = system.newGame(client.ckey, saveName)
 						newGame.load()
-						newGame.start()
 						return
 				if("spectate")
 					if(!system.games.len) return
@@ -82,5 +80,6 @@ titleScreen/menu
 					newGame.addSpectator(client)
 					return
 				if("map")
+					client.interface.playSong()
 					new /interface/mapEditor(client)
 					return

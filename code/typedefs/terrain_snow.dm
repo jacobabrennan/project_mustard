@@ -18,8 +18,9 @@ https://upload.wikimedia.org/wikipedia/commons/3/39/GlarusAlps.jpg
 //------------------------------------------------------------------------------
 
 
-terrain/desert
-	//ambientLight = "#00f"
+terrain/snow
+	id = "snow"
+	name = "Snow"
 	icon = 'snow.dmi'
 	var
 		interactOverlay
@@ -39,7 +40,7 @@ terrain/desert
 		//theTile.rough = 1
 		if(interactionFlags & INTERACTION_WALK)
 			if(!(world.time%3))
-				new /terrain/desert/print(interactor)
+				new /terrain/snow/print(interactor)
 		/*if(interactionFlags & INTERACTION_WIND && rand() < 1/16)
 			var/terrain/wind/wind = interactor
 			var bearing
@@ -60,7 +61,7 @@ terrain/desert
 				if(interactor.dir == SOUTH    ) bearing = 270
 				if(interactor.dir == SOUTHEAST) bearing = 315
 			spawn(delay)
-				new /terrain/desert/sparkle(bearing, theTile)
+				new /terrain/snow/sparkle(bearing, theTile)
 		*/
 	//
 	sparkle

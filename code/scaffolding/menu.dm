@@ -282,7 +282,9 @@ component
 						--scroll
 						scroll()
 					positionCursor()
-					if(position != oldPosition) return TRUE
+					if(position != oldPosition)
+						client.audio.playSound("menu")
+						return TRUE
 				if(SOUTH)
 					var oldPosition = position
 					position = min(options.len, position+1)
@@ -291,7 +293,9 @@ component
 						++scroll
 						scroll()
 					positionCursor()
-					if(position != oldPosition) return TRUE
+					if(position != oldPosition)
+						client.audio.playSound("menu")
+						return TRUE
 				if(PRIMARY) return FALSE
 				if(BACK) return FALSE
 		proc
@@ -408,6 +412,7 @@ component
 					if(1+(position-1)%width != width) position++
 					positionCursor(position)
 			if(position != oldPosition)
+				client.audio.playSound("menu")
 				return TRUE
 		proc/select()
 			var /component/slot/posSlot = slots[position]
@@ -528,15 +533,6 @@ component
 							revealLine(position+1)
 						else
 							del src
-
-
-rpg/Login()
-	. = ..()
-	spawn()
-		var /component/dialogue/D = client.menu.addComponent(/component/dialogue)
-		D.setup("Hero", "Bug: sword attacks not aligned properly when moving in some directions. Bug: sword attacks not #p New stuff! aligned properly when moving in some directions. Bug: sword attacks not aligned properly when moving in some directions.")
-		D.show()
-		client.menu.focus(D)
 
 
 //-- Transition ----------------------------------------------------------------

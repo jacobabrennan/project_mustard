@@ -383,6 +383,7 @@ rpg/menu
 								int.menu.focus(int.menu.gear)
 							if(3)
 								int.menu.focus(int.menu.party)
+						client.audio.playSound("menu")
 						return TRUE
 				return TRUE
 			switch(oldPosition)

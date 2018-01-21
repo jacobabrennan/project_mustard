@@ -82,9 +82,11 @@ rpg/menu/gear
 			// Move out of character screen
 			if(NORTH)
 				equipment.position = 2
+				client.audio.playSound("menu")
 				focus(equipment)
 			if(EAST)
 				inventory.position = inventory.width*3+1
+				client.audio.playSound("menu")
 				focus(inventory)
 			// Check for cancel / escape menu
 			if(BACK)
@@ -129,6 +131,7 @@ rpg/menu/gear
 				focus(int.menu.paneSelect)
 				focus = null
 				int.menu.focus(int.menu.paneSelect)
+				client.audio.playSound("menu")
 				return TRUE
 		// If it didn't move, change focus to different box
 		else if(B == inventory)
@@ -138,12 +141,14 @@ rpg/menu/gear
 					focus(equipment)
 				else
 					focus(charSelect)
+				client.audio.playSound("menu")
 		else if(B == equipment)
 			if(direction == SOUTH)
 				focus(charSelect)
 			else if(direction == EAST)
 				inventory.position = 1
 				focus(inventory)
+			client.audio.playSound("menu")
 		// Reposition and show box's cursor
 		B = focus
 		if(istype(B))
@@ -438,6 +443,7 @@ rpg/menu/party
 			if(NORTH)
 				if(focus == spectators) return TRUE
 				int.menu.focus(int.menu.paneSelect)
+				client.audio.playSound("menu")
 				return TRUE
 			if(WEST)
 				if(focus == spectators)
