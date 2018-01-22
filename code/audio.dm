@@ -7,7 +7,7 @@ titleScreen
 rpg
 	Login()
 		. = ..()
-		playSong("cavern")
+		playSong()
 
 
 //-- Audio Library -------------------------------------------------------------

@@ -54,11 +54,14 @@ event
 				parentRegion.z()
 			)
 			time = get_dist(target, targetTile)
+			// Take an extra step, because of boundry
+			target.forceLoc(get_step_towards(target, targetTile))
 		takeTurn(delay)
 			time--
 			if(!target || (time < 0)) del src
 			target.forceLoc(get_step_towards(target, targetTile))
 			. = ..()
+
 
 
 //-- Effect Typedefs -----------------------------------------------------------
@@ -117,3 +120,13 @@ effect
 			animate(src, transform = matrix().Scale(scale), 3)
 			spawn(2)
 				animate(src, alpha = 0, 2)
+	chestOpen
+		pixel_z = 8
+		New(furniture/chest/openChest, item/showItem)
+			. = ..()
+			centerLoc(openChest)
+			icon = showItem.icon
+			icon_state = showItem.icon_state
+			animate(src, pixel_z=20, time=5, easing=SINE_EASING|EASE_OUT)
+			spawn(8)
+				del src

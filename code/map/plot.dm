@@ -29,11 +29,17 @@ plot
 			objectData["terrain"] = terrain
 		if(enemyLevel != 1)
 			objectData["enemyLevel"] = enemyLevel
-		var/list/furnitureArray = list()
-		for(var/furniture/F in area)
-			furnitureArray[++furnitureArray.len] = F.toJSON()
-		if(furnitureArray.len)
-			objectData["furniture"] = furnitureArray
+		// Save all furniture, whether revealed or not.
+		if(!revealed)
+			if(furnitureStorage && furnitureStorage.len)
+				objectData["furniture"] = furnitureStorage
+		else
+			var/list/furnitureArray = list()
+			for(var/furniture/F in area)
+				furnitureArray[++furnitureArray.len] = F.toJSON()
+			if(furnitureArray.len)
+				objectData["furniture"] = furnitureArray
+		//
 		return objectData
 	fromJSON(list/objectData)
 		if(objectData["warpId"])
@@ -61,7 +67,7 @@ plot
 		var/terrain/terrainTerrain = terrain(src)
 		var terrainIcon = initial(terrainTerrain:icon)
 		area.icon = terrainIcon
-		// Add Tiles
+		// Add Tiles.
 		for(var/posY = 1 to PLOT_SIZE)
 			for(var/posX = 1 to PLOT_SIZE)
 				var compoundY = (y)*PLOT_SIZE + posY
@@ -70,6 +76,7 @@ plot
 				compoundY += parentRegion.mapOffset.y*PLOT_SIZE
 				compoundX += parentRegion.mapOffset.x*PLOT_SIZE
 				parentRegion.revealTileAt(compoundX, compoundY)
+		// Setup Furniture
 		for(var/list/furnitureObject in furnitureStorage)
 			var/furniture/F = json2Object(furnitureObject)
 			var/_x = furnitureObject["x"]+area.x

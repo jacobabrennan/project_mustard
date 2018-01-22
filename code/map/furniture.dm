@@ -111,12 +111,8 @@ furniture/chest
 		// Instantiate the item and add to party inventory
 		var /item/newItem = new treasureType()
 		touchChar.get(newItem)
-		// Show the item to all players in the plot
-		for(var/character/member in aloc(src))
-			var rpg/int = member.interface
-			if(!int) continue
-			int.menu.openMenu()
-			int.menu.gear.showItem(newItem)
+		// Show the item
+		new /effect/chestOpen(src, newItem)
 
 
 

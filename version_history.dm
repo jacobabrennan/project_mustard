@@ -10,10 +10,10 @@
 
 // ^ Blank Dividers for easy cut/paste. 80 & 50 characters long.
 system
-	var/versionMotto = "Needs more waterfalls"
+	var/versionMotto = "Over Troubled Water"
 	proc/loadVersion()
 		system.versionType = "Internal"
-		system.versionNumber = "0.0.19"
+		system.versionNumber = "0.0.20"
 		system.versionHub = 0
 		spawn(1)
 			world << "<b>Version [versionType] [versionNumber]</b>: [versionMotto]"
@@ -27,6 +27,7 @@ Focus - Things which must be done this version
 	At least one upgrade item for each class
 
 Upcomming - Feature candidates for the next version
+	Butterflies
 	Audio preferences, such as mute all, effects volume, & music volume.
 	Player Profile data
 		Data about the player that persists among all games
@@ -109,6 +110,12 @@ Deferred - Low Priority Optional Features
 
 
 //------------------------------------------------------------------------------
+
+Internal 0.0.20 : Jan 20th 2018 -- Over Troubled Water
+	Added Autojoining graphics for water.
+	Added Bridge tile types.
+	Chests now play an opening animation (instead of opening the inventory).
+	Tweaked: Transition animation; arrow range AI; furniture saving.
 
 Internal 0.0.19 : Jan 19th 2018 -- Needs more waterfalls
 	Added Basic Support for Sound Effects

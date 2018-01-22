@@ -1,18 +1,10 @@
 
 
-//------------------------------------------------------------------------------
-
-//character
-//	density = TRUE
-
-
-//------------------------------------------------------------------------------
+//-- Tile ----------------------------------------------------------------------
 
 tile
 	parent_type = /turf
-	// Buiding
 	var
-		buildPoints = 1
 		movement = MOVEMENT_NONE
 		rough = 1
 		deep = FALSE
@@ -24,24 +16,35 @@ tile
 				return FALSE
 		. = ..()
 		. = TRUE
-	// Basic Types used by all plot terrains
-	water
-		density = TRUE
-		icon_state = "water_0"
-		movement = MOVEMENT_WATER
-		deep = TRUE
-		density = TRUE
-		ocean
+
+	//-- Basic Types used by all plot terrains -------
 	land
 		icon_state = "floor"
 		movement = MOVEMENT_FLOOR
+	wall
+		density = 1
+		icon_state = "wall"
+		movement = MOVEMENT_WALL
+		density = TRUE
 	feature
 		density = 1
 		icon_state = "feature"
 		movement = MOVEMENT_WALL
 		density = TRUE
+	water
+		density = TRUE
+		icon_state = "water_15"
+		movement = MOVEMENT_WATER
+		deep = TRUE
+		density = TRUE
+		ocean
+	bridgeV
+		movement = MOVEMENT_FLOOR | MOVEMENT_WATER
+		icon_state = "bridge_ver"
+	bridgeH
+		movement = MOVEMENT_FLOOR | MOVEMENT_WATER
+		icon_state = "bridge_hor"
 	interact
-		//density = 1
 		icon_state = "interact"
 		movement = MOVEMENT_FLOOR
 		var
@@ -50,8 +53,3 @@ tile
 			interact(var/atom/A, interactionFlags)
 				var/terrain/ownTerrain = terrain(src)
 				ownTerrain.triggerTileInteraction(src, A, interactionFlags)
-	wall
-		density = 1
-		icon_state = "wall"
-		movement = MOVEMENT_WALL
-		density = TRUE

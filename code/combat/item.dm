@@ -201,11 +201,13 @@ item
 			var /list/deltasX = new()
 			var /list/deltasY = new()
 			var toFar
-			if(bounds_dist(equipChar, equipChar.party.mainCharacter) > 112) toFar = TRUE
+			if(bounds_dist(equipChar, equipChar.party.mainCharacter) > 112)
+				toFar = TRUE
+				target = null
 			if(target)
 				var deltaX = ((target.x-A.x)*TILE_SIZE + target.bound_width /2 + target.step_x) - ((equipChar.x-A.x)*TILE_SIZE + equipChar.bound_width /2 + equipChar.step_x)
 				var deltaY = ((target.y-A.y)*TILE_SIZE + target.bound_height/2 + target.step_y) - ((equipChar.y-A.y)*TILE_SIZE + equipChar.bound_height/2 + equipChar.step_y)
-				if(target.dead || min(abs(deltaX), abs(deltaY)) > alignMax || toFar)
+				if(target.dead || min(abs(deltaX), abs(deltaY)) > alignMax || max(abs(deltaX), abs(deltaY)) > arrowRange)
 					target = null
 			// Check for targets of opportunity. Shoot the one that can be hit the fastest with an arrow
 			var fastestDir
@@ -217,7 +219,7 @@ item
 				var deltaY = ((E.y-A.y)*TILE_SIZE + E.bound_height/2 + E.step_y) - ((equipChar.y-A.y)*TILE_SIZE + equipChar.bound_height/2 + equipChar.step_y)
 				deltasX[E] = deltaX
 				deltasY[E] = deltaY
-				if(min(abs(deltaX), abs(deltaY)) > arrowRange) continue
+				if(max(abs(deltaX), abs(deltaY)) > arrowRange) continue
 				var directX
 				var directY
 				var closingX
@@ -265,7 +267,7 @@ item
 					var deltaX = abs(deltasX[E])
 					var deltaY = abs(deltasY[E])
 					var minDelta = min(deltaX, deltaY)
-					if(minDelta < closestAlignDist)
+					if(minDelta < closestAlignDist && max(deltaX, deltaY) <= arrowRange)
 						closestAlignTarget = E
 						closestAlignDist = minDelta
 				if(closestAlignTarget)

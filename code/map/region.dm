@@ -239,7 +239,21 @@ region
 			if(!istype(tileType, /tile/water))
 				tileType = /tile/wall*/
 		//
-		return createTileAt(x, y, tileType)
+		var /tile/newTile = createTileAt(x, y, tileType)
+		// Autojoin graphics for water tiles
+		if(istype(newTile, /tile/water))
+			var joinFlags = 0
+			if((x-1)%PLOT_SIZE == 0) joinFlags |= WEST
+			else if(initial(tileTypeAt(x-1, y):movement) & MOVEMENT_WATER) joinFlags |= WEST
+			if((x-1)%PLOT_SIZE == PLOT_SIZE-1) joinFlags |= EAST
+			else if(initial(tileTypeAt(x+1, y):movement) & MOVEMENT_WATER) joinFlags |= EAST
+			if((y-1)%PLOT_SIZE == 0) joinFlags |= SOUTH
+			else if(initial(tileTypeAt(x, y-1):movement) & MOVEMENT_WATER) joinFlags |= SOUTH
+			if((y-1)%PLOT_SIZE == PLOT_SIZE-1) joinFlags |= NORTH
+			else if(initial(tileTypeAt(x, y+1):movement) & MOVEMENT_WATER) joinFlags |= NORTH
+			newTile.icon_state = "water_[joinFlags]"
+		//
+		return newTile
 	proc/unrevealTileAt(x, y) // Reveal tile at atomic coordinates (no plot coordinates version)
 		var oldTile = locate(
 			x + mapOffset.x*PLOT_SIZE+1, // BYOND's map coordinates start at 1
@@ -315,6 +329,8 @@ region
 				if("%") tileType = /tile/feature
 				if("&") tileType = /tile/interact
 				if("#") tileType = /tile/wall
+				if("-") tileType = /tile/bridgeH
+				if("|") tileType = /tile/bridgeV
 				if("."," ","+","'") tileType = /tile/land
 				// Town Interior Types
 				/*if("0") tileType = /tile/interior/black
@@ -345,6 +361,8 @@ region
 				if(/tile/interact) tileChar = "&"
 				if(/tile/wall) tileChar = "#"
 				if(/tile/land) tileChar = "."
+				if(/tile/bridgeH) tileChar = "-"
+				if(/tile/bridgeV) tileChar = "|"
 				// Town Interior Types
 				/*if(/tile/interior/black) tileChar = "0"
 				if(/tile/interior/wallBottom) tileChar = "1"

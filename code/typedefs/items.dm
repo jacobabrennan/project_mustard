@@ -24,9 +24,13 @@ item
 	bow1
 		parent_type = /item/bow
 		icon_state = "bow1"
+		potency = 1
+		arrowRange = 80
 	bow2
 		parent_type = /item/bow
 		icon_state = "bow2"
+		potency = 1
+		arrowRange = 100
 	shield1
 	shield2
 	quiver1
@@ -40,6 +44,17 @@ item
 	robe1
 	robe2
 	flail1
+	bookHealing1
+		parent_type = /item/book
+		icon_state = "bookHeal1"
+		spells = list(/spell/heal1)
+	bookHealing2
+		parent_type = /item/book
+		icon_state = "bookHeal2"
+		spells = list(
+			/spell/heal1,
+			/spell/fire1
+		)
 
 
 item
@@ -85,11 +100,6 @@ item
 		icon = 'armor.dmi'
 		icon_state = "charm"
 
-	bookHealing1
-		parent_type = /item/book
-		icon_state = "bookHeal1"
-		spells = list(/spell/heal1)
-
 
 //-- Spells from Books ---------------------------------------------------------
 
@@ -97,3 +107,16 @@ spell
 	heal1
 		parent_type = /spell/heal
 		icon_state = "heal1"
+	fire1
+		icon_state = "fire1"
+		mpCost = 1
+		use(character/user)
+			. = ..()
+			if(user.mp < mpCost) return
+			user.adjustMp(-mpCost)
+			var /projectile/P = user.shoot(/projectile/fire1)
+			if(!P) return
+			P.baseSpeed = 4
+			P.maxRange = 80
+			P.project()
+			return P

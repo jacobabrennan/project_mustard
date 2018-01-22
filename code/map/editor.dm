@@ -242,6 +242,8 @@ interface/mapEditor/menu/basicPalette
 			new /interface/mapEditor/menu/paletteOption{ typePath=/tile/feature}(),
 			new /interface/mapEditor/menu/paletteOption{ typePath=/tile/interact}(),
 			new /interface/mapEditor/menu/paletteOption{ typePath=/tile/water}(),
+			new /interface/mapEditor/menu/paletteOption{ typePath=/tile/bridgeH}(),
+			new /interface/mapEditor/menu/paletteOption{ typePath=/tile/bridgeV}(),
 		))
 		furnitureEditor = addComponent(/component/box)
 		furnitureEditor.setup(16,48,10,1)
