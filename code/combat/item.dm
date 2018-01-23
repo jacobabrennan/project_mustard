@@ -170,7 +170,7 @@ item
 		parent_type = /item/weapon
 		equipFlags = EQUIP_BOW
 		icon_state = "crossbow"
-		projectileType = /projectile/bowArrow
+		projectileType = /projectile/arrow
 		potency = 1
 		var
 			arrowSpeed = 6
@@ -320,7 +320,7 @@ item
 		icon = 'weapons.dmi'
 		icon_state = "quiver1"
 		var
-			projectileType = /projectile/bowArrow
+			projectileType = /projectile/arrow
 		proc/getArrow(character/equipChar, item/bow/equipBow)
 			return equipChar.shoot(projectileType)
 	book

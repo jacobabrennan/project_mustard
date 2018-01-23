@@ -79,14 +79,24 @@ combatant
 		. = behavior()
 	proc
 		behavior()
-	proc/control()
-		for(var/cIndex = controllers.len to 1 step -1)
-			var/controller = controllers[cIndex]
-			var/block = FALSE
-			if(hascall(controller, "control"))
-				block = controller:control(src)
-			else if(controller) block = TRUE
-			if(block) return block
+	proc
+		control()
+			for(var/cIndex = controllers.len to 1 step -1)
+				var/controller = controllers[cIndex]
+				var/block = FALSE
+				if(hascall(controller, "control"))
+					block = controller:control(src)
+				else if(controller) block = TRUE
+				if(block) return block
+		commandDown(which)
+			for(var/cIndex = controllers.len to 1 step -1)
+				var/controller = controllers[cIndex]
+				var/block = FALSE
+				if(hascall(controller, "commandDown"))
+					block = controller:commandDown(which, src)
+				else if(controller) block = TRUE
+				if(block) return block
+
 
 	//-- Controller & Sequence -----------------------
 	proc/addController(sequence/controller)

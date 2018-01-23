@@ -47,7 +47,7 @@ rpg
 		character.interface = null
 		G.addSpectator(client)
 
-	//-- Command Passing - Client to Interface -------
+	//-- Command Passing -----------------------------
 	proc/checkCommands()
 		return client.macros.commands | commandsDown
 	proc/control(character/_character)
@@ -80,8 +80,8 @@ rpg
 			_character.go(deltaX*speed, deltaY*speed)
 		commandsDown = 0
 	commandDown(command)
-		var/block = client.menu.commandDown(command)
-		if(block) return
+		if(character.commandDown(command)) return TRUE
+		if(client.menu.commandDown(command)) return TRUE
 		commandsDown |= command
 
 	//-- Convenience Utilities -----------------------

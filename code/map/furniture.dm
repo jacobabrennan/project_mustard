@@ -94,17 +94,14 @@ furniture/chest
 			icon_state = "chest"
 			open = FALSE
 	interact(character/touchChar, interactFlags)
-		// Return if already open the plot is hostile
+		// Return if already open
 		if(open)
-			return
-		var /plot/P = plot(src)
-		if(P.isHostile())
 			return
 		// Make sure it's a player interacting
 		if(!istype(touchChar) || !(touchChar.faction&FACTION_PLAYER) || !touchChar.interface)
 			return
 		// Set quest and close chest
-		var /game/G = game(P)
+		var /game/G = game(src)
 		G.quest.put(treasureId, TRUE)
 		icon_state = "chest_open"
 		open = TRUE

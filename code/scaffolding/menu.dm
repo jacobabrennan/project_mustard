@@ -14,13 +14,44 @@ client
 
 menu
 	parent_type = /component
-	appearance_flags = PLANE_MASTER | TILE_BOUND
-	icon = 'light_overlay.png'
+	//appearance_flags = PLANE_MASTER | TILE_BOUND
+	//icon = 'light_overlay.png'
 	plane = PLANE_MENU
-	screen_loc = "1,1"
+	//screen_loc = "1,1"
 	setup()
 		. = ..()
-		client.screen.Add(src)
+		client.screenAdd(src)
+
+client
+	proc
+		screenAdd()
+			for(var/argument in args)
+				screen.Add(argument)
+		screenRemove()
+			for(var/argument in args)
+				screen.Remove(argument)
+
+party
+	var
+		menu/menu
+	New()
+		menu = new(src)
+		. = ..()
+	proc
+		screenAdd()
+			var /game/G = game(src)
+			for(var/game/spectator/watcher in G.spectators)
+				watcher.client.screenAdd(arglist(args))
+			for(var/character/member in characters)
+				if(member.interface && member.interface.client)
+					member.interface.client.screenAdd(arglist(args))
+		screenRemove()
+			var /game/G = game(src)
+			for(var/game/spectator/watcher in G.spectators)
+				watcher.client.screenRemove(arglist(args))
+			for(var/character/member in characters)
+				if(member.interface && member.interface.client)
+					member.interface.client.screenRemove(arglist(args))
 
 
 //-- Component - Backbone of menuing system ------------------------------------
@@ -62,12 +93,12 @@ component
 			return component
 		show()
 			shown = TRUE
-			client.screen.Add(src)
+			client.screenAdd(src)
 			for(var/component/C in components)
 				if(C.autoShow) C.show()
 		hide()
 			shown = FALSE
-			client.screen.Remove(src)
+			client.screenRemove(src)
 			for(var/component/C in components)
 				C.hide()
 			if(parent.focus == src)
@@ -438,10 +469,12 @@ component
 			width = 22
 			height = 4
 			list/statements = new()
+			datum/callback
 			position
 			revealing
 			skip
-		setup(character, string)
+		setup(portraitId, string, response, _callback)
+			callback = _callback
 			// Prep supplied string into list of statements.
 			var /list/wordList = splittext(string, " ")
 			var currentStatement = ""
@@ -477,7 +510,7 @@ component
 					lineCount++
 					currentLine = ""
 			// If the statement has enough lines, add it to the statement list
-					if(lineCount >= 4)
+					if(lineCount >= height)
 						statements.Add(currentStatement)
 						currentStatement = ""
 						lineCount = 0
@@ -490,16 +523,24 @@ component
 				currentStatement += currentLine
 			if(length(currentStatement))
 				statements.Add(currentStatement)
-			//
+			// Create Subcomponents
 			cursor = addComponent(/component/sprite)
 			cursor.imprint('menu16.dmi', "dialogue_cursor")
-			cursor.positionScreen(200,182)
-			chrome(rect(56,200,12*TILE_SIZE, 3*TILE_SIZE))
 			portrait = addComponent(/component/sprite)
-			portrait.imprint('portraits.dmi', character)
-			portrait.positionScreen(0, 192)
+			portrait.imprint('portraits.dmi', portraitId)
 			label = addComponent(/component/label)
-			label.positionScreen(56, 200)
+			// Position
+			if(response) // Align Right, for conversations
+				cursor.positionScreen(152,136)
+				chrome(rect(8,152,12*TILE_SIZE, 3*TILE_SIZE))
+				portrait.positionScreen(192, 144)
+				label.positionScreen(8, 152)
+			else // Default align left
+				cursor.positionScreen(200,182)
+				chrome(rect(56,200,12*TILE_SIZE, 3*TILE_SIZE))
+				portrait.positionScreen(0, 192)
+				label.positionScreen(56, 200)
+			//
 			label.show()
 			revealLine(1)
 		proc/revealLine(newLine)
@@ -519,20 +560,27 @@ component
 				revealing = FALSE
 				if(position < statements.len)
 					cursor.show()
-
+		control()
+			return TRUE
 		commandDown(command)
 			. = ..()
 			if(.) return
+			diag(1)
 			. = TRUE
 			switch(command)
 				if(PRIMARY, BACK)
 					if(revealing)
+						diag(2)
 						skip = TRUE
+					else if(position < statements.len)
+						diag(3)
+						revealLine(position+1)
+					else if(hascall(callback, "commandDown"))
+						diag(4)
+						call(callback, "commandDown")(MENU_READY)
 					else
-						if(position < statements.len)
-							revealLine(position+1)
-						else
-							del src
+						diag(5)
+						del src
 
 
 //-- Transition ----------------------------------------------------------------

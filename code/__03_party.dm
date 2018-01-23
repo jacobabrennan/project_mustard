@@ -34,7 +34,7 @@ party
 	proc
 		createNew()
 			addPartyMember(new /character/hero())
-			var /character/cleric/cleric   = addPartyMember(new /character/cleric())
+			var /character/cleric/cleric   = addPartyMember(new /character/magi())
 			var /character/soldier/soldier = addPartyMember(new /character/soldier())
 			var /character/goblin/goblin   = addPartyMember(new /character/goblin())
 			mainCharacter.equip(new /item/sword1())

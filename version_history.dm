@@ -10,10 +10,10 @@
 
 // ^ Blank Dividers for easy cut/paste. 80 & 50 characters long.
 system
-	var/versionMotto = "Over Troubled Water"
+	var/versionMotto = "A thousand years ago..."
 	proc/loadVersion()
 		system.versionType = "Internal"
-		system.versionNumber = "0.0.20"
+		system.versionNumber = "0.0.21"
 		system.versionHub = 0
 		spawn(1)
 			world << "<b>Version [versionType] [versionNumber]</b>: [versionMotto]"
@@ -24,11 +24,12 @@ system
 /*-- Feature List - Remember: It's the map and Bosses! COMBAT! -----------------
 
 Focus - Things which must be done this version
-	At least one upgrade item for each class
 
 Upcomming - Feature candidates for the next version
+	At least one upgrade item for each class
 	Butterflies
 	Audio preferences, such as mute all, effects volume, & music volume.
+	Game Saving
 	Player Profile data
 		Data about the player that persists among all games
 		Preferences
@@ -45,8 +46,15 @@ Upcomming - Feature candidates for the next version
 		loads a configured script. Examples could include being ambushed by the
 		Red Caps the first time you visit a plot.
 		Maybe there's a central script manager that loads scripted events by ID?
+	Tweaks:
+		The position % 2 problem.
 
 Set In Stone - Features that have to be finished for 1.0
+	There exists an unresolved design problem around players who disconnect &
+		reconnect during scripted events. This will become a bug is unresolved
+		before release, as the current implementation will hand the player
+		control of the character, even though control may be locked by the
+		current script.
 	Title Screen
 		With Animation
 		Join Game in progress
@@ -110,6 +118,13 @@ Deferred - Low Priority Optional Features
 
 
 //------------------------------------------------------------------------------
+
+Internal 0.0.21 : Jan 21th 2018 -- A thousand years ago...
+	Added infrastructure for telling stories:
+		Party Menu: shows components to everyone, takes control from lead player
+		Scripts: control story "cutscenes".
+		Dialogue Responses.
+		Storyline character, the Magi.
 
 Internal 0.0.20 : Jan 20th 2018 -- Over Troubled Water
 	Added Autojoining graphics for water.

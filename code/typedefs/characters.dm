@@ -107,3 +107,8 @@ character
 		partyDistance = 24
 		roughWalk = 16
 		baseHp = 3
+	magi
+		parent_type = /character/cleric
+		name = "Magi"
+		icon = 'magi.dmi'
+		portrait = "Magi"

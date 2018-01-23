@@ -2,7 +2,7 @@
 titleScreen
 	Login()
 		. = ..()
-		playSong("goblin")
+		//playSong("goblin")
 
 rpg
 	Login()
@@ -48,9 +48,32 @@ client/audio
 interface
 	proc
 		playSound(audioId)
-			if(client) client.audio.playSound(audioId)
+			if(client) client.audioPlaySound(audioId)
 		playSong(audioId)
-			if(client) client.audio.playSong(audioId)
+			if(client) client.audioPlaySong(audioId)
+client
+	proc
+		audioPlaySong()
+			audio.playSong(arglist(args))
+		audioPlaySound()
+			audio.playSound(arglist(args))
+
+party
+	proc
+		audioPlaySong()
+			var /game/G = game(src)
+			for(var/game/spectator/watcher in G.spectators)
+				watcher.client.audioPlaySong(arglist(args))
+			for(var/character/member in characters)
+				if(member.interface)
+					member.interface.playSong(arglist(args))
+		audioPlaySound()
+			var /game/G = game(src)
+			for(var/game/spectator/watcher in G.spectators)
+				watcher.client.audioPlaySound(arglist(args))
+			for(var/character/member in characters)
+				if(member.interface)
+					member.interface.playSound(arglist(args))
 
 
 //-- Audio ---------------------------------------------------------------------

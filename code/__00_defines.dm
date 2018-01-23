@@ -88,6 +88,7 @@
 #define TERTIARY 256
 #define QUATERNARY 512
 #define BACK 1024
+#define MENU_READY 2048
 
 //-- Menu System Pane IDs ------------------------
 #define PANE_GEAR 1

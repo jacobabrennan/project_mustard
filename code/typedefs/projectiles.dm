@@ -3,7 +3,7 @@
 //-- Character Projectiles -----------------------------------------------------
 
 //-- Arrows shot by bow weapons ------------------
-projectile/bowArrow
+projectile/arrow
 	icon = 'projectiles.dmi'
 	icon_state = "arrow"
 	//max_time = 32
@@ -24,6 +24,7 @@ projectile/bowArrow
 			if(EAST , WEST )
 				bound_height = short_width
 				bound_width = long_width
+		centerLoc(owner)
 
 //-- Swiping Melee Attacks (Axe) -----------------
 projectile/axe
