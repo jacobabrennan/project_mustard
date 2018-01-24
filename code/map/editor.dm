@@ -36,6 +36,7 @@ interface/mapEditor
 		var /game/G = system.newGame(ID_SYSTEM, "edit")
 		gameId = G.gameId
 		G.quest = new()
+		G.mode = GAME_EDITOR
 		// Find starting place and display to client
 		forceLoc(locate(round(world.maxx/2),round(world.maxy/2),1))
 
@@ -43,7 +44,7 @@ interface/mapEditor
 	density = FALSE
 	movement = MOVEMENT_ALL
 	step_size = 8
-	icon = 'test.dmi'
+	icon = 'menu16.dmi'
 	icon_state = "eye"
 	var
 		image/plotBorder
@@ -114,7 +115,7 @@ interface/mapEditor
 interface/mapEditor
 	regionMarker
 		parent_type = /area
-		icon = 'test.dmi'
+		icon = 'menu16.dmi'
 		icon_state = "regionMarker"
 		var
 			gameId
@@ -250,6 +251,7 @@ interface/mapEditor/menu/basicPalette
 		furnitureEditor.refresh(list(
 			new /interface/mapEditor/menu/paletteOption{ typePath=/furniture/deleter}(),
 			null,
+			new /interface/mapEditor/menu/paletteOption{ typePath=/furniture/scriptedEvent}(),
 			new /interface/mapEditor/menu/paletteOption{ typePath=/memory/entrance}(),
 			new /interface/mapEditor/menu/paletteOption{ typePath=/furniture/tree}(),
 			new /interface/mapEditor/menu/paletteOption{ typePath=/furniture/chest}(),

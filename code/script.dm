@@ -5,6 +5,7 @@
 script
 	var
 		gameId
+		stage = 0
 	New(_gameId)
 		gameId = _gameId
 		var /game/G = game(gameId)
@@ -15,6 +16,29 @@ script
 			return TRUE
 		commandDown(command)
 			return TRUE
+	//
+	var
+		component/dialogue/dialogue
+		component/dialogue/response
+	Del()
+		del dialogue
+		del response
+		. = ..()
+	proc
+		dialogue(portrait, message)
+			del dialogue
+			var /game/G = game(gameId)
+			dialogue = G.party.menu.addComponent(/component/dialogue)
+			dialogue.setup(portrait, message, null, src)
+			dialogue.show()
+			G.party.menu.focus(dialogue)
+		response(portrait, message)
+			del response
+			var /game/G = game(gameId)
+			response = G.party.menu.addComponent(/component/dialogue)
+			response.setup(portrait, message, TRUE, src)
+			response.show()
+			G.party.menu.focus(response)
 
 script/newGame
 	New(_gameId, client/newPlayer)
@@ -34,29 +58,51 @@ script/newGame
 			del src
 
 script/alphaTest
-	var
-		component/dialogue/dialogue
 	New(_gameId)
 		. = ..()
-		var /game/G = system.getGame(gameId)
-		//
-		/*var /component/dialogue/D = int.menu.addComponent(/component/dialogue)
-		D.setup("alpha", "Welcome to Alpha Test 2. #p Here is another longer statement to make this dialogue component break into several segments. Kupo!")
-		D.show()
-		int.menu.focus(D)*/
-		dialogue = G.party.menu.addComponent(/component/dialogue)
-		dialogue.setup("Hero", "Here here! Here here! Here here! Here here! Here here! Here here! Here here! Here here! Here here! Here here! Here here! Here here!", TRUE, src)
-		dialogue.show()
-		G.party.menu.focus(dialogue)
-		//G.party.mainCharacter.interface.client.menu.focus(G.party.menu)
+		dialogue("Magi", "Here here!")
 	commandDown(command, combatant/controllee)
 		. = TRUE
 		var /game/G = system.getGame(gameId)
 		switch(command)
 			if(MENU_READY)
-				diag("del")
-				del dialogue
-				del src
+				if(!response)
+					response("Hero", "Ok! #p Outta here.")
+				else
+					del dialogue
+					del response
+					del src
 			else
 				if(controllee != G.party.mainCharacter) return
-				dialogue.commandDown(command)
+				G.party.menu.commandDown(command)
+
+script/addGoblin
+	//#error Check the Quest system
+	New(_gameId, plot/P)
+		set waitfor = FALSE
+		spawn(20)
+			. = ..()
+			dialogue("Goblin", "Can I come along?")
+			var /game/G = game(gameId)
+			var /furniture/scriptedEvent/S = locate() in P.area
+			var /character/goblin/goblin = G.party.addPartyMember(new /character/goblin())
+			goblin.equip( new /item/bow1())
+			goblin.equip( new /item/quiver1())
+			goblin.centerLoc(S)
+	commandDown(command, combatant/controllee)
+		. = TRUE
+		var /game/G = system.getGame(gameId)
+		switch(command)
+			if(MENU_READY)
+				switch(stage)
+					if(0)
+						response("Soldier", "No. #p Definitly Not.")
+						stage++
+					if(1)
+						response("Hero", "Of Course.")
+						stage++
+					if(2)
+						del src
+			else
+				if(controllee != G.party.mainCharacter) return
+				G.party.menu.commandDown(command)

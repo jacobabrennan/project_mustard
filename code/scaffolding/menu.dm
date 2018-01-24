@@ -531,6 +531,7 @@ component
 			label = addComponent(/component/label)
 			// Position
 			if(response) // Align Right, for conversations
+				portrait.transform = matrix(-1,0,0, 0,1,0)
 				cursor.positionScreen(152,136)
 				chrome(rect(8,152,12*TILE_SIZE, 3*TILE_SIZE))
 				portrait.positionScreen(192, 144)
@@ -565,21 +566,16 @@ component
 		commandDown(command)
 			. = ..()
 			if(.) return
-			diag(1)
 			. = TRUE
 			switch(command)
 				if(PRIMARY, BACK)
 					if(revealing)
-						diag(2)
 						skip = TRUE
 					else if(position < statements.len)
-						diag(3)
 						revealLine(position+1)
 					else if(hascall(callback, "commandDown"))
-						diag(4)
 						call(callback, "commandDown")(MENU_READY)
 					else
-						diag(5)
 						del src
 
 

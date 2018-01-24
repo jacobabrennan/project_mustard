@@ -8,6 +8,7 @@ game
 		gameId // A string to uniquely identify this game. Used extensively throughout project.
 		ownerId // The "player1" for this game. Game will be saved under this player's ID.
 		saveId // A string to uniquely identify this game's save file among others belonging to this player.
+		mode = GAME_RPG
 	New(_ownerId, _saveId)
 		. = ..()
 		ownerId = _ownerId

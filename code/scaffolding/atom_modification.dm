@@ -16,7 +16,7 @@ world
 //-- Map Restriction -----------------------------
 world/area = /area/border
 area/border
-	icon = 'test.dmi'
+	icon = 'menu16.dmi'
 	icon_state = "areaDefault"
 	Enter(interface/entrant)
 		if(!istype(entrant)) return

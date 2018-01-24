@@ -11,6 +11,11 @@
 
 //-- Gameplay Metrics ----------------------------------------------------------
 
+//-- Game Mode -----------------------------------
+#define GAME_RPG 1
+#define GAME_EDITOR 2
+
+//-- Items & Inventory ---------------------------
 #define ITEM_DROP_RATE (1/6)
 	// How often enemies drop items when they die
 #define INVENTORY_MAX 48

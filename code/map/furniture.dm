@@ -161,7 +161,40 @@ furniture/tree
 		density = initial(density)
 
 
-//------------------------------------------------------------------------------
+//-- Scripted Event Markers ----------------------------------------------------
+
+furniture/scriptedEvent
+	#ifdef DEBUG
+	icon = 'mapEditorCommands.dmi'
+	icon_state = "script"
+	#else
+	icon = null
+	#endif
+	interaction = INTERACTION_NONE
+	var
+		scriptType
+	toJSON()
+		var /list/objectData = ..()
+		objectData["scriptType"] = scriptType
+		return objectData
+	fromJSON(list/objectData)
+		. = ..()
+		scriptType = text2path(objectData["scriptType"])
+	_configureMapEditor()
+		var temp = input("Set Script Typepath", "Script", scriptType) in typesof(/script)
+		if(!(ispath(temp)))
+			return
+		scriptType = temp
+		alert("Script Set", "Script")
+	activate()
+		if(!ispath(scriptType)){ diag("ASDF", scriptType); return}
+		var /plot/P = plot(src)
+		var /game/G = game(P)
+		if(G.mode == GAME_EDITOR) return
+		new scriptType(G.gameId, P)
+
+
+//-- Memory Dungeons -----------------------------------------------------------
 
 memory
 	entrance

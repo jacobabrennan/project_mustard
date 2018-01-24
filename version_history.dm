@@ -13,7 +13,7 @@ system
 	var/versionMotto = "A thousand years ago..."
 	proc/loadVersion()
 		system.versionType = "Internal"
-		system.versionNumber = "0.0.21"
+		system.versionNumber = "0.0.22"
 		system.versionHub = 0
 		spawn(1)
 			world << "<b>Version [versionType] [versionNumber]</b>: [versionMotto]"
@@ -24,37 +24,33 @@ system
 /*-- Feature List - Remember: It's the map and Bosses! COMBAT! -----------------
 
 Focus - Things which must be done this version
+	First Mission:
+		Mapping Start Area
+		Butterflies
 
 Upcomming - Feature candidates for the next version
-	At least one upgrade item for each class
-	Butterflies
-	Audio preferences, such as mute all, effects volume, & music volume.
 	Game Saving
 	Player Profile data
 		Data about the player that persists among all games
 		Preferences
 		Accomplishments
-	Scripted Events
-		Must be able to show the same thing to all players & spectators,
-		even as PlayerOne advances dialogues, etc.
 	Hit Animation
 	More Final Enemies
 	More Final Items
 	Begin Final Mapping
-	Event Furniture:
-		Make a furniture type that when activated checks the quest system, and
-		loads a configured script. Examples could include being ambushed by the
-		Red Caps the first time you visit a plot.
-		Maybe there's a central script manager that loads scripted events by ID?
 	Tweaks:
 		The position % 2 problem.
+		The soldier's axe AI is broken (conflicted when she should revive).
+		Cleric should wait until you need 2 hp. Else it seems hurt == sparkles.
 
 Set In Stone - Features that have to be finished for 1.0
-	There exists an unresolved design problem around players who disconnect &
-		reconnect during scripted events. This will become a bug is unresolved
-		before release, as the current implementation will hand the player
-		control of the character, even though control may be locked by the
-		current script.
+	There exists an unresolved design problem should player one disconnect
+		during a scripted event (especially if there are menu components on
+		screen).
+
+	----
+	Story
+
 	Title Screen
 		With Animation
 		Join Game in progress
@@ -65,18 +61,30 @@ Set In Stone - Features that have to be finished for 1.0
 		Regressia Hero against Lorcan (legend, not true)
 		Convey basic story, but make them FEEL AWESOME!
 		SPECTACLE!
-	Party Editing with multiple character options for subscribers
+	First Quest
 	Red Caps
 		Enemy goblin party, flies around on an airship / balloon
 		Aerial Bombardment
 		Sky Hooks
+	Three More Quests
+	Goblin Town
+		NPCs needed
+	Map Interests
+	Confrontation w/ King
+	Lightning Scene
+	Final Quest
+	Final Boss
+	Ending
+
+	----
+	Interface
+	Audio preferences, such as mute all, effects volume, & music volume.
+	Party Editing with multiple character options for subscribers
 	Status Panes
 		Game Settings
 		World / Dungeon Map
 			Map shows where party members are
 			Also Shows Quest status. Similar to the Four Orbs in FF1.
-	Goblin Town
-		NPCs needed
 
 Spectulative - Ideas for new features to make the game better.
 	AI aggression setting.
@@ -87,7 +95,6 @@ Spectulative - Ideas for new features to make the game better.
 		allow equiping two handed weapons with one hand
 		add spells to hot keys
 	No treasure chests, but statues that come to life?
-	Pause Game when player 1 goes to status
 	Plot Backgrounds that show distant scenary,
 		like you're walking on a mountain ridge looking out at the sunset
 	Make the screen shake for big impacts
@@ -111,13 +118,18 @@ Spectulative - Ideas for new features to make the game better.
 	Revive member who fell down holl, etc
 
 Deferred - Low Priority Optional Features
+	CQ Game Mode - Start or join a wave based mini-game from the title screen.
 	Savefile versions
 	Hidden Gnomes
 	Submersion
 	Airship Racing!
+	Pause Game when player 1 goes to status
 
 
 //------------------------------------------------------------------------------
+
+Internal 0.0.22 : Jan 22nd 2018 --
+	Script triggers can now be placed on the map.
 
 Internal 0.0.21 : Jan 21th 2018 -- A thousand years ago...
 	Added infrastructure for telling stories:
