@@ -84,7 +84,7 @@ furniture/chest
 	activate()
 		var /plot/P = plot(src)
 		var /game/G = game(P)
-		var questState = G.quest.get("treasureId")
+		var questState = G.quest.get(treasureId)
 		var /terrain/T = terrain(P)
 		icon = T.icon
 		if(questState)
@@ -100,7 +100,7 @@ furniture/chest
 		// Make sure it's a player interacting
 		if(!istype(touchChar) || !(touchChar.faction&FACTION_PLAYER) || !touchChar.interface)
 			return
-		// Set quest and close chest
+		// Set quest and open chest
 		var /game/G = game(src)
 		G.quest.put(treasureId, TRUE)
 		icon_state = "chest_open"

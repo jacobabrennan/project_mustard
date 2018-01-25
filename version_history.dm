@@ -10,7 +10,7 @@
 
 // ^ Blank Dividers for easy cut/paste. 80 & 50 characters long.
 system
-	var/versionMotto = "A thousand years ago..."
+	var/versionMotto = "What's a Bean attack?"
 	proc/loadVersion()
 		system.versionType = "Internal"
 		system.versionNumber = "0.0.22"
@@ -128,7 +128,7 @@ Deferred - Low Priority Optional Features
 
 //------------------------------------------------------------------------------
 
-Internal 0.0.22 : Jan 22nd 2018 --
+Internal 0.0.22 : Jan 22nd 2018 -- What's a Bean attack?
 	Script triggers can now be placed on the map.
 
 Internal 0.0.21 : Jan 21th 2018 -- A thousand years ago...

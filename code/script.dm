@@ -77,13 +77,15 @@ script/alphaTest
 				G.party.menu.commandDown(command)
 
 script/addGoblin
-	//#error Check the Quest system
 	New(_gameId, plot/P)
 		set waitfor = FALSE
+		var /game/G = game(_gameId)
+		if(G.quest.get("goblin"))
+			return
 		spawn(20)
 			. = ..()
+			G.quest.put("goblin", TRUE)
 			dialogue("Goblin", "Can I come along?")
-			var /game/G = game(gameId)
 			var /furniture/scriptedEvent/S = locate() in P.area
 			var /character/goblin/goblin = G.party.addPartyMember(new /character/goblin())
 			goblin.equip( new /item/bow1())
